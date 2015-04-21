@@ -704,7 +704,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           whitelist: [
             'http://www.kmlvalidator.org/validate.htm',
             'https://' + window.location.host + '/**'
-          ]
+          ],
+          defaultTopicId: '${default_topic_id}'
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {
