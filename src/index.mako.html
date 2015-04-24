@@ -705,7 +705,8 @@ itemscope itemtype="http://schema.org/WebApplication"
             'http://www.kmlvalidator.org/validate.htm',
             'https://' + window.location.host + '/**'
           ],
-          defaultTopicId: '${default_topic_id}'
+          defaultTopicId: '${default_topic_id}',
+          translationFallbackCode: '${translation_fallback_code}'
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {
