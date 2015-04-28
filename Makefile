@@ -174,7 +174,7 @@ datepicker: .build-artefacts/datepicker
 
 .PHONY: translate
 translate: .build-artefacts/translate-requirements-installation.timestamp
-	${PYTHON_CMD} scripts/translation2js.py src/locales/
+	${PYTHON_CMD} scripts/translation2json.py
 
 .PHONY: fixrights
 fixrights:
