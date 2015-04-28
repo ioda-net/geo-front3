@@ -1014,6 +1014,7 @@
         preload: 6, //Number of upper zoom to preload when offline
         defaultExtent: gaGlobalOptions.defaultExtent,
         viewResolutions: resolutions,
+        defaultResolution: gaGlobalOptions.defaultResolution,
         getViewResolutionForZoom: function(zoom) {
           return resolutions[zoom];
         },
