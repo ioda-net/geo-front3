@@ -1012,7 +1012,7 @@
           2.5, 2.0, 1.0, 0.5, 0.25, 0.1];
       return {
         preload: 6, //Number of upper zoom to preload when offline
-        swissExtent: [420000, 30000, 900000, 350000],
+        defaultExtent: [420000, 30000, 900000, 350000],
         viewResolutions: resolutions,
         getViewResolutionForZoom: function(zoom) {
           return resolutions[zoom];
