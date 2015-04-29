@@ -218,8 +218,7 @@ prd/style/app.css: src/style/app.less \
 		    src/style/ga_bootstrap.less \
 		    src/style/ga_variables.less \
 		    $(SRC_COMPONENTS_LESS_FILES) \
-		    node_modules \
-		    .build-artefacts/bootstrap
+		    node_modules
 	mkdir -p $(dir $@)
 	node_modules/.bin/lessc -ru --yui-compress $< $@
 
@@ -315,8 +314,7 @@ src/style/app.css: src/style/app.less \
 	    src/style/ga_bootstrap.less \
 	    src/style/ga_variables.less \
 	    $(SRC_COMPONENTS_LESS_FILES) \
-	    node_modules \
-	    .build-artefacts/bootstrap
+	    node_modules
 	node_modules/.bin/lessc $(LESS_PARAMETERS) $< $@
 
 src/index.html: src/index.mako.html \
@@ -511,9 +509,6 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 
 .build-artefacts/ol3:
 	git clone https://github.com/openlayers/ol3.git $@ && cd $@ && git checkout v3.4.0
-
-.build-artefacts/bootstrap:
-	git clone https://github.com/twbs/bootstrap.git $@ && cd $@ && git checkout v3.3.1
 
 .build-artefacts/fastclick:
 	git clone https://github.com/ftlabs/fastclick.git $@ && cd $@ && git checkout v1.0.6
