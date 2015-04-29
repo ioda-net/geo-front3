@@ -154,7 +154,9 @@ ol: scripts/ol-geoadmin.json .build-artefacts/ol3
 .PHONY: fastclick
 fastclick: .build-artefacts/fastclick .build-artefacts/closure-compiler/compiler.jar
 	cp .build-artefacts/fastclick/lib/fastclick.js src/lib/fastclick.js
-	java -jar .build-artefacts/closure-compiler/compiler.jar src/lib/fastclick.js --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file  src/lib/fastclick.min.js
+	closure-compiler src/lib/fastclick.js \
+	    --compilation_level SIMPLE_OPTIMIZATIONS \
+	    --js_output_file  src/lib/fastclick.min.js
 
 .PHONY: localforage
 localforage: .build-artefacts/localforage
@@ -395,11 +397,10 @@ node_modules: package.json
 
 
 .build-artefacts/app.js: .build-artefacts/js-files \
-	    .build-artefacts/closure-compiler/compiler.jar \
 	    .build-artefacts/externs/angular.js \
 	    .build-artefacts/externs/jquery.js
 	mkdir -p $(dir $@)
-	java -jar .build-artefacts/closure-compiler/compiler.jar $(SRC_JS_FILES_FOR_COMPILER) \
+	closure-compiler $(SRC_JS_FILES_FOR_COMPILER) \
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
 	    --jscomp_error checkVars \
 	    --externs externs/ol.js \
@@ -412,9 +413,8 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	mkdir -p $(dir $@)
 	./node_modules/.bin/ng-annotate -a $< > $@
 
-.build-artefacts/app-whitespace.js: .build-artefacts/js-files \
-	    .build-artefacts/closure-compiler/compiler.jar
-	java -jar .build-artefacts/closure-compiler/compiler.jar  $(SRC_JS_FILES_FOR_COMPILER) \
+.build-artefacts/app-whitespace.js: .build-artefacts/js-files
+	closure-compiler  $(SRC_JS_FILES_FOR_COMPILER) \
 	    --compilation_level WHITESPACE_ONLY \
 	    --formatting PRETTY_PRINT \
 	    --js_output_file $@
@@ -451,15 +451,6 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	mkdir -p .build-artefacts
 	git clone http://github.com/google/closure-library/ $@
 	cd $@ && git reset --hard 0011afd534469ba111786fe68300a634e08a4d80 && cd ../../
-
-.build-artefacts/closure-compiler/compiler.jar: .build-artefacts/closure-compiler/compiler-latest.zip
-	unzip $< -d .build-artefacts/closure-compiler
-	touch $@
-
-.build-artefacts/closure-compiler/compiler-latest.zip:
-	mkdir -p $(dir $@)
-	wget -O $@ http://dl.google.com/closure-compiler/compiler-20131014.zip
-	touch $@
 
 $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)/.git/config:
 	rm -rf $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)
