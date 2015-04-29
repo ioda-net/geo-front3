@@ -50,6 +50,7 @@ help:
 	@echo "- deploybranchdemo Deploys current branch to test and demo (note: takes code from github)"
 	@echo "- ol               Update ol.js and ol-debug.js "
 	@echo "- translate        Generate the translation files (requires db user pwd in ~/.pgpass: dbServer:dbPort:*:dbUser:dbUserPwd)"
+	@echo "- update-datetimepicker Update bootstrap-datetimepicker"
 	@echo "- help             Display this help"
 	@echo
 	@echo "Variables:"
@@ -166,11 +167,12 @@ filesaver: .build-artefacts/filesaver
 	cp .build-artefacts/filesaver/FileSaver.js src/lib/filesaver.js
 	cp .build-artefacts/filesaver/FileSaver.min.js src/lib/filesaver.min.js
 
-.PHONY: datepicker
-datepicker: .build-artefacts/datepicker
-	cp .build-artefacts/datepicker/src/js/bootstrap-datetimepicker.js src/lib/
-	cp .build-artefacts/datepicker/src/less/bootstrap-datetimepicker.less src/style/
-	cp .build-artefacts/datepicker/build/js/bootstrap-datetimepicker.min.js src/lib/
+.PHONY: update-datepicker
+update-datepicker:
+	npm install https://github.com/Eonasdan/bootstrap-datetimepicker/archive/v3.1.3.tar.gz
+	cp node_modules/bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js src/lib/
+	cp node_modules/bootstrap-datetimepicker/src/less/bootstrap-datetimepicker.less src/style/
+	cp node_modules/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js src/lib/
 
 .PHONY: translate
 translate: .build-artefacts/translate-requirements-installation.timestamp
@@ -518,11 +520,6 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 
 .build-artefacts/filesaver:
 	git clone https://github.com/eligrey/FileSaver.js.git $@
-
-# datepicker needs custom build of moment js with specific locales
-.build-artefacts/datepicker:
-	git clone https://github.com/Eonasdan/bootstrap-datetimepicker.git $@ && \
-	    cd $@ && git checkout v3.1.3
 
 .build-artefacts/externs/angular.js:
 	mkdir -p $(dir $@)
