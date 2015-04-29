@@ -18,7 +18,7 @@ DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
 
-## Python interpreter can't have space in path name
+	## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd
 ## See: https://bugs.launchpad.net/virtualenv/+bug/241581/comments/11
 PYTHON_CMD=.build-artefacts/python-venv/bin/python
@@ -189,7 +189,7 @@ guard-%:
 
 prd/robots.txt: scripts/robots.mako-dot-txt .build-artefacts/last-deploy-target
 	mkdir -p $(dir $@)
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "deploy_target=$(DEPLOY_TARGET)" $< > $@
 
 prd/lib/: src/lib/d3-3.3.1.min.js src/lib/bootstrap-datetimepicker.min.js  \
@@ -224,22 +224,20 @@ prd/style/app.css: src/style/app.less \
 	node_modules/.bin/lessc -ru --yui-compress $< $@
 
 prd/geoadmin.appcache: src/geoadmin.mako.appcache \
-			.build-artefacts/python-venv/bin/mako-render \
 			.build-artefacts/last-version
 	mkdir -p $(dir $@);
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render --var "version=$(VERSION)" \
+	python3 /usr/bin/mako-render --var "version=$(VERSION)" \
 	    --var "deploy_target=$(DEPLOY_TARGET)" \
 	    --var "apache_base_path=$(APACHE_BASE_PATH)" \
 	    --var "api_url=$(API_URL)" $< > $@
 
 prd/index.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/python-venv/bin/htmlmin \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-version
 	mkdir -p $(dir $@)
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "device=desktop" \
 	    --var "mode=prod" \
 	    --var "version=$(VERSION)" \
@@ -253,13 +251,12 @@ prd/index.html: src/index.mako.html \
 	${PYTHON_CMD} .build-artefacts/python-venv/bin/htmlmin --remove-comments --keep-optional-attribute-quotes $@ $@
 
 prd/mobile.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/python-venv/bin/htmlmin \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-version
 	mkdir -p $(dir $@)
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "device=mobile" \
 	    --var "mode=prod" \
 	    --var "version=$(VERSION)" \
@@ -273,13 +270,12 @@ prd/mobile.html: src/index.mako.html \
 	${PYTHON_CMD} .build-artefacts/python-venv/bin/htmlmin --remove-comments --keep-optional-attribute-quotes $@ $@
 
 prd/embed.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/python-venv/bin/htmlmin \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-version
 	mkdir -p $(dir $@)
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "device=embed" \
 	    --var "mode=prod" \
 	    --var "version=$(VERSION)" \
@@ -324,10 +320,9 @@ src/style/app.css: src/style/app.less \
 	node_modules/.bin/lessc $(LESS_PARAMETERS) $< $@
 
 src/index.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "device=desktop" \
 	    --var "version=" \
 	    --var "versionslashed=" \
@@ -339,10 +334,9 @@ src/index.html: src/index.mako.html \
 	    --var "default_resolution"="$(DEFAULT_RESOLUTION)" $< > $@
 
 src/mobile.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "device=mobile" \
 	    --var "version=" \
 	    --var "versionslashed=" \
@@ -354,10 +348,9 @@ src/mobile.html: src/index.mako.html \
 	    --var "default_resolution"="$(DEFAULT_RESOLUTION)" $< > $@
 
 src/embed.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "device=embed" \
 	    --var "version=" \
 	    --var "versionslashed=" \
@@ -370,28 +363,26 @@ src/embed.html: src/index.mako.html \
 
 src/TemplateCacheModule.js: src/TemplateCacheModule.mako.js \
 	    $(SRC_COMPONENTS_PARTIALS_FILES) \
-	    .build-artefacts/python-venv/bin/mako-render
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "partials=$(subst src/,,$(SRC_COMPONENTS_PARTIALS_FILES))" \
 	    --var "basedir=src" $< > $@
 
 apache/app.conf: apache/app.mako-dot-conf \
-	    .build-artefacts/python-venv/bin/mako-render \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-apache-base-directory \
 	    .build-artefacts/last-version
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	python3 /usr/bin/mako-render \
 	    --var "apache_base_path=$(APACHE_BASE_PATH)" \
 	    --var "api_url=$(API_URL)" \
 	    --var "apache_base_directory=$(APACHE_BASE_DIRECTORY)" \
 	    --var "version=$(VERSION)" $< > $@
 
-test/karma-conf-dev.js: test/karma-conf.mako.js .build-artefacts/python-venv/bin/mako-render
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render $< > $@
+test/karma-conf-dev.js: test/karma-conf.mako.js
+	python3 /usr/bin/mako-render $< > $@
 
-test/karma-conf-prod.js: test/karma-conf.mako.js .build-artefacts/python-venv/bin/mako-render
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render --var "mode=prod" $< > $@
+test/karma-conf-prod.js: test/karma-conf.mako.js
+	python3 /usr/bin/mako-render --var "mode=prod" $< > $@
 
 node_modules: ANGULAR_JS = angular.js angular.min.js
 node_modules: ANGULAR_TRANSLATE_JS = angular-translate.js angular-translate.min.js 
@@ -446,14 +437,6 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	.build-artefacts/python-venv/bin/gjslint -r src/components src/js --jslint_error=all
 	touch $@
 
-.build-artefacts/python-venv/bin/mako-render: .build-artefacts/python-venv
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "Mako==1.0.0"
-	touch $@
-	@ if [[ ! -e .build-artefacts/python-venv/local ]]; then \
-	    ln -s . .build-artefacts/python-venv/local; \
-	fi
-	cp scripts/cmd.py .build-artefacts/python-venv/local/lib/python2.7/site-packages/mako/cmd.py
-
 .build-artefacts/python-venv/bin/htmlmin: .build-artefacts/python-venv
 	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin"
 	touch $@
@@ -496,23 +479,20 @@ $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)/.git/config:
 	git clone https://github.com/geoadmin/mf-geoadmin3 $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)
 
 deploy/deploy-branch.cfg: deploy/deploy-branch.mako.cfg \
-	    .build-artefacts/last-git-branch \
-	    .build-artefacts/python-venv/bin/mako-render
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	    .build-artefacts/last-git-branch
+	python3 /usr/bin/mako-render \
 	    --var "git_branch=$(GIT_BRANCH)" $< > $@
 
 rc_branch: rc_branch.mako \
 	    .build-artefacts/last-git-branch \
-	    .build-artefacts/last-deploy-target à
-	    .build-artefacts/python-venv/bin/mako-render
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	    .build-artefacts/last-deploy-target \
+	python3 /usr/bin/mako-render \
 	    --var "deploy_target=$(DEPLOY_TARGET)" \
 	    --var "apache_base_path=$(GIT_BRANCH)" $< > $@
 
 scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
-	    .build-artefacts/last-git-branch \
-	    .build-artefacts/python-venv/bin/mako-render
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/mako-render \
+	    .build-artefacts/last-git-branch
+	python3 /usr/bin/mako-render \
 	    --var "git_branch=$(GIT_BRANCH)" $< > $@
 
 .build-artefacts/last-version::
