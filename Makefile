@@ -232,10 +232,10 @@ prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 	    --var "api_url=$(API_URL)" $< > $@
 
 prd/index.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/htmlmin \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
-	    .build-artefacts/last-version
+	    .build-artefacts/last-version \
+	    node_modules
 	mkdir -p $(dir $@)
 	python3 /usr/bin/mako-render \
 	    --var "device=desktop" \
@@ -248,13 +248,13 @@ prd/index.html: src/index.mako.html \
 	    --var "translation_fallback_code=$(TRANSLATION_FALLBACK_CODE)" \
 	    --var "default_extent"="$(DEFAULT_EXTENT)" \
 	    --var "default_resolution"="$(DEFAULT_RESOLUTION)" $< > $@
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/htmlmin --remove-comments --keep-optional-attribute-quotes $@ $@
+	./node_modules/html-minifier/cli.js --remove-comments $@ -o $@
 
 prd/mobile.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/htmlmin \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
-	    .build-artefacts/last-version
+	    .build-artefacts/last-version \
+	    node_modules
 	mkdir -p $(dir $@)
 	python3 /usr/bin/mako-render \
 	    --var "device=mobile" \
@@ -267,13 +267,13 @@ prd/mobile.html: src/index.mako.html \
 	    --var "translation_fallback_code=$(TRANSLATION_FALLBACK_CODE)" \
 	    --var "default_extent"="$(DEFAULT_EXTENT)" \
 	    --var "default_resolution"="$(DEFAULT_RESOLUTION)" $< > $@
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/htmlmin --remove-comments --keep-optional-attribute-quotes $@ $@
+	./node_modules/html-minifier/cli.js --remove-comments $@ -o $@
 
 prd/embed.html: src/index.mako.html \
-	    .build-artefacts/python-venv/bin/htmlmin \
 	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
-	    .build-artefacts/last-version
+	    .build-artefacts/last-version \
+	    node_modules
 	mkdir -p $(dir $@)
 	python3 /usr/bin/mako-render \
 	    --var "device=embed" \
@@ -286,7 +286,7 @@ prd/embed.html: src/index.mako.html \
 	    --var "translation_fallback_code=$(TRANSLATION_FALLBACK_CODE)" \
 	    --var "default_extent"="$(DEFAULT_EXTENT)" \
 	    --var "default_resolution"="$(DEFAULT_RESOLUTION)" $< > $@
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/htmlmin --remove-comments --keep-optional-attribute-quotes $@ $@
+	./node_modules/html-minifier/cli.js --remove-comments $@ -o $@
 
 prd/img/: src/img/*
 	mkdir -p $@
@@ -362,7 +362,7 @@ src/embed.html: src/index.mako.html \
 	    --var "default_resolution"="$(DEFAULT_RESOLUTION)" $< > $@
 
 src/TemplateCacheModule.js: src/TemplateCacheModule.mako.js \
-	    $(SRC_COMPONENTS_PARTIALS_FILES) \
+	    $(SRC_COMPONENTS_PARTIALS_FILES)
 	python3 /usr/bin/mako-render \
 	    --var "partials=$(subst src/,,$(SRC_COMPONENTS_PARTIALS_FILES))" \
 	    --var "basedir=src" $< > $@
@@ -396,7 +396,7 @@ node_modules: package.json
 
 .build-artefacts/app.js: .build-artefacts/js-files \
 	    .build-artefacts/closure-compiler/compiler.jar \
-	    .build-artefacts/externs/angular.js à
+	    .build-artefacts/externs/angular.js \
 	    .build-artefacts/externs/jquery.js
 	mkdir -p $(dir $@)
 	java -jar .build-artefacts/closure-compiler/compiler.jar $(SRC_JS_FILES_FOR_COMPILER) \
@@ -435,10 +435,6 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 
 .build-artefacts/lint.timestamp: .build-artefacts/python-venv/bin/gjslint $(SRC_JS_FILES)
 	.build-artefacts/python-venv/bin/gjslint -r src/components src/js --jslint_error=all
-	touch $@
-
-.build-artefacts/python-venv/bin/htmlmin: .build-artefacts/python-venv
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin"
 	touch $@
 
 .build-artefacts/ol-requirements-installation.timestamp: .build-artefacts/python-venv
