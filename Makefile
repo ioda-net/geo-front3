@@ -18,7 +18,7 @@ DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
 
-	## Python interpreter can't have space in path name
+## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd
 ## See: https://bugs.launchpad.net/virtualenv/+bug/241581/comments/11
 PYTHON_CMD=.build-artefacts/python-venv/bin/python
@@ -439,11 +439,6 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 
 .build-artefacts/python-venv/bin/htmlmin: .build-artefacts/python-venv
 	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin"
-	touch $@
-
-.build-artefacts/translate-requirements-installation.timestamp: .build-artefacts/python-venv
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "PyYAML==3.10"
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "gspread==0.2.2"
 	touch $@
 
 .build-artefacts/ol-requirements-installation.timestamp: .build-artefacts/python-venv
