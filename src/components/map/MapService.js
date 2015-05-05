@@ -1368,7 +1368,7 @@
           });
         });
 
-        var deregister = scope.$on('gaLayersChange', function() {
+        var deregister = $rootScope.$on('gaLayersChange', function() {
           var allowThirdData = false;
           var confirmedOnce = false;
           var nbLayersToAdd = layerSpecs.length;

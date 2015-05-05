@@ -79,7 +79,11 @@ Use `make ol` to update the `ol.js` and `ol-debug.js` files.
 
 Add the correct version tag
 
-https://github.com/geoadmin/mf-geoadmin3/blob/master/Makefile#L370
+https://github.com/geoadmin/mf-geoadmin3/blob/master/Makefile#20
+
+You can also use an argument to test a new version of ol3, for instance you can do:
+
+    make OL3_VERSION="632205d902f8dcc1f03eb1dd1736d26a1b3ac2a3" ol
 
 Remember to update the API and API doc at the same time to keep coherency.
 
@@ -117,7 +121,7 @@ determine which URL to test.
 
 Run it manually:
 
-    node test/selenium/tests.js -t http://map.geo.admin.ch
+    node test/selenium/tests.js -t https://map.geo.admin.ch
 
 This runs it with the given target URL.
 
@@ -168,7 +172,7 @@ The command adds a branch specific configuration to
 behaves exactly the same as any user specific deploy.
 
 Sample path:
-http://mf-geoadmin3.int.bgdi.ch/dev_bottombar/prod
+https://mf-geoadmin3.int.bgdi.ch/dev_bottombar/prod
 
 Please only use integration url for external communication (including here on 
 github), even though the exact same structure is also available on our test 
