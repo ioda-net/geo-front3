@@ -31,3 +31,4 @@ rc_*
 
 # Vim swap files
 *.swp
+/nbproject/private/
