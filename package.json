@@ -18,7 +18,8 @@
     "angular": "1.3.5",
     "angular-translate": "2.4.2",
     "phantomjs": "1.9.16",
-    "localforage": "1.0.1"
+    "localforage": "1.0.1",
+    "html-minifier": "0.7.2"
   },
   "dependencies": {
     "bootstrap": "3.3.1"
