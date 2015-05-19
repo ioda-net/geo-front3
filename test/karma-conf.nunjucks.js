@@ -3,17 +3,17 @@
 module.exports = function(config) {
     config.set({
 	// base path, that will be used to resolve files and exclude
-	% if mode == 'prod':
+	{% if prod %}
 	   basePath: '../prd',
-	% else:
+	{% else %}
 	   basePath: '../src',
-	% endif
+	{% endif %}
 
 	// list of files / patterns to load in the browser
 	files: [
-	    % if mode == 'prod':
+	    {% if prod %}
 	        'lib/build.js',
-	    % else:
+	    {% else %}
 	       'lib/jquery-2.0.3.js',
 	       'lib/angular.js',
 	       'lib/angular-translate.js',
@@ -28,7 +28,7 @@ module.exports = function(config) {
 	       '../test/closure-loader-globals.js',
 	       'lib/ol-debug.js',
 	       '../.build-artefacts/app-whitespace.js',
-	    % endif
+	    {% endif %}
 	       '../test/angular/angular-mocks.js',
 	       '../test/expect-0.2.0/expect.js',
 	       '../test/sinon-1.7.3/sinon.js',

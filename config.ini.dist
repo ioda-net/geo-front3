@@ -1,6 +1,9 @@
 ; This file contains the values to generate the templates.
 ; Copy in config-dev.ini and config-prod.ini to correctly genarate templates
 
+
+; We must generate a template for all these devices. To do that, we must loop
+; over this array. Thus devices cannot go into default.
 devices[] = desktop
 devices[] = embed
 devices[] = mobile
@@ -10,6 +13,10 @@ prod = false
 api_url = //api.geoadmin.local
 apache_base_path = /
 default_topic_id = geojb
+topics[] = geojb
 translation_fallback_code = fr
+languages[] = fr
+languages[] = de
+languages[] = en
 default_extent = [550000.0, 210000.0, 620000.0, 245000.0]
 default_resolution = 50.0
