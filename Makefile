@@ -77,11 +77,11 @@ lint: .build-artefacts/lint.timestamp
 
 .PHONY: testdev
 testdev: .build-artefacts/app-whitespace.js test/karma-conf-dev.js node_modules
-	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-dev.js --single-run
+	./node_modules/karma/bin/karma start test/karma-conf-dev.js --single-run
 
 .PHONY: testprod
 testprod: prd/lib/build.js test/karma-conf-prod.js node_modules
-	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-prod.js --single-run
+	./node_modules/karma/bin/karma start test/karma-conf-prod.js --single-run
 
 .PHONY: teste2e
 teste2e: guard-BROWSERSTACK_TARGETURL guard-BROWSERSTACK_USER guard-BROWSERSTACK_KEY
