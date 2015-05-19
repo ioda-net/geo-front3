@@ -128,6 +128,17 @@ gulp.task('deps.js', function (cb) {
 
     cb();
 });
+
+gulp.task('app.css', function () {
+    return gulp.src('src/style/app.less')
+        .pipe(less({
+            relativeUrls: true
+        }))
+  .pipe(gulp.dest('src/style'));
+});
+
+gulp.task('dev', ['deps.js', 'app.css', 'build-templates']);
+
 gulp.task('clean', function (cb) {
     del([
         'src/deps.js',
