@@ -10,6 +10,7 @@ var extend = require('extend');
 var fs = require('fs');
 var ini = require('ini');
 var data = require('gulp-data');
+var shell = require('gulp-shell');
 var renameRegex = require('gulp-regex-rename');
 var nunjucksRender = require('gulp-nunjucks-render');
 var gulpif = require('gulp-if');
@@ -106,6 +107,10 @@ gulp.task('build-templates', function (cb) {
 
     cb();
 });
+
+gulp.task('translate', shell.task([
+    'python3 scripts/translation2json.py src/locales/translations.csv src/locales/',
+]));
 
 gulp.task('clean', function (cb) {
     del([
