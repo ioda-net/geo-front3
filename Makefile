@@ -220,7 +220,7 @@ prd/style/app.css: src/style/app.less \
 		    $(SRC_COMPONENTS_LESS_FILES) \
 		    node_modules
 	mkdir -p $(dir $@)
-	node_modules/.bin/lessc -ru --yui-compress $< $@
+	node_modules/.bin/lessc -ru --clean-css $< $@
 
 prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 			.build-artefacts/last-version
