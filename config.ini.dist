@@ -1,0 +1,15 @@
+; This file contains the values to generate the templates.
+; Copy in config-dev.ini and config-prod.ini to correctly genarate templates
+
+devices[] = desktop
+devices[] = embed
+devices[] = mobile
+
+[default]
+prod = false
+api_url = //api.geoadmin.local
+apache_base_path = /
+default_topic_id = geojb
+translation_fallback_code = fr
+default_extent = [550000.0, 210000.0, 620000.0, 245000.0]
+default_resolution = 50.0
