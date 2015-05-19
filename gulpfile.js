@@ -14,6 +14,8 @@ var shell = require('gulp-shell');
 var renameRegex = require('gulp-regex-rename');
 var nunjucksRender = require('gulp-nunjucks-render');
 var gulpif = require('gulp-if');
+var run = require('gulp-run');
+var less = require('gulp-less');
 var minify = require('html-minifier').minify;
 
 nunjucksRender.nunjucks.configure({
@@ -22,6 +24,12 @@ nunjucksRender.nunjucks.configure({
         variableEnd: '}'
     },
     watch: false
+});
+
+var depswriter_py =
+        new run.Command('python node_modules/google-closure-library/closure/bin/build/depswriter.py',
+{
+    silent: true
 });
 
 var config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
@@ -112,6 +120,14 @@ gulp.task('translate', shell.task([
     'python3 scripts/translation2json.py src/locales/translations.csv src/locales/',
 ]));
 
+gulp.task('deps.js', function (cb) {
+   run('python node_modules/google-closure-library/closure/bin/build/depswriter.py ' +
+                            '--root_with_prefix="src/components components" ' +
+                            '--root_with_prefix="src/js js" ' +
+                            '--output_file=src/deps.js').exec();
+
+    cb();
+});
 gulp.task('clean', function (cb) {
     del([
         'src/deps.js',
