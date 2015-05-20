@@ -1,4 +1,4 @@
-/* global require, __dirname */
+/* global require, __dirname, process */
 
 'use strict';
 
@@ -7,6 +7,7 @@ var gulp = require('gulp');
 var concat = require('gulp-concat');
 var data = require('gulp-data');
 var eslint = require('gulp-eslint');  // Linter
+var extReplace = require('gulp-ext-replace');
 var gulpif = require('gulp-if');
 var less = require('gulp-less');
 var ngAnnotate = require('gulp-ng-annotate');  // Add annotation to angular files so they can be minified.
@@ -49,6 +50,31 @@ var config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
 // Required by appcache
 config['default'].version = new Date().getTime();
 
+/**
+ * Return an array containing all argument passed to the task. If an array is given, they are
+ * concatenated.
+ */
+var passArgvOpts = function (options) {
+    var opts = options || [];
+
+    return opts.concat(process.argv.slice(3));
+};
+
+/**
+ * Join all element of an array with a space.
+ */
+var formatCmd = function(cmd) {
+    return cmd.join(' ');
+};
+
+/**
+ * Take an array of options, append the options passed to the command line and return the command.
+ */
+var formatArgvOpts = function (options) {
+    var cmd = passArgvOpts(options);
+    return formatCmd(cmd);
+};
+
 
 
 gulp.task('default', ['help']);
@@ -59,12 +85,12 @@ gulp.task('help', function () {
 }).help = 'shows this help message.';
 
 
-gulp.task('test', function (cb) {
+gulp.task('test', ['build-karma-conf-from-template'], function (cb) {
     var configFile;
     if (process.argv[3] && process.argv[3].match(/prod/)) {
-        configFile = 'test/karma-conf-prod.js';
+        configFile = 'test/karma-conf.prod.js';
     } else {
-        configFile = 'test/karma-conf-dev.js';
+        configFile = 'test/karma-conf.dev.js';
     }
 
     karma.start({
@@ -75,6 +101,65 @@ gulp.task('test', function (cb) {
     '': 'Launch tests with karam.',
     '--prod': 'If given, launch tests against production file.'
 };
+
+
+gulp.task('build-karma-conf-from-template', function (cb) {
+    [true, false].forEach(function (prod) {
+        gulp.src('test/karma-conf.nunjucks.js')
+            .pipe(data(function () {
+                return {prod: prod};
+            }))
+            .pipe(nunjucksRender())
+            .pipe(gulpif(prod,
+                    extReplace('prod.js', '.nunjucks.html'),
+                    extReplace('dev.js', '.nunjucks.html')
+            ))
+            .pipe(gulp.dest('test'));
+    });
+
+    cb();
+});
+
+
+gulp.task('translate', function () {
+    var cmd = formatArgvOpts([
+        'python3',
+        'scripts/translation2json.py',
+        'src/locales/translations.csv',
+        'src/locales/'
+    ]);
+
+    return run(cmd).exec();
+}).help = 'launch the translation script';
+
+
+gulp.task('clean', function (cb) {
+    del([
+        'src/deps.js',
+        'src/style/app.css',
+        'src/TemplateCacheModule.js',
+        'prd'
+    ], cb);
+}).help = 'remove generated files.';
+
+
+gulp.task('cleanall', ['clean'], function (cb) {
+    del([
+        'node_modules'
+    ], cb);
+}).help = 'clean and remove node modules.';
+
+
+gulp.task('lint', function () {
+    return gulp.src('src/components/**/*.js')
+        .pipe(eslint())
+        .pipe(eslint.format());
+}).help = 'run the eslint javacript linter.';
+
+
+gulp.task('gslint', function () {
+    return run('gjslint -r src/components src/js --jslint_error=all').exec();
+}).help = 'run the javascript linter used by swisstopo.';
 
 
 gulp.task('build-templates', function (cb) {
@@ -151,26 +236,7 @@ gulp.task('build-templates', function (cb) {
 	    .pipe(renameRegex(/.html$/, '.js'))
             .pipe(gulp.dest('prd'));
 
-    // Karma
-    [{'prod': true}, {'prod': false}].forEach(function (prod) {
-        gulp.src('test/karma-conf.nunjucks.js')
-            .pipe(data(function () {
-                return prod;
-            }))
-            .pipe(nunjucksRender())
-            .pipe(renameRegex(/\.nunjucks/, ''))
-            .pipe(gulpif(prod.prod,
-                            renameRegex(/\.html$/, '-prod.js'),
-                            renameRegex(/\.html/, '-dev.js')
-            ))
-            .pipe(gulp.dest('test'));
-    });
-
     cb();
-});
-
-gulp.task('translate', function () {
-    return run('python3 scripts/translation2json.py src/locales/translations.csv src/locales/').exec();
 });
 
 gulp.task('deps.js', function (cb) {
@@ -307,16 +373,6 @@ gulp.task('checker', function () {
 	.pipe(gulp.dest('prd'));
 });
 
-gulp.task('lint', function () {
-    return gulp.src('src/components/**/*.js')
-        .pipe(eslint())
-        .pipe(eslint.format());
-});
-
-gulp.task('gslint', function () {
-    return run('gjslint -r src/components src/js --jslint_error=all').exec();
-})
-
 // Cache partials so they can be used in karma
 gulp.task('app-whitespace.js', function () {
     var jsFiles = fs.readFileSync('.build-artefacts/js-files')
@@ -332,18 +388,4 @@ gulp.task('app-whitespace.js', function () {
 	}).exec();
 
     cb();
-});
-
-gulp.task('clean', function (cb) {
-    del([
-        'src/deps.js',
-        'src/style/app.css',
-        'src/TemplateCacheModule.js'
-    ], cb);
-});
-
-gulp.task('cleanall', ['clean'], function (cb) {
-    del([
-        'node_modules'
-    ], cb);
 });
