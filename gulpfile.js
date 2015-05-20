@@ -22,6 +22,7 @@ var cleancss = new LessPluginCleanCSS({ advanced: true });
 var ngAnnotate = require('gulp-ng-annotate');
 var concat = require('gulp-concat');
 var replace = require('gulp-replace');
+var eslint = require('gulp-eslint');
 var minify = require('html-minifier').minify;
 
 nunjucksRender.nunjucks.configure({
@@ -278,6 +279,16 @@ gulp.task('checker', function () {
     return gulp.src('src/checker')
 	.pipe(gulp.dest('prd'));
 });
+
+gulp.task('lint', function () {
+    return gulp.src('src/components/**/*.js')
+        .pipe(eslint())
+        .pipe(eslint.format());
+});
+
+gulp.task('gslint', function () {
+    return run('gjslint -r src/components src/js --jslint_error=all').exec();
+})
 
 // Cache partials so they can be used in karma
 gulp.task('app-whitespace.js', function () {
