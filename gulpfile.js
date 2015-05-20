@@ -12,10 +12,12 @@ var ini = require('ini');
 var data = require('gulp-data');
 var shell = require('gulp-shell');
 var renameRegex = require('gulp-regex-rename');
+var rename = require('gulp-rename');
 var nunjucksRender = require('gulp-nunjucks-render');
 var gulpif = require('gulp-if');
 var run = require('gulp-run');
 var less = require('gulp-less');
+var ngAnnotate = require('gulp-ng-annotate');
 var minify = require('html-minifier').minify;
 
 nunjucksRender.nunjucks.configure({
@@ -81,9 +83,11 @@ gulp.task('build-templates', function (cb) {
                 // The name of the partial in the cache is its path without src/
                 var partialName = partialPath.replace(/^src\//, '')
                 templateCacheConfig['partials'][partialName] = minify(
-                        partialContents.toString(), {
+                        partialContents.toString().replace(/'/g, "\\'").replace(/\n/g, ''), {
                             collapseWhitespace: true,
-                            conservativeCollapse: true
+                            conservativeCollapse: true,
+			    preserveLineBreaks: false,
+			    removeComments: true
                         }
                     );
             });
@@ -96,6 +100,7 @@ gulp.task('build-templates', function (cb) {
             }))
             .pipe(nunjucksRender())
             .pipe(renameRegex(/\.nunjucks/, ''))
+	    .pipe(renameRegex(/.html$/, '.js'))
             .pipe(gulp.dest('prd'));
 
     // Karma
@@ -139,6 +144,69 @@ gulp.task('app.css', function () {
 
 gulp.task('dev', ['deps.js', 'app.css', 'build-templates']);
 
+gulp.task('build.js', function () {
+    return gulp.src([
+                'src/lib/jquery-2.0.3.min.js',
+                'src/lib/bootstrap-3.3.1.min.js',
+                'src/lib/moment-with-customlocales.min.js',
+                'src/lib/typeahead-0.9.3.min.js',
+                'src/lib/angular.min.js',
+                'src/lib/proj4js-compressed.js',
+                'src/lib/EPSG21781.js',
+                'src/lib/EPSG2056.js',
+                'src/lib/EPSG32631.js',
+                'src/lib/EPSG32632.js',
+                'src/lib/ol.js',
+                'src/lib/angular-translate.min.js',
+                'src/lib/angular-translate-loader-static-files.min.js',
+                'src/lib/fastclick.min.js',
+                'src/lib/localforage.min.js',
+                'src/lib/filesaver.min.js'
+            ]);
+});
+
+// Requires only template cache module
+gulp.task('annotate', ['build-templates'], function () {
+    return gulp.src(['src/components/**/*.js', 'src/js/**/*.js', 'prd/TemplateCacheModule.js'], {base: './'})
+	.pipe(ngAnnotate({
+	    add: true
+	}))
+	.pipe(renameRegex(/^prd\/TemplateCacheModule.js$/, 'src/TemplateCacheModule.js'))
+	.pipe(gulp.dest('.build-artefacts/annotated'));
+});
+
+gulp.task('js-files', ['annotate'], function (cb) {
+    return run('python node_modules/google-closure-library/closure/bin/build/closurebuilder.py ' +
+	'--root=.build-artefacts/annotated ' +
+	'--root=src/lib/closure ' +
+       '--namespace="ga" ' +
+	'--namespace="__ga_template_cache__" ' +
+	'--output_mode=list ', {silent: true}).exec()
+	.pipe(run("sed -e ':a' -e 'N' -e '$!ba' -e 's/\\n/ --js /g'", {silent: true}))
+	.pipe(run("sed 's/^.*base\.js //'", {silent: true}))
+	.pipe(rename('js-files'))
+	.pipe(gulp.dest('.build-artefacts'));
+})
+
+gulp.task('app.js', ['fs-files'], function (cb) {
+    var jsFiles = fs.readFileSync('.build-artefacts/js-files')
+	.toString();
+
+    run('closure-compiler ' +
+	jsFiles.replace('\n', ' ')  +
+	'--compilation_level SIMPLE_OPTIMIZATIONS ' +
+	'--jscomp_error checkVars ' +
+	'--externs externs/ol.js ' +
+	'--externs .build-artefacts/externs/angular.js ' +
+	'--externs .build-artefacts/externs/jquery.js ' +
+	'--js_output_file .build-artefacts/app.js',
+	{
+	    verbosity: 0
+       }).exec();
+
+    cb();
+});
+
 gulp.task('clean', function (cb) {
     del([
         'src/deps.js',
@@ -147,8 +215,8 @@ gulp.task('clean', function (cb) {
     ], cb);
 });
 
-gulp.task('cleanall', function (cb) {
+gulp.task('cleanall', ['clean'], function (cb) {
     del([
         'node_modules'
-    ]);
+    ], cb);
 });
