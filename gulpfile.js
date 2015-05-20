@@ -17,7 +17,11 @@ var nunjucksRender = require('gulp-nunjucks-render');
 var gulpif = require('gulp-if');
 var run = require('gulp-run');
 var less = require('gulp-less');
+var LessPluginCleanCSS = require('less-plugin-clean-css');
+var cleancss = new LessPluginCleanCSS({ advanced: true });
 var ngAnnotate = require('gulp-ng-annotate');
+var concat = require('gulp-concat');
+var replace = require('gulp-replace');
 var minify = require('html-minifier').minify;
 
 nunjucksRender.nunjucks.configure({
@@ -61,6 +65,21 @@ gulp.task('build-templates', function (cb) {
         .pipe(gulp.dest('src'));
     });
 
+    var indexConfig = extend({}, config['default']);
+    config['default'].prod = true;
+    config.devices.forEach(function (device) {
+            gulp.src('src/*.nunjucks.html')
+        .pipe(data(function() {
+            indexConfig.device = device;
+            return indexConfig;
+        }))
+        .pipe(nunjucksRender())
+        .pipe(renameRegex(/\.nunjucks/, ''))
+        .pipe(renameRegex(/index/, device))
+        .pipe(renameRegex(/desktop/, 'index'))
+        .pipe(gulp.dest('prd'));
+    });
+
     // HTML5 Appcache
     gulp.src([
                 'src/*.nunjucks.appcache',
@@ -71,6 +90,7 @@ gulp.task('build-templates', function (cb) {
             .pipe(nunjucksRender())
             .pipe(renameRegex(/\.nunjucks/, ''))
             .pipe(renameRegex(/\.html$/, '.appcache'))
+	    .pipe(gulp.dest('src'))
             .pipe(gulp.dest('prd'));
 
     // Template cache
@@ -188,7 +208,7 @@ gulp.task('js-files', ['annotate'], function (cb) {
 	.pipe(gulp.dest('.build-artefacts'));
 })
 
-gulp.task('app.js', ['fs-files'], function (cb) {
+gulp.task('app.js', ['js-files'], function (cb) {
     var jsFiles = fs.readFileSync('.build-artefacts/js-files')
 	.toString();
 
@@ -203,6 +223,75 @@ gulp.task('app.js', ['fs-files'], function (cb) {
 	{
 	    verbosity: 0
        }).exec();
+
+    cb();
+});
+
+gulp.task('build.js', ['app.js'], function () {
+    return gulp.src([
+	'src/lib/jquery-2.0.3.min.js',
+	'src/lib/bootstrap-3.3.1.min.js',
+	'src/lib/moment-with-customlocales.min.js',
+	'src/lib/typeahead-0.9.3.min.js src/lib/angular.min.js',
+	'src/lib/proj4js-compressed.js',
+	'src/lib/EPSG*.js',
+	'src/lib/ol.js',
+	'src/lib/angular-translate.min.js',
+	'src/lib/angular-translate-loader-static-files.min.js',
+	'src/lib/fastclick.min.js',
+	'src/lib/localforage.min.js',
+	'src/lib/filesaver.min.js',
+	'.build-artefacts/app.js'
+    ])
+	.pipe(concat('build.js'))
+	.pipe(replace(/^\/\/[#,@] sourceMappingURL=.*/g, ''))
+	.pipe(gulp.dest('prd/lib'));
+})
+
+gulp.task('prd-app.css', function () {
+    return gulp.src([
+	'src/style/app.less',
+    ])
+    .pipe(less({
+	relativeUrls: true,
+	plugins: [cleancss],
+    }))
+    .pipe(gulp.dest('prd/style'));
+});
+
+gulp.task('prd-img', function () {
+    return gulp.src('src/img/**/*')
+	.pipe(gulp.dest('prd/img'));
+});
+
+gulp.task('prd-font', function () {
+    return gulp.src('src/style/font-awesome-3.2.1/font/*')
+	.pipe(gulp.dest('prd/style/font-awesome-3.2.1/font'));
+});
+
+gulp.task('prd-locales', function () {
+    return gulp.src('src/locales/*.json')
+	.pipe(gulp.dest('prd/locales'));
+})
+
+gulp.task('checker', function () {
+    return gulp.src('src/checker')
+	.pipe(gulp.dest('prd'));
+});
+
+// Cache partials so they can be used in karma
+gulp.task('app-whitespace.js', function () {
+    var jsFiles = fs.readFileSync('.build-artefacts/js-files')
+	.toString();
+
+    run('closure-compiler ' +
+	jsFiles.replace('\n', ' ')  +
+	'--compilation_level WHITESPACE_ONLY ' +
+	'--formatting PRETTY_PRINT ' +
+	'--js_output_file .build-artefacts/app-whitespace.js',
+	{
+	    verbosity: 0
+	}).exec();
 
     cb();
 });
