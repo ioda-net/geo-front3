@@ -2,29 +2,40 @@
 
 'use strict';
 
+// Gulp plugins
 var gulp = require('gulp');
-var karma = require('karma').server;
-var del = require('del');
-var glob = require('glob');
-var extend = require('extend');
+var concat = require('gulp-concat');
+var data = require('gulp-data');
+var eslint = require('gulp-eslint');  // Linter
+var gulpif = require('gulp-if');
+var less = require('gulp-less');
+var ngAnnotate = require('gulp-ng-annotate');  // Add annotation to angular files so they can be minified.
+var nunjucksRender = require('gulp-nunjucks-render');  // Templating engine
+var rename = require('gulp-rename');
+var renameRegex = require('gulp-regex-rename');
+var replace = require('gulp-replace');  // Sed in gulp
+var run = require('gulp-run');  // Run system commands
+var ghelp = require('gulp-showhelp');
+
+// To load and manipulate configuration
+var extend = require('extend'); // Allow to clone a JS object. Used to modify the config locally.
 var fs = require('fs');
 var ini = require('ini');
-var data = require('gulp-data');
-var shell = require('gulp-shell');
-var renameRegex = require('gulp-regex-rename');
-var rename = require('gulp-rename');
-var nunjucksRender = require('gulp-nunjucks-render');
-var gulpif = require('gulp-if');
-var run = require('gulp-run');
-var less = require('gulp-less');
+
+// For tests
+var karma = require('karma').server;
+
+// Minifiers
 var LessPluginCleanCSS = require('less-plugin-clean-css');
 var cleancss = new LessPluginCleanCSS({ advanced: true });
-var ngAnnotate = require('gulp-ng-annotate');
-var concat = require('gulp-concat');
-var replace = require('gulp-replace');
-var eslint = require('gulp-eslint');
-var minify = require('html-minifier').minify;
+var htmlMinify = require('html-minifier').minify;
 
+// Various
+var del = require('del');
+var glob = require('glob');
+
+
+// Change nunjucks variable delimiters to avoid conflict with angular
 nunjucksRender.nunjucks.configure({
     tags: {
         variableStart: '${',
@@ -33,15 +44,17 @@ nunjucksRender.nunjucks.configure({
     watch: false
 });
 
-var depswriter_py =
-        new run.Command('python node_modules/google-closure-library/closure/bin/build/depswriter.py',
-{
-    silent: true
-});
 
 var config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
 // Required by appcache
 config['default'].version = new Date().getTime();
+
+
+gulp.task('default', ['help']);
+
+gulp.task('help', function () {
+    ghelp.show();
+}).help = 'shows this help message.';
 
 gulp.task('test', function (cb) {
     karma.start({
@@ -103,7 +116,7 @@ gulp.task('build-templates', function (cb) {
                 var partialContents = fs.readFileSync(partialPath);
                 // The name of the partial in the cache is its path without src/
                 var partialName = partialPath.replace(/^src\//, '')
-                templateCacheConfig['partials'][partialName] = minify(
+                templateCacheConfig['partials'][partialName] = htmlMinify(
                         partialContents.toString().replace(/'/g, "\\'").replace(/\n/g, ''), {
                             collapseWhitespace: true,
                             conservativeCollapse: true,
@@ -142,9 +155,9 @@ gulp.task('build-templates', function (cb) {
     cb();
 });
 
-gulp.task('translate', shell.task([
-    'python3 scripts/translation2json.py src/locales/translations.csv src/locales/',
-]));
+gulp.task('translate', function () {
+    return run('python3 scripts/translation2json.py src/locales/translations.csv src/locales/').exec();
+});
 
 gulp.task('deps.js', function (cb) {
    run('python node_modules/google-closure-library/closure/bin/build/depswriter.py ' +
