@@ -50,18 +50,32 @@ var config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
 config['default'].version = new Date().getTime();
 
 
+
 gulp.task('default', ['help']);
+
 
 gulp.task('help', function () {
     ghelp.show();
 }).help = 'shows this help message.';
 
+
 gulp.task('test', function (cb) {
+    var configFile;
+    if (process.argv[3] && process.argv[3].match(/prod/)) {
+        configFile = 'test/karma-conf-prod.js';
+    } else {
+        configFile = 'test/karma-conf-dev.js';
+    }
+
     karma.start({
-        configFile: __dirname + '/test/karma-conf-dev.js',
+        configFile: configFile,
         singleRun: true
     }, cb);
-});
+}).help = {
+    '': 'Launch tests with karam.',
+    '--prod': 'If given, launch tests against production file.'
+};
+
 
 gulp.task('build-templates', function (cb) {
     // HTML
