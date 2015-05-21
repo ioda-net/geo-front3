@@ -14,7 +14,6 @@
 /deploy/deploy-branch.cfg
 /src/locales/*.csv
 /scripts/00-*.conf
-/src/lib/angular*.js
 /rc_*
 /config*.ini
 # FIXME
