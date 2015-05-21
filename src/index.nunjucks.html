@@ -9,7 +9,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <!--[if !HTML5]>
     <meta http-equiv="X-UA-Compatible" content="IE=9,IE=10,IE=edge,chrome=1"/>
     <![endif]-->
-{% if device == 'desktop' %}
+{% if device == 'index' %}
     <title translate="page_title">map.geo.admin.ch</title>
 {% else %}
     <title>geo.admin.ch</title>
@@ -162,11 +162,11 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
       <div id="search-container" ng-controller="GaSearchController">
         <div ga-search ga-search-map="map" ga-search-options="options" ga-search-focused="globals.searchFocused"></div>
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
         <span ga-help="24,31,25" ga-help-options="{showOnHover:true}"></span>
   {% endif %}
       </div>
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
       <div class="navbar-form pull-right hidden-xs">
         <div id="background-selection">
           <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
@@ -236,7 +236,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 {% if device != 'embed' %}
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
       <div  class="pull-left" ga-scale-line ga-scale-line-map="map"></div>
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
       <div id="mouseposition" class="pull-left hidden-xs" ng-controller="GaMousePositionController">
         <select ng-model="options.projection"
                 ng-options="p.label for p in mousePositionProjections">
@@ -249,7 +249,7 @@ itemscope itemtype="http://schema.org/WebApplication"
      <div class="pull-right">
         <a target="_blank" ng-href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
       </div>
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
       <div class="pull-right">
         <a target="_blank" ng-href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
       </div>
@@ -273,7 +273,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 {% if device != 'embed' %}
     <div ng-cloak translate-cloak id="pulldown" ng-show="!globals.offline" ng-class="{'selection-and-catalog-shown': (globals.catalogShown && globals.selectionShown)}">
-      <div id="pulldown-content" class="content ${"in" if device == "desktop" else "collapse"}">
+      <div id="pulldown-content" class="content ${"in" if device == "index" else "collapse"}">
         <div class="panel">
           <a id="shareHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#share">
             <i class="visible-collapsed icon-caret-right spacer"></i>
@@ -288,7 +288,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           </div>
         </div> <!-- .panel -->
 
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
         <div class="panel">
           <a id="printHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#print"
              ga-collapsible-show="globals.printShown">
@@ -374,7 +374,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   {% endif %}
 
         <div class="panel">
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
           <div class="theme-toggle">
             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
               <span translate>choose_theme</span>
@@ -391,7 +391,7 @@ itemscope itemtype="http://schema.org/WebApplication"
             <i class="visible-collapsed icon-caret-right"></i>
             <i class="hidden-collapsed icon-caret-down"></i>
             <span>{{topicId | translate}}</span>
-{% if device == 'desktop' %}
+{% if device == 'index' %}
             <span ga-help="32,37,39" ga-help-options="{showOnHover:true}"></span>
 {% endif %}
 
@@ -409,15 +409,15 @@ itemscope itemtype="http://schema.org/WebApplication"
         </div> <!-- .panel -->
 
         <div class="panel">
-          <a id="selectionHeading" class="panel-heading accordion-toggle light ${"collapsed" if device!= "desktop" else ""}" data-toggle="collapse" href="#selection">
+          <a id="selectionHeading" class="panel-heading accordion-toggle light ${"collapsed" if device!= "index" else ""}" data-toggle="collapse" href="#selection">
             <i class="visible-collapsed icon-caret-right"></i>
             <i class="hidden-collapsed icon-caret-down"></i>
             <span translate>layer_selection</span>
-{% if device == 'desktop' %}
+{% if device == 'index' %}
             <span ga-help="34,35,36" ga-help-options="{showOnHover:true}"></span>
 {% endif %}
           </a>
-          <div id="selection"  ga-collapsible-observe="globals.selectionShown" class="${"in" if device == "desktop" else ""}">
+          <div id="selection"  ga-collapsible-observe="globals.selectionShown" class="${"in" if device == "index" else ""}">
             <div class="panel-body panel-body-wide" ga-layermanager ga-layermanager-map="map">
             </div>
           </div>
@@ -462,7 +462,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         </div> <!-- .panel -->
   {% endif %}
       </div> <!-- #pulldown-content -->
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
       <button id="menu-button" type="button" data-toggle="collapse" data-target="#pulldown-content" class="toggle btn btn-default">
   {% elif device == 'mobile' %}
       <button type="button" data-toggle="collapse" data-target="#pulldown-content" class="toggle btn btn-default collapsed">
@@ -497,7 +497,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
     </div> <!-- end Feedback -->
 
-  {% if device == 'desktop' %}
+  {% if device == 'index' %}
     <!-- Popup: Import WMS -->
     <div ga-popup="globals.importWmsPopupShown"
          ga-popup-options="{title:'import_wms', help:'62'}"
@@ -622,7 +622,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <script src="${versionslashed}lib/d3-3.3.1.min.js"></script>
     <script src="${versionslashed}lib/jQuery.XDomainRequest.js"></script>
     <![endif]-->
-% else:
+{% else %}
     <!-- in source, we need to load it here because IE9 ignores it in
          the comments for reasons unknown to me. In prod, it's only
          loaded in IE9 -->

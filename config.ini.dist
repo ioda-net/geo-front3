@@ -1,10 +1,12 @@
 ; This file contains the values to generate the templates.
-; Copy in config-dev.ini and config-prod.ini to correctly genarate templates
+; Copy in config-dev.ini and config-prod.ini to correctly generate templates
 
+prod = false
 
 ; We must generate a template for all these devices. To do that, we must loop
 ; over this array. Thus devices cannot go into default.
-devices[] = desktop
+; index is for desktop
+devices[] = index
 devices[] = embed
 devices[] = mobile
 

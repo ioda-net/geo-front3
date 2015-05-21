@@ -17,6 +17,7 @@ var renameRegex = require('gulp-regex-rename');
 var replace = require('gulp-replace');  // Sed in gulp
 var run = require('gulp-run');  // Run system commands
 var ghelp = require('gulp-showhelp');
+var watch = require('gulp-watch');
 
 // To load and manipulate configuration
 var extend = require('extend'); // Allow to clone a JS object. Used to modify the config locally.
@@ -46,9 +47,9 @@ nunjucksRender.nunjucks.configure({
 });
 
 
-var config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
+var config;
 // Required by appcache
-config['default'].version = new Date().getTime();
+//config['default'].version = new Date().getTime();
 
 /**
  * Return an array containing all argument passed to the task. If an array is given, they are
@@ -81,7 +82,7 @@ gulp.task('default', ['help']);
 
 
 gulp.task('help', function () {
-    ghelp.show();
+    ghelp.show(ghelp.taskNames().sort());
 }).help = 'shows this help message.';
 
 
@@ -162,37 +163,78 @@ gulp.task('gslint', function () {
 }).help = 'run the javascript linter used by swisstopo.';
 
 
+gulp.task('dev', ['build-index-html', 'build-app-css', 'build-deps-js']).help = 'generate all files for development';
+
+
+gulp.task('load-dev-conf', function (cb) {
+    config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
+    cb();
+});
+
+
+gulp.task('build-index-html', ['load-dev-conf'], function (cb) {
+    var indexConfig = extend({}, config['default']);
+
+    config.devices.forEach(function (device) {
+        gulp.src('src/*.nunjucks.html')
+            .pipe(data(function() {
+                indexConfig.device = device;
+                return indexConfig;
+            }))
+            .pipe(nunjucksRender())
+            .pipe(extReplace(''))
+            .pipe(rename(device + '.html'))
+            .pipe(gulpif(config.prod,
+                gulp.dest('prd'),
+                gulp.dest('src')
+            ));
+    });
+
+    cb();
+});
+
+
+gulp.task('build-app-css', function () {
+    var lessOptions = {
+        relativeUrls: true
+    };
+    if (config.prod) {
+        lessOptions.plugins = [cleancss];
+    }
+
+    return gulp.src('src/style/app.less')
+        .pipe(less(lessOptions))
+        .pipe(gulpif(config.prod,
+                gulp.dest('prd/style'),
+                gulp.dest('src/style')
+        ));
+});
+
+
+gulp.task('build-deps-js', function () {
+   return run('python node_modules/google-closure-library/closure/bin/build/depswriter.py ' +
+                            '--root_with_prefix="src/components components" ' +
+                            '--root_with_prefix="src/js js" ' +
+                            '--output_file=src/deps.js').exec();
+});
+
+
+gulp.task('watch', function (cb) {
+    watch(['src/*.nunjucks.html', 'config-dev.ini'], function () {
+        gulp.start('build-index-html');
+    });
+
+    watch('src/style/app.less', function () {
+        gulp.start('build-app-css');
+    });
+
+    watch(['src/components/**/*.js', 'src/js/**/*.js', 'js/**/*.js'], function () {
+        gulp.start('build-deps-js');
+    });
+}).help = 'watch for changes in the development files and launch tasks impacted by the update';
+
+
 gulp.task('build-templates', function (cb) {
-    // HTML
-    var indexConfig = extend({}, config['default']);
-    config.devices.forEach(function (device) {
-            gulp.src('src/*.nunjucks.html')
-        .pipe(data(function() {
-            indexConfig.device = device;
-            return indexConfig;
-        }))
-        .pipe(nunjucksRender())
-        .pipe(renameRegex(/\.nunjucks/, ''))
-        .pipe(renameRegex(/index/, device))
-        .pipe(renameRegex(/desktop/, 'index'))
-        .pipe(gulp.dest('src'));
-    });
-
-    var indexConfig = extend({}, config['default']);
-    config['default'].prod = true;
-    config.devices.forEach(function (device) {
-            gulp.src('src/*.nunjucks.html')
-        .pipe(data(function() {
-            indexConfig.device = device;
-            return indexConfig;
-        }))
-        .pipe(nunjucksRender())
-        .pipe(renameRegex(/\.nunjucks/, ''))
-        .pipe(renameRegex(/index/, device))
-        .pipe(renameRegex(/desktop/, 'index'))
-        .pipe(gulp.dest('prd'));
-    });
-
     // HTML5 Appcache
     gulp.src([
                 'src/*.nunjucks.appcache',
@@ -238,25 +280,6 @@ gulp.task('build-templates', function (cb) {
 
     cb();
 });
-
-gulp.task('deps.js', function (cb) {
-   run('python node_modules/google-closure-library/closure/bin/build/depswriter.py ' +
-                            '--root_with_prefix="src/components components" ' +
-                            '--root_with_prefix="src/js js" ' +
-                            '--output_file=src/deps.js').exec();
-
-    cb();
-});
-
-gulp.task('app.css', function () {
-    return gulp.src('src/style/app.less')
-        .pipe(less({
-            relativeUrls: true
-        }))
-  .pipe(gulp.dest('src/style'));
-});
-
-gulp.task('dev', ['deps.js', 'app.css', 'build-templates']);
 
 gulp.task('build.js', function () {
     return gulp.src([
@@ -341,17 +364,6 @@ gulp.task('build.js', ['app.js'], function () {
 	.pipe(replace(/^\/\/[#,@] sourceMappingURL=.*/g, ''))
 	.pipe(gulp.dest('prd/lib'));
 })
-
-gulp.task('prd-app.css', function () {
-    return gulp.src([
-	'src/style/app.less',
-    ])
-    .pipe(less({
-	relativeUrls: true,
-	plugins: [cleancss],
-    }))
-    .pipe(gulp.dest('prd/style'));
-});
 
 gulp.task('prd-img', function () {
     return gulp.src('src/img/**/*')
