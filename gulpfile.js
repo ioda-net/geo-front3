@@ -161,12 +161,16 @@ gulp.task('gslint', function () {
 }).help = 'run the javascript linter used by swisstopo.';
 
 
-gulp.task('dev', [
-    'load-dev-conf',
-    'build-index-html',
-    'build-app-css',
-    'build-deps-js'
-]).help = 'generate all files for development';
+gulp.task('dev', function (cb) {
+    runSequence(
+            'load-dev-conf',
+            [
+                'build-index-html',
+                'build-app-css',
+                'build-deps-js'
+            ],
+            cb);
+}).help = 'generate all files for development';
 
 
 gulp.task('load-dev-conf', function (cb) {
@@ -243,18 +247,23 @@ gulp.task('watch', function (cb) {
 }).help = 'watch for changes in the development files and launch tasks impacted by the update';
 
 
-gulp.task('prod', [
-    'load-prod-conf',
-    'build-index-html',
-    'build-app-css',
-    'copy-images',
-    'copy-fonts',
-    'copy-locales',
-    'copy-checker',
-    'build-appcache',
-    'build-build.js',
-    'app-whitespace.js'
-]).help = 'generate all files for production';
+gulp.task('prod', function (cb) {
+    runSequence(
+            'load-prod-conf',
+            [
+                'build-index-html',
+                'build-app-css',
+                'copy-images',
+                'copy-fonts',
+                'copy-locales',
+                'copy-checker',
+                'build-appcache',
+                'build-build.js',
+                'app-whitespace.js'
+            ],
+            'clean-tmp',
+            cb);
+}).help = 'generate all files for production';
 
 
 gulp.task('load-prod-conf', function (cb) {
@@ -401,6 +410,6 @@ gulp.task('app-whitespace.js', ['build-js-files'], function () {
 });
 
 
-gulp.task('clean-tmp', function(cb) {
+gulp.task('clean-tmp', function (cb) {
     del(['/tm/geo-front3'], cb);
 });
