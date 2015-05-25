@@ -35,7 +35,7 @@ var del = require('del');
 var merge = require('merge-stream');
 var path = require('path');
 var runSequence = require('run-sequence');
-var geoUtils = require('./scripts/geo-gulp-utils');
+var geoGulpUtils = require('./scripts/geo-gulp-utils');
 
 
 // Change nunjucks variable delimiters to avoid conflict with angular
@@ -49,32 +49,6 @@ nunjucksRender.nunjucks.configure({
 
 
 var config = null;
-
-/**
- * Return an array containing all argument passed to the task. If an array is given, they are
- * concatenated.
- */
-var passArgvOpts = function (options) {
-    var opts = options || [];
-
-    return opts.concat(process.argv.slice(3));
-};
-
-/**
- * Join all element of an array with a space.
- */
-var formatCmd = function (cmd) {
-    return cmd.join(' ');
-};
-
-/**
- * Take an array of options, append the options passed to the command line and return the command.
- */
-var formatArgvOpts = function (options) {
-    var cmd = passArgvOpts(options);
-    return formatCmd(cmd);
-};
-
 
 
 gulp.task('default', ['help']);
@@ -122,7 +96,7 @@ gulp.task('build-karma-conf-from-template', function (cb) {
 
 
 gulp.task('translate', function () {
-    var cmd = formatArgvOpts([
+    var cmd = geoGulpUtils.formatArgvOpts([
         'python3',
         'scripts/translation2json.py',
         'src/locales/translations.csv',
@@ -157,7 +131,15 @@ gulp.task('lint', function () {
 
 
 gulp.task('gslint', function () {
-    return run('gjslint -r src/components src/js --jslint_error=all').exec();
+    var cmd = geoGulpUtils.formatArgvOpts([
+        'gjslint',
+        '-r',
+        'src/components',
+        'src/js',
+        '--jslint_error=all'
+    ]);
+
+    return run(cmd).exec();
 }).help = 'run the javascript linter used by swisstopo.';
 
 
@@ -225,10 +207,15 @@ gulp.task('build-app-css', function () {
 
 
 gulp.task('build-deps-js', function () {
-    return run('python node_modules/google-closure-library/closure/bin/build/depswriter.py ' +
-            '--root_with_prefix="src/components components" ' +
-            '--root_with_prefix="src/js js" ' +
-            '--output_file=src/deps.js').exec();
+    var cmd = geoGulpUtils.formatArgvOpts([
+        'python',
+        'node_modules/google-closure-library/closure/bin/build/depswriter.py',
+        '--root_with_prefix="src/components components"',
+        '--root_with_prefix="src/js js"',
+        '--output_file=src/deps.js'
+    ]);
+
+    return run(cmd).exec();
 });
 
 
@@ -333,17 +320,18 @@ gulp.task('build-build.js', ['closure-compiler'], function () {
 
 
 gulp.task('closure-compiler', ['build-js-files'], function () {
-    var jsFiles = fs.readFileSync('/tmp/geo-front3/js-files')
-            .toString()
-            .replace('\n', ' ');
+    var jsFiles = geoGulpUtils.getJsFiles();
+    var cmd = geoGulpUtils.formatArgvOpts([
+        'closure-compiler',
+        jsFiles,
+        '--compilation_level SIMPLE_OPTIMIZATIONS',
+        '--jscomp_error checkVars',
+        '--externs externs/ol.js',
+        '--externs externs/angular.js',
+        '--externs externs/jquery.js'
+    ]);
 
-    return run('closure-compiler ' +
-            jsFiles +
-            '--compilation_level SIMPLE_OPTIMIZATIONS ' +
-            '--jscomp_error checkVars ' +
-            '--externs externs/ol.js ' +
-            '--externs externs/angular.js ' +
-            '--externs externs/jquery.js', {
+    return run(cmd, {
                 verbosity: 0
             }).exec()
             .pipe(gulp.dest('/tmp/geo-front3'));
@@ -351,14 +339,28 @@ gulp.task('closure-compiler', ['build-js-files'], function () {
 
 
 gulp.task('build-js-files', ['annotate'], function () {
-    return run('python node_modules/google-closure-library/closure/bin/build/closurebuilder.py ' +
-            '--root=/tmp/geo-front3/annotated ' +
-            '--root=src/lib/closure ' +
-            '--namespace="ga" ' +
-            '--namespace="__ga_template_cache__" ' +
-            '--output_mode=list ', {silent: true}).exec()
-            .pipe(run("sed -e ':a' -e 'N' -e '$!ba' -e 's/\\n/ --js /g'", {silent: true}))
-            .pipe(run("sed 's/^.*base\.js //'", {silent: true}))
+    var closurebuilder = geoGulpUtils.formatArgvOpts([
+        'python node_modules/google-closure-library/closure/bin/build/closurebuilder.py',
+            '--root=/tmp/geo-front3/annotated',
+            '--root=src/lib/closure',
+            '--namespace="ga"',
+            '--namespace="__ga_template_cache__"',
+            '--output_mode=list'
+    ]);
+    var removeUnusefulLine = geoGulpUtils.formatArgvOpts([
+        "sed 's/^.*base\.js //'"
+    ]);
+    var formatFile = geoGulpUtils.formatArgvOpts([
+        "sed",
+        "-e ':a'",
+        "-e 'N'",
+        "-e '$!ba'",
+        "-e 's/\\n/--js /g'"
+    ]);
+
+    return run(closurebuilder, {silent: true}).exec()
+            .pipe(run(formatFile, {silent: true}))
+            .pipe(run(removeUnusefulLine, {silent: true}))
             .pipe(rename('js-files'))
             .pipe(gulp.dest('/tmp/geo-front3/'));
 });
@@ -374,7 +376,7 @@ gulp.task('annotate', function () {
     };
     var partialsGlob = path.join(__dirname, 'src/components/**/partials/**/*.html');
 
-    templateCacheConfig.partials = geoUtils.getPartials(partialsGlob, htmlMinConf);
+    templateCacheConfig.partials = geoGulpUtils.getPartials(partialsGlob, htmlMinConf);
 
     var templateCache = gulp.src('src/TemplateCacheModule.nunjucks.js', {base: './'})
             .pipe(data(function () {
@@ -393,15 +395,16 @@ gulp.task('annotate', function () {
 
 // Cache partials so they can be used in karma
 gulp.task('app-whitespace.js', ['build-js-files'], function () {
-    var jsFiles = fs.readFileSync('.build-artefacts/js-files')
-            .toString()
-            .replace('\n', ' ');
+    var jsFiles = geoGulpUtils.getJsFiles();
+    var cmd = geoGulpUtils.formatArgvOpts([
+        'closure-compiler',
+        jsFiles,
+        '--compilation_level WHITESPACE_ONLY',
+        '--formatting PRETTY_PRINT',
+        '--js_output_file .build-artefacts/app-whitespace.js'
+    ]);
 
-    run('closure-compiler ' +
-            jsFiles +
-            '--compilation_level WHITESPACE_ONLY ' +
-            '--formatting PRETTY_PRINT ' +
-            '--js_output_file .build-artefacts/app-whitespace.js',
+    run(cmd,
             {
                 verbosity: 0
             }).exec();

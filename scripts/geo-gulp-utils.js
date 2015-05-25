@@ -11,22 +11,61 @@ function getPartials(partialsGlob, htmlMinConfig) {
     // To do that, we use glob to find them and for each element in the resulting array, we add an
     // item to the configuration.
     glob.sync(partialsGlob)
-        .forEach(function (partialPath) {
-            // Simple quotes whithin the content must be escaped so javascript doesn't consider them
-            // as an end of string.
-            // htmlMinify doesn't remove all whitespaces, so we help it.
-            var partialContents = fs.readFileSync(partialPath)
-                .toString()
-                .replace(/'/g, "\\'")
-                .replace(/\n/g, '');
+            .forEach(function (partialPath) {
+                // Simple quotes whithin the content must be escaped so javascript doesn't consider them
+                // as an end of string.
+                // htmlMinify doesn't remove all whitespaces, so we help it.
+                var partialContents = fs.readFileSync(partialPath)
+                        .toString()
+                        .replace(/'/g, "\\'")
+                        .replace(/\n/g, '');
 
-            // The name of the partial in the cache must be its path without src/
-            var partialName = partialPath.replace(/^src\//, '');
+                // The name of the partial in the cache must be its path without src/
+                var partialName = partialPath.replace(/^src\//, '');
 
-            partials[partialName] = htmlMinify(partialContents, htmlMinifyConf);
-        });
+                partials[partialName] = htmlMinify(partialContents, htmlMinifyConf);
+            });
 
     return partials;
 }
 
+function getJsFiles() {
+    return fs.readFileSync('/tmp/geo-front3/js-files')
+            .toString()
+            .replace('\n', ' ');
+}
+
+
+/**
+ * Return an array containing all argument passed to the task. If an array is given, they are
+ * concatenated.
+ */
+var passArgvOpts = function (options) {
+    var opts = options || [];
+
+    return opts.concat(process.argv.slice(3));
+};
+
+
+/**
+ * Join all element of an array with a space.
+ */
+var formatCmd = function (cmd) {
+    return cmd.join(' ');
+};
+
+
+/**
+ * Take an array of options, append the options passed to the command line and return the command.
+ */
+var formatArgvOpts = function (options) {
+    var cmd = passArgvOpts(options);
+    return formatCmd(cmd);
+};
+
+
 module.exports.getPartials = getPartials;
+module.exports.getJsFiles = getJsFiles;
+module.exports.passArgvOpts = passArgvOpts;
+module.exports.formatCmd = formatCmd;
+module.exports.formatArgvOpts = formatArgvOpts;
