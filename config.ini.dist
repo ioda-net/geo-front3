@@ -11,7 +11,6 @@ devices[] = embed
 devices[] = mobile
 
 [default]
-prod = false
 api_url = //api.geoadmin.local
 apache_base_path = /
 default_topic_id = geojb
