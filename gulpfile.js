@@ -32,7 +32,7 @@ var cleancss = new LessPluginCleanCSS({advanced: true});
 
 // Various
 var del = require('del');
-var merge = require('merge-stream');
+var merge = require('merge-stream'); // Used to avoid temporary files
 var path = require('path');
 var runSequence = require('run-sequence');
 var geoGulpUtils = require('./scripts/geo-gulp-utils');
@@ -147,9 +147,9 @@ gulp.task('dev', function (cb) {
   runSequence(
           'load-dev-conf',
           [
-            'build-index-html',
-            'build-app-css',
-            'build-deps-js'
+            'index.html',
+            'app.css',
+            'deps.js'
           ],
           cb);
 }).help = 'generate all files for development';
@@ -161,7 +161,7 @@ gulp.task('load-dev-conf', function (cb) {
 });
 
 
-gulp.task('build-index-html', function (cb) {
+gulp.task('index.html', function (cb) {
   // This task is common to dev and prod and requires configuration. If a configuration file is
   // loaded, we use it. If it is not, we load the dev config.
   if (config === null) {
@@ -189,7 +189,7 @@ gulp.task('build-index-html', function (cb) {
 });
 
 
-gulp.task('build-app-css', function () {
+gulp.task('app.css', function () {
   var lessOptions = {
     relativeUrls: true
   };
@@ -206,7 +206,7 @@ gulp.task('build-app-css', function () {
 });
 
 
-gulp.task('build-deps-js', function () {
+gulp.task('deps.js', function () {
   var cmd = geoGulpUtils.formatArgvOpts([
     'python',
     'node_modules/google-closure-library/closure/bin/build/depswriter.py',
@@ -221,15 +221,15 @@ gulp.task('build-deps-js', function () {
 
 gulp.task('watch', function (cb) {
   watch(['src/*.nunjucks.html', 'config-dev.ini'], function () {
-    gulp.start('build-index-html');
+    gulp.start('index.html');
   });
 
   watch('src/style/app.less', function () {
-    gulp.start('build-app-css');
+    gulp.start('app.css');
   });
 
   watch(['src/components/**/*.js', 'src/js/**/*.js', 'js/**/*.js'], function () {
-    gulp.start('build-deps-js');
+    gulp.start('deps.js');
   });
 }).help = 'watch for changes in the development files and launch tasks impacted by the update';
 
@@ -238,14 +238,14 @@ gulp.task('prod', function (cb) {
   runSequence(
           'load-prod-conf',
           [
-            'build-index-html',
-            'build-app-css',
+            'index.html',
+            'app.css',
             'copy-images',
             'copy-fonts',
             'copy-locales',
             'copy-checker',
-            'build-appcache',
-            'build-build.js',
+            'appcache',
+            'build.js',
             'app-whitespace.js'
           ],
           'clean-tmp',
@@ -283,7 +283,7 @@ gulp.task('copy-checker', function () {
 });
 
 
-gulp.task('build-appcache', ['load-prod-conf'], function () {
+gulp.task('appcache', ['load-prod-conf'], function () {
   var appcacheConfig = extend({}, config['default']);
   config['default'].version = new Date().getTime();
 
@@ -297,7 +297,7 @@ gulp.task('build-appcache', ['load-prod-conf'], function () {
 });
 
 
-gulp.task('build-build.js', ['closure-compiler'], function () {
+gulp.task('build.js', ['closure-compiler'], function () {
   return gulp.src([
     'src/lib/jquery-2.0.3.min.js',
     'src/lib/bootstrap-3.3.1.min.js',
@@ -319,7 +319,7 @@ gulp.task('build-build.js', ['closure-compiler'], function () {
 });
 
 
-gulp.task('closure-compiler', ['build-js-files'], function () {
+gulp.task('closure-compiler', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
   var cmd = geoGulpUtils.formatArgvOpts([
     'closure-compiler',
@@ -338,7 +338,7 @@ gulp.task('closure-compiler', ['build-js-files'], function () {
 });
 
 
-gulp.task('build-js-files', ['annotate'], function () {
+gulp.task('js-files', ['annotate'], function () {
   var closurebuilder = geoGulpUtils.formatArgvOpts([
     'python node_modules/google-closure-library/closure/bin/build/closurebuilder.py',
     '--root=/tmp/geo-front3/annotated',
@@ -367,6 +367,10 @@ gulp.task('build-js-files', ['annotate'], function () {
 
 
 gulp.task('annotate', function () {
+  // We must build the template cache before annotating the files.
+  // In order to build this cache, we must map each file content to its file name. The content of
+  // the file is minified with htmlMin. The templateCacheConfig will contain the mapping in its
+  // partials property.
   var templateCacheConfig = extend({}, config['default']);
   var htmlMinConf = {
     collapseWhitespace: true,
@@ -394,7 +398,7 @@ gulp.task('annotate', function () {
 
 
 // Cache partials so they can be used in karma
-gulp.task('app-whitespace.js', ['build-js-files'], function () {
+gulp.task('app-whitespace.js', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
   var cmd = geoGulpUtils.formatArgvOpts([
     'closure-compiler',
