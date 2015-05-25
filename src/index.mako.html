@@ -1,0 +1,785 @@
+# -*- coding: utf-8 -*-
+<!DOCTYPE html>
+<html ng-app="ga" ng-controller="GaMainController"
+itemscope itemtype="http://schema.org/WebApplication"
+% if device == 'mobile' and mode=='prod' :
+ manifest="geoadmin.appcache"
+% endif
+>
+  <head>
+    <!--[if !HTML5]>
+    <meta http-equiv="X-UA-Compatible" content="IE=9,IE=10,IE=edge,chrome=1"/>
+    <![endif]-->
+% if device == 'desktop':
+    <title translate="page_title">map.geo.admin.ch</title>
+% else:
+    <title>geo.admin.ch</title>
+% endif
+    <meta charset="utf-8"/>
+    <!-- verification for google webmaster tools -->
+    <meta name="google-site-verification" content="ZAmW5d4_2X8xb5Yy_nYQbnTSe1EIeSqyhox9aXXwrws"/>
+    <!-- verification for bing webmaster tools -->
+    <meta name="msvalidate.01" content="58E0E0B7DD4AB3D30EE315C695950E68"/>
+    <!-- verification for yandex webmaster tools -->
+    <meta name='yandex-verification' content='4795f82c05657028'/>
+    <!-- this tag enables the search bot forwarding to _escaped_fragment_= urls for SEO. It can be used instead of the ugly hasbang -->
+    <meta name="fragment" content="!"/>
+
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimal-ui"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+    <meta name="application-name" content="map.geo.admin.ch"/>
+    <meta name="msapplication-TileImage" content="${versionslashed}img/touch-icon-bund-144x144.png"/>
+    <meta name="msapplication-TileColor" content="#ffffff"/>
+    <meta name="msapplication-square70x70logo" content="${versionslashed}img/touch-icon-bund-70x70.png"/>
+    <meta name="msapplication-square150x150logo" content="${versionslashed}img/touch-icon-bund-150x150.png"/>
+    <meta name="msapplication-square310x310logo" content="${versionslashed}img/touch-icon-bund-310x310.png"/>
+    <link rel="dns-prefetch" href="${api_url}"/>
+
+    <link rel="apple-touch-icon" sizes="76x76" href="${versionslashed}img/touch-icon-bund-76x76.png"/>
+    <link rel="apple-touch-icon" sizes="120x120" href="${versionslashed}img/touch-icon-bund-120x120.png"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="${versionslashed}img/touch-icon-bund-152x152.png"/>
+
+    <!-- Description is translated 'by hand' in the MainController -->
+    <meta name="description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta name="keywords" content="maps Switzerland, map viewer, Confederation, geodata, public platform, geographical information, geoportal, orthophotos, geolocation, geoinformation, Geodaten, Geoinformation, Bund, Plattform, Karte, Kartendienst, Kartenviewer"/>
+    <meta name="news_keywords" content="Maps of Switzerland"/>
+
+    <!-- Open Graph metas SMO -->
+    <meta property="og:site_name" content="geo.admin.ch"/>
+    <meta property="og:title" content="Swiss Geoportal"/>
+    <meta property="og:description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta property="og:type" content="WebApplication"/>
+    <meta property="og:url" content="https://map.geo.admin.ch"/>
+    <meta property="og:image" content="${versionslashed}img/logo_geoportal.png"/>
+
+    <!-- Twitter Card Infos -->
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:site" content="@swiss_geoportal"/>
+    <meta name="twitter:creator" content="@swiss_geoportal"/>
+    <meta name="twitter:title" content="geo.admin.ch"/>
+    <meta name="twitter:description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta name="twitter:image" content="${versionslashed}img/logo_geoportal.png"/>
+    <meta name="twitter:url" content="https://map.geo.admin.ch"/>
+
+    <!-- Facebook Specific fb:admins and fb.appid -->
+
+    <!-- Google+ Specific Tags -->
+    <meta itemprop="name" content="geo.admin.ch"/>
+    <meta itemprop="description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta itemprop="image" content="${versionslashed}img/logo_geoportal.png"/>
+
+    <script>
+      (function(){
+        var w = window, l = w.location, n = w.navigator, pathname, p = '${device}',
+          m = l.search.match(/(?:mobile=(true|false))/);
+
+        if (!l.origin) { l.origin = l.protocol + "//" + l.hostname } // IE fix
+
+        // avoid loops
+        m = (m) ? m[1] : m;
+        if ((p=='desktop' && m=='false') || (p=='mobile' && m=='true')) {
+          return;
+        }
+
+        var redirectToMobile = function() {
+          pathname = !/(index|embed)\.html$/.test(l.pathname) ?
+            l.pathname + 'mobile.html' : l.pathname.replace(/(index|embed)\.html$/, 'mobile.html');
+          l.href = l.origin + pathname + l.search;
+        }
+        var redirectToDesktop = function() {
+          l.href = l.origin + l.pathname.replace(/(mobile|embed)\.html$/, 'index.html') + l.search;
+        }
+
+        var onMobile = ((('ontouchstart' in w) ||
+            (('maxTouchPoints' in n) && n.maxTouchPoints > 1) ||
+            (('msMaxTouchPoints' in n) && n.msMaxTouchPoints > 1)) &&
+            (screen.width<=768 || screen.height<=768));
+        if (m=='false' || (!onMobile && p=='mobile') ) {
+          redirectToDesktop();
+        } else if (m=='true' || (onMobile && p=='desktop') ) {
+          redirectToMobile();
+        }
+      })();
+    </script>
+    
+    <link href="${versionslashed}style/app.css" rel="stylesheet"/>
+    <link rel="shortcut icon" type="image/x-icon" href="${versionslashed}img/favicon.ico"/>
+  </head>
+
+  <body class="{{topicId}}" 
+        ng-class="{
+          'search-focused': globals.searchFocused,
+          'touch': globals.touch, 
+          'webkit': globals.webkit, 
+          'no-webkit': !globals.webkit, 
+          'offline': globals.offline,
+          'online': !globals.offline,
+          'embed': globals.embed
+        }">
+    <!-- The below conditional is ignored by >= IE10 and all other browsers -->
+    <!--[if IE]>
+      <script>
+       (function(){
+       var msgDocumentMode = "";
+       var msgCompatibilityView = "";
+       if (document.documentMode < 9) {
+          msgDocumentMode = "DE: Dokumentmodus von Internet Explorer muss 9 oder gr\366sser sein.\nFR: Le mode de document d'Internet Explorer doit \352tre plus grand ou \351gal \340 9.\nIT: Modalit\340 documento dev'essere maggiore o uguale a 9.\nEN: The document mode of your navigator should be 9 or higher.\n\n";
+       }
+       if (navigator.userAgent.indexOf("MSIE 7.0") > 0 || navigator.userAgent.indexOf("MSIE 8.0") > 0) {
+          msgCompatibilityView = "DE: Sie verwenden einen veralteten Browser. Um die Website in vollem Umfang nutzen zu k\366nnnen, empfehlen wir Ihnen in diesem Falle, einen neueren Browser zu installieren: www.browsehappy.com/?locale=de\nFR: Vous utilisez un navigateur trop ancien. Pour utiliser toute les possibilit\351s de ce site web, nous vous conseillons d'installer un navigateur plus r\351cent: www.browsehappy.com/?locale=fr\nIT:Si sta utilizzando un browser non completamente supportato. Per sfruttare appieno le funzionalit\340 di questo sito web, consigliamo di installare un browser pi\371 recente: www.browsehappy.com/?locale=it\nEN: You are using an outdated browser. Please upgrade in this case your browser to improve your experience: browsehappy.com/?locale=en\n\n";
+       }
+       if (msgDocumentMode.length > 0 || msgCompatibilityView.length > 0) {
+         alert(msgDocumentMode + msgCompatibilityView + "DE: \334ber die 'F12' Taste k\366nnen Sie die Einstellungen auf 'Browsermodus:IE9' und 'Dokumentmodus:IE-9-Standards' setzen.\nFR: En appuyant sur F12, vous pouvez modifier l'affichage de compatibilit\351 en choisissant le mode navigateur IE9 et le mode de document normes IE9.\nIT: Premere F12 per modificare la Modalit\340 browser scegliendo poi 'Modalit\340 browser IE9' e 'Modalit\340 documento: IE9'.\nEN: Click on F12 and change the compatibility view mode and the document mode to 'Browser Mode:IE9' and 'Document Mode: IE9 standards'.");
+       }
+       })();
+      </script>
+      <script src="${versionslashed}lib/IE9Fixes.js"></script>
+      <script>
+        IE9Fix.call(this);
+      </script>
+    <![endif]-->
+    <div ng-controller="GaSeoController">
+      <div ga-seo ga-seo-options="options" ga-seo-map="map"></div>
+    </div>
+% if device == 'embed':
+    <div style="display: none;">
+      <div class="topic-container" ng-controller="GaTopicController">
+        <div ga-topic ga-topic-ui="select" ga-topic-options="options" ga-topic-map="map"></div>
+      </div>
+      <div ng-controller="GaTranslationController">
+        <div ga-translation-selector ga-translation-selector-options="options"></div>
+      </div>
+      <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
+    </div>
+% endif
+% if device != 'embed':
+    <div ng-cloak translate-cloak id="header" class="navbar navbar-fixed-top">
+      <div id="logo" class="pull-left">
+        <a ng-href="?topic={{topicId}}&lang={{langId}}">
+          <img ng-if="langId" ng-src="${versionslashed}img/logo.ch.{{langId}}.png" alt="big_logo" draggable="false"/>
+          <img src="${versionslashed}img/logo.ch.small.png" alt="small_logo" draggable="false"/>
+        </a>
+      </div>
+      <div id="search-container" ng-controller="GaSearchController">
+        <div ga-search ga-search-map="map" ga-search-options="options" ga-search-focused="globals.searchFocused"></div>
+  % if device == 'desktop':
+        <span ga-help="24,31,25" ga-help-options="{showOnHover:true}"></span>
+  % endif      
+      </div>
+  % if device == 'desktop':
+      <div class="navbar-form pull-right hidden-xs">
+        <div id="background-selection">
+          <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
+        </div>
+        <div id="toptools">
+          <div ga-fullscreen ga-fullscreen-map="map"></div>&nbsp;&nbsp;
+          <a href="" ng-click="globals.feedbackPopupShown = !globals.feedbackPopupShown">
+            <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
+          </a>&nbsp;&nbsp;
+          <a target="_blank" href="//help.geo.admin.ch/?lang={{langId}}" translate>help_label</a>&nbsp;&nbsp;
+          <a ng-href="{{deviceSwitcherHref}}" translate>mobile_redirect</a>&nbsp;&nbsp;
+          <div ng-controller="GaTranslationController">
+            <div ga-translation-selector ga-translation-selector-options="options"></div>
+          </div>
+        </div>
+      </div>
+  % endif
+      ## css animation doesnt work on pseudo element, let use this instead
+      <div class="alert alert-danger" translate>offline_sorry</div>
+    </div> <!-- #header -->
+% endif
+    <div id="loader"></div>
+    <div tabindex="1" ga-map ga-map-map="map">
+      <div ng-cloak translate-cloak id="copyrightsdata">
+        <div>
+          <span >&copy;&nbsp;</span>
+          <span translate>data</span>
+        </div>
+        <div ga-attribution ga-attribution-map="map"></div>
+      </div>
+  % if device == 'embed':
+      <a ng-cloak translate-cloak id="bigMapLink" target="_blank" ng-href="{{toMainHref}}">
+        <div>
+          <img src="${versionslashed}img/logo.ch.small.png" alt="small_logo" draggable="false"/>
+          <span translate-values="{{host}}" translate>view_on_mapgeoadminch</span>
+        </div>
+        <div ng-show="time">{{time}}</div>
+      </a>
+      <div ga-scale-line ga-scale-line-map="map"></div>
+  % endif
+
+      <div id='buttonGroup'>
+  % if device != 'embed':
+        <div ga-geolocation ga-geolocation-map="map"></div>
+  % endif
+        <div id="zoomButtons"></div>
+  % if device != 'embed':
+        <div ga-time-selector-bt ga-time-selector-bt-map="map"></div> 
+  % endif
+        <div ga-rotate ga-rotate-map="map"></div>
+  % if device == 'mobile':
+        <div ga-offline-bt></div>
+  % endif
+      </div>
+      <div ga-swipe 
+           ga-swipe-map="map" 
+           ga-swipe-active="globals.isSwipeActive"
+           style="display:none;">
+      </div>
+    </div> <!-- #map -->
+% if device == 'mobile':
+    <div ga-offline-selector
+         ga-offline-selector-map="map">
+    </div>
+% endif
+
+% if device != 'embed':
+    <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
+      <div  class="pull-left" ga-scale-line ga-scale-line-map="map"></div>
+  % if device == 'desktop':
+      <div id="mouseposition" class="pull-left hidden-xs" ng-controller="GaMousePositionController">
+        <select ng-model="options.projection"
+                ng-options="p.label for p in mousePositionProjections">
+        </select>
+        <div ga-mouse-position
+             ga-mouse-position-map="map"
+             ga-mouse-position-options="options"></div>
+      </div>
+  % endif
+     <div class="pull-right">
+        <a target="_blank" ng-href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
+      </div>
+  % if device == 'desktop':
+      <div class="pull-right">
+        <a target="_blank" ng-href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
+      </div>
+  % endif
+    </div><!-- #footer -->
+
+    <div ng-controller="GaContextPopupController">
+      <div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options"></div>
+    </div>
+% endif
+    <div ng-controller="GaTimeSelectorController">
+      <div ga-time-selector ga-time-selector-map="map"
+           ga-time-selector-options="options">
+      </div>
+    </div>
+    <div ng-controller="GaTooltipController">
+      <div ga-tooltip 
+           ga-tooltip-map="map" 
+           ga-tooltip-options="options"
+           ga-tooltip-active="!globals.isMeasureActive && !globals.isDrawActive"></div>
+    </div>
+% if device != 'embed':
+    <div ng-cloak translate-cloak id="pulldown" ng-show="!globals.offline" ng-class="{'selection-and-catalog-shown': (globals.catalogShown && globals.selectionShown)}">
+      <div id="pulldown-content" class="content ${"in" if device == "desktop" else "collapse"}">
+        <div class="panel">
+          <a id="shareHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#share">
+            <i class="visible-collapsed icon-caret-right spacer"></i>
+            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-share"></i>
+            <span translate>share</span>
+          </a>
+          <div id="share" class="panel-collapse collapse">
+            <div class="panel-body" ng-controller="GaShareController">
+              <div ga-share ga-share-options="options"></div>
+            </div>
+          </div>
+        </div> <!-- .panel -->
+
+  % if device == 'desktop':
+        <div class="panel">
+          <a id="printHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#print"
+             ga-collapsible-show="globals.printShown">
+            <i class="visible-collapsed icon-caret-right spacer"></i>
+            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-print"></i>
+            <span translate>print</span>
+          </a>
+          <div id="print" class="panel-collapse collapse">
+            <div class="panel-body" ng-controller="GaPrintController">
+              <div ga-print></div>
+            </div>
+
+          </div>
+        </div>  <!-- .panel -->
+
+        <div class="panel"> 
+
+          <a id="toolsHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#tools">
+            <i class="visible-collapsed icon-caret-right spacer"></i>
+            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-ga-mapfunction"></i>
+            <span translate>map_tools</span>
+          </a>
+
+          <div id="tools" class="collapse">
+            <div class="panel-body panel-body-wide panel-cursor">
+
+              <ul>
+
+                <li><!-- Import WMS -->
+                  <a href="" ng-click="globals.importWmsPopupShown = !globals.importWmsPopupShown"
+                     data-original-title="{{'wmsimport_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="bottom"
+                     accesskey="w">
+                    <span ng-class="{'selected': globals.importWmsPopupShown}" translate>import_wms</span>
+                  </a>
+                </li>
+                <li><!-- Import KML -->
+                  <a href=""  ng-click="globals.importKmlPopupShown = !globals.importKmlPopupShown"
+                     data-original-title="{{'kmlimport_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="bottom"
+                     accesskey="k">
+                    <span ng-class="{'selected': globals.importKmlPopupShown}" translate>import_kml</span>
+                  </a>
+                </li>
+                <li><!-- Compare -->
+                  <a href=""  ng-click="globals.isSwipeActive = !globals.isSwipeActive"
+                     data-original-title="{{'swipe_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="bottom"
+                     accesskey="c">
+                    <span ng-class="{'selected': globals.isSwipeActive}" translate>swipe</span>
+                  </a>
+                </li>
+                <li><!-- Measure -->
+                  <a href=""  ng-click="globals.isMeasureActive = !globals.isMeasureActive;globals.isDrawActive = false;"
+                     data-original-title="{{'measure_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="bottom"
+                     accesskey="m">
+                    <span  ng-class="{'selected': globals.isMeasureActive}" translate>measure</span>
+                  </a>
+                </li>
+                <li><!-- Draw -->
+                  <a href=""  ng-click="globals.isDrawActive = !globals.isDrawActive;globals.isMeasureActive = false;"
+                     data-original-title="{{'draw_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="bottom"
+                     accesskey="r">
+                    <span  ng-class="{'selected': globals.isDrawActive}" translate>draw</span>
+                  </a>
+                </li>
+                <li><!-- Feature Tree -->
+                  <a href=""  ng-click="globals.isFeatureTreeActive = !globals.isFeatureTreeActive"
+                     data-original-title="{{'featuretree_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="top"
+                     accesskey="s">
+                    <span  ng-class="{'selected': globals.isFeatureTreeActive}" translate>object_information</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div> <!-- .panel -->
+  % endif
+
+        <div class="panel">
+  % if device == 'desktop':
+          <div class="theme-toggle">
+            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+              <span translate>choose_theme</span>
+              <i class="icon-chevron-sign-right"></i>
+            </a>
+            <div class="dropdown-menu" ng-controller="GaTopicController">
+              <div ga-topic ga-topic-ui="list" ga-topic-options="options" ga-topic-map="map"></div>
+            </div>
+          </div>
+  % endif
+          <a id="catalogHeading" class="panel-heading accordion-toggle light collapsed"
+             data-toggle="collapse" href="#catalog"
+             ga-collapsible-show="globals.catalogShown">
+            <i class="visible-collapsed icon-caret-right"></i>
+            <i class="hidden-collapsed icon-caret-down"></i>
+            <span>{{topicId | translate}}</span>
+% if device == 'desktop':
+            <span ga-help="32,37,39" ga-help-options="{showOnHover:true}"></span>
+% endif
+
+          </a>
+          <div id="catalog" class="collapse" ng-controller="GaCatalogtreeController">
+  % if device == 'mobile':
+            <label class="topic-container" ng-controller="GaTopicController">
+              <span translate>change_topic</span>
+              <div ga-topic ga-topic-ui="select" ga-topic-options="options" ga-topic-map="map"></div>
+            </label>
+  % endif
+            <div class="panel-body panel-body-wide accordion-inner-catalog" ng-if="!globals.offline" ga-catalogtree ga-catalogtree-map="map" ga-catalogtree-options="options">
+            </div>
+          </div>
+        </div> <!-- .panel -->
+
+        <div class="panel">
+          <a id="selectionHeading" class="panel-heading accordion-toggle light ${"collapsed" if device!= "desktop" else ""}" data-toggle="collapse" href="#selection">
+            <i class="visible-collapsed icon-caret-right"></i>
+            <i class="hidden-collapsed icon-caret-down"></i>
+            <span translate>layer_selection</span>
+% if device == 'desktop':
+            <span ga-help="34,35,36" ga-help-options="{showOnHover:true}"></span>
+% endif
+          </a>
+          <div id="selection"  ga-collapsible-observe="globals.selectionShown" class="${"in" if device == "desktop" else ""}">
+            <div class="panel-body panel-body-wide" ga-layermanager ga-layermanager-map="map">
+            </div>
+          </div>
+        </div> <!-- .panel -->
+
+  % if device == 'mobile':
+        <div class="panel">
+          <a class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#settings">
+            <i class="visible-collapsed icon-caret-right spacer"></i>
+            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-gear"></i>
+            <span translate>settings</span>
+          </a>
+          <div id="settings" class="collapse">
+            <div class="panel-body">
+              <p>
+                <a href="" ng-click="globals.feedbackPopupShown = !globals.feedbackPopupShown">
+                  <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
+                </a>
+              </p>
+              <p>
+                <a ng-href="{{deviceSwitcherHref}}" translate>desktop_redirect</a>
+              </p>
+              <div class="options">
+                <label ng-controller="GaTranslationController">
+                  <span translate>lang_chooser_label</span>
+                  <div ga-translation-selector ga-translation-selector-options="options"></div>
+                </label>
+                <label>
+                  <span translate>bg_chooser_label</span>
+                  <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
+                </label>
+              </div>
+              <hr>
+              <p>
+                <a target="_blank" ng-href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
+                <br>
+                <a target="_blank" ng-href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
+              </p>
+            </div>
+          </div>
+        </div> <!-- .panel -->
+  % endif
+      </div> <!-- #pulldown-content -->
+  % if device == 'desktop':
+      <button id="menu-button" type="button" data-toggle="collapse" data-target="#pulldown-content" class="toggle btn btn-default">
+  % elif device == 'mobile':
+      <button type="button" data-toggle="collapse" data-target="#pulldown-content" class="toggle btn btn-default collapsed">
+  % endif
+        <span class="hidden-collapsed">
+          <i class="icon-caret-up"></i> <span translate>close_menu</span>
+          <span class="phone-toggle">&times;</span>
+        </span>
+        <span class="visible-collapsed">
+          <i class="icon-reorder"></i>
+          <i class="icon-caret-down"></i>
+          <span translate>open_menu</span>
+        </span>
+      </button>
+    </div> <!-- #pulldown -->
+
+  % if device == 'mobile':
+    <!-- offline dialog -->
+    <div ga-offline-menu ga-offline-menu-map="map"></div>
+  % endif
+    <!-- Popup: Feedback -->
+    <div ga-popup="globals.feedbackPopupShown"
+         ga-popup-options="{title:'problem_announcement', help:'70'}"
+         ga-draggable=".popover-title"
+         id="feedback-popup" >
+      <div ng-controller="GaFeedbackController">
+        <div ga-feedback
+             ga-feedback-map="map"
+             ga-feedback-options="options"
+             ga-feedback-active="globals.feedbackPopupShown">
+        </div>
+      </div>
+    </div> <!-- end Feedback -->
+
+  % if device == 'desktop':
+    <!-- Popup: Import WMS -->
+    <div ga-popup="globals.importWmsPopupShown"
+         ga-popup-options="{title:'import_wms', help:'62'}"
+         ga-draggable=".popover-title"
+         id="import-wms-popup" >
+      <div ng-controller="GaImportWmsController">
+        <div ga-import-wms
+             ga-import-wms-map="map"
+             ga-import-wms-options="options">
+        </div>
+      </div>
+    </div> <!-- end Import WMS -->
+
+    <!-- Popup: Import KML -->
+    <div ga-popup="globals.importKmlPopupShown"
+         ga-popup-options="{title:'import_kml', help:'63'}"
+         ga-draggable=".popover-title"
+         id="import-kml-popup" >
+      <div ng-controller="GaImportKmlController">
+        <div ga-import-kml
+             ga-import-kml-map="map"
+             ga-import-kml-options="options">
+        </div>
+      </div>
+    </div><!-- end Import KML -->
+   
+    <!-- Popup: Measure -->
+    <div ng-controller="GaMeasureController">
+      <div ga-popup="globals.isMeasureActive"
+           ga-popup-options="{title:'measure',showPrint:true, print: print, help:'66', x:'auto', y:'auto'}"
+           id="measure-popup" >
+        <div ga-measure 
+             ga-measure-map="map" 
+             ga-measure-options="options" 
+             ga-measure-active="globals.isMeasureActive"></div>
+      </div>
+    </div><!-- end Measure -->
+ 
+    <!-- Popup: Draw -->
+    <div ga-popup="globals.isDrawActive"
+         ga-popup-options="{title:'draw', help:'67'}"
+         ga-draggable=".popover-title"
+         id="draw-popup" >
+      <div ng-controller="GaDrawController">
+        <div ga-draw 
+             ga-draw-map="map" 
+             ga-draw-options="options"
+             ga-draw-active="globals.isDrawActive && options.hasPopupFocus"></div>
+      </div>
+    </div><!-- end Draw -->
+  % endif
+    <!-- Popup: Feature Tree -->
+    <div ng-controller="GaFeaturetreeController">
+      <div ga-popup="globals.isFeatureTreeActive"
+           ga-popup-options="{title:'object_information', showPrint:true, print: print, help:'68'}"
+           ga-draggable=".popover-title"
+           id="featuretree-popup">
+        <div class="panel-group" id="accordion">
+          <div class="panel panel-default">
+            <a class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#accordion-query">
+              <span translate>queries</span>
+            </a>
+            <div id="accordion-query" class="panel-collapse collapse in">
+              <div class="panel-body"
+                   ga-query
+                   ga-query-map="map"
+                   ga-query-options="options"
+                   ga-query-active="globals.isFeatureTreeActive">
+              </div>
+            </div>
+          </div>
+          <div class="panel panel-default">
+            <a class="panel-heading collapsed" data-toggle="collapse" data-parent="#accordion" href="#accordion-tree"
+               ga-collapsible-show="options.featuresShown">
+              <span translate>items</span> {{getItemText()}}
+              <div ng-show='printInProgress' class='pull-right'>{{printProgressPercentage}}%</div>
+            </a>
+            <div id="accordion-tree"
+                 class="panel-collapse collapse">
+              <div ng-show="options.nbFeatures == 0" class="panel-body">
+                <div class="ga-no-result" translate>no_feature_results</div>
+              </div>
+              <div ng-show="options.nbFeatures > 0"
+                   ga-featuretree 
+                   ga-featuretree-map="map"
+                   ga-featuretree-options="options" 
+                   ga-featuretree-active="globals.isFeatureTreeActive">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div><!-- end Feature Tree -->
+
+  % if device == 'mobile':
+    <div ng-if="globals.homescreen" class="popover homescreen"
+         ng-class="{
+           'visible': globals.homescreen, 
+           'bottom': globals.tablet,
+           'top': !globals.tablet,
+           'tr': (globals.ios >= 8)
+         }">
+      <div class="arrow"></div>
+      <div class="popover-title">
+        <span translate>homescreen_title</span>
+        <button type="button" class="ga-icon ga-btn icon-remove" ng-click="globals.homescreen=false"></button>
+      </div>
+      <div class="popover-content">
+        <i class=icon-share></i>&nbsp;
+        <span translate>homescreen_content</span>
+      </div>
+    </div>
+  % endif
+% endif
+
+% if mode == 'prod':
+    <script src="${versionslashed}lib/build.js"></script>
+    <!-- For <= IE9, we load it explicitely as XDomain does not support
+         dynamic/lazy loading of javascript -->
+    <!--[if IE]>
+    <script src="${versionslashed}lib/bootstrap-datetimepicker.min.js"></script>
+    <script src="${versionslashed}lib/d3-3.3.1.min.js"></script>
+    <script src="${versionslashed}lib/jQuery.XDomainRequest.js"></script>
+    <![endif]-->
+% else:
+    <!-- in source, we need to load it here because IE9 ignores it in
+         the comments for reasons unknown to me. In prod, it's only
+         loaded in IE9 -->
+    <script src="lib/IE9Fixes.js"></script>
+    <script>
+      //This call only affects browser <= IE9
+      IE9Fix.call(this);
+    </script>
+    <script src="lib/jquery-2.0.3.js"></script>
+    <script src="lib/jQuery.XDomainRequest.js"></script>
+    <script src="lib/angular.js"></script>
+    <script src="lib/angular-translate.js"></script>
+    <script src="lib/angular-translate-loader-static-files.js"></script>
+    <script src="lib/d3-3.3.1.js"></script>
+    <script src="lib/bootstrap-3.3.1.js"></script>
+    <script src="lib/typeahead-0.9.3.js"></script>
+    <script src="lib/proj4js-compressed.js"></script>
+    <script src="lib/EPSG21781.js"></script>
+    <script src="lib/EPSG2056.js"></script>
+    <script src="lib/EPSG32631.js"></script>
+    <script src="lib/EPSG32632.js"></script>
+    <script src="lib/fastclick.js"></script>
+    <script src="lib/localforage.js"></script>
+    <script src="lib/filesaver.js"></script>
+    <script src="lib/moment-with-customlocales.js"></script>
+
+
+
+    <!-- Use Closure to load the application scripts -->
+    <script>
+      window.CLOSURE_NO_DEPS = true;
+    </script>
+
+    <!-- ol-debug.js includes Closure's base.js code, so we don't
+         need to load base.js ourselves. We keep Closure's base.js file
+         around in case we need to test with ol.js or ol-simple.js. -->
+    <script src="lib/ol-debug.js"></script>
+    <!--<script src="lib/closure/base.js"></script>-->
+    <script src="deps.js"></script>
+    <script>
+      goog.require('ga');
+    </script>
+% endif
+
+% if device == 'mobile':
+    <script>
+      window.addEventListener('load', function() {
+        FastClick.attach(document.body);
+      }, false);
+    </script>
+% elif device == 'embed':
+    <script>
+      window.addEventListener('load', function() {
+        if (window.name !== "embed" && window.location == window.parent.location) {
+          document.body.innerHTML = "The map.geo.admin.ch embed page must be used in an iframe."
+        }
+      }, false);
+    </script>
+% else:
+    <script>
+      $(window).on('load', function() {
+        //If screen is smaller than 1024, we start with menu closed.
+        if ($(window).width() <= 1024) {
+          $('#menu-button').trigger('click');
+        }
+      });
+    </script>
+% endif
+
+    <script>
+      (function() {
+        var module = angular.module('ga');
+        var cacheAdd = '${version}' != '' ? '/' + '${version}' : '';
+        var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
+
+        module.constant('gaGlobalOptions', {
+          mapUrl : location.origin + '${apache_base_path}',
+          apiUrl : location.protocol + '${api_url}',
+          cachedApiUrl: location.protocol + '${api_url}' + cacheAdd,
+          resourceUrl: location.origin + pathname + '${versionslashed}',
+          ogcproxyUrl : location.protocol + '${api_url}' + '/ogcproxy?url=',
+          whitelist: [
+            'http://www.kmlvalidator.org/validate.htm',
+            'https://' + window.location.host + '/**'
+          ],
+          defaultTopicId: '${default_topic_id}',
+          translationFallbackCode: '${translation_fallback_code}',
+          defaultExtent: ${default_extent},
+          defaultResolution: ${default_resolution}
+        });
+
+        module.config(function($translateProvider, gaGlobalOptions) {
+          $translateProvider.useStaticFilesLoader({
+            prefix: '${versionslashed}locales/',
+            suffix: '.json'
+          });
+          $translateProvider.cloakClassName('ng-cloak');
+        });
+
+        module.config(function(gaLayersProvider, gaGlobalOptions) {
+          gaLayersProvider.wmtsGetTileUrlTemplate =
+              '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
+
+          gaLayersProvider.layersConfigUrlTemplate =
+              gaGlobalOptions.cachedApiUrl + '/rest/services/all/MapServer/layersConfig?lang={Lang}';
+
+          gaLayersProvider.legendUrlTemplate =
+              gaGlobalOptions.cachedApiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
+        });
+
+        module.config(function(gaExportKmlProvider, gaGlobalOptions) {
+          gaExportKmlProvider.downloadKmlUrl =
+              gaGlobalOptions.apiUrl + '/downloadkml';
+        });
+
+        module.config(function(gaPreviewFeaturesProvider, gaGlobalOptions) {
+          gaPreviewFeaturesProvider.url =
+              gaGlobalOptions.cachedApiUrl + '/rest/services/all/MapServer/';
+        });
+
+        module.config(function(gaProfileServiceProvider, gaGlobalOptions) {
+          gaProfileServiceProvider.d3libUrl =
+              gaGlobalOptions.resourceUrl + 'lib/d3-3.3.1.min.js';
+        });
+        
+        module.config(function(gaQueryProvider, gaGlobalOptions) {
+          gaQueryProvider.dpUrl = gaGlobalOptions.resourceUrl +
+              'lib/bootstrap-datetimepicker.min.js';
+        });
+
+        module.config(function($sceDelegateProvider, gaGlobalOptions) {
+          var whitelist = $sceDelegateProvider.resourceUrlWhitelist();
+          whitelist = whitelist.concat(gaGlobalOptions.whitelist);
+          $sceDelegateProvider.resourceUrlWhitelist(whitelist);
+        });
+
+        $('.ga-custom-tooltip').tooltip();
+
+      })();
+
+% if device == 'mobile':
+## Workaround for iOS 6.x bug: content shifted after orientation change
+## As we can't use css fix ( see http://stackoverflow.com/a/12518946/29655 )
+## we force a redraw on orientation change
+## ( see http://stackoverflow.com/a/13235711/29655 )
+      (function(){
+        $(window).bind("orientationchange", function(){
+          $('#header').hide();
+          setTimeout(function(){
+            $('#header').show(); 
+            // iOS 7 minimal-ui meta tag bug
+            window.scrollTo(0, 0);
+          }, 0);
+        });
+      })();
+% endif
+    </script>
+  </body>
+</html>
