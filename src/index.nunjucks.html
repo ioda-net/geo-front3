@@ -626,17 +626,17 @@ itemscope itemtype="http://schema.org/WebApplication"
     <!-- in source, we need to load it here because IE9 ignores it in
          the comments for reasons unknown to me. In prod, it's only
          loaded in IE9 -->
-    <script src="lib/IE9Fixes.js"></script>
+    <script src="lib/IE/IE9Fixes.js"></script>
     <script>
       //This call only affects browser <= IE9
       IE9Fix.call(this);
     </script>
     <script src="lib/jquery-2.0.3.js"></script>
-    <script src="lib/jQuery.XDomainRequest.js"></script>
+    <script src="lib/IE/jQuery.XDomainRequest.js"></script>
     <script src="lib/angular.js"></script>
     <script src="lib/angular-translate.js"></script>
     <script src="lib/angular-translate-loader-static-files.js"></script>
-    <script src="lib/d3-3.3.1.js"></script>
+    <script src="lib/IE/d3-3.3.1.js"></script>
     <script src="lib/bootstrap-3.3.1.js"></script>
     <script src="lib/typeahead-0.9.3.js"></script>
     <script src="lib/proj4js-compressed.js"></script>
@@ -745,12 +745,12 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         module.config(function(gaProfileServiceProvider, gaGlobalOptions) {
           gaProfileServiceProvider.d3libUrl =
-              gaGlobalOptions.resourceUrl + 'lib/d3-3.3.1.min.js';
+              gaGlobalOptions.resourceUrl + 'lib/IE/d3-3.3.1.min.js';
         });
         
         module.config(function(gaQueryProvider, gaGlobalOptions) {
           gaQueryProvider.dpUrl = gaGlobalOptions.resourceUrl +
-              'lib/bootstrap-datetimepicker.min.js';
+              'lib/IE/bootstrap-datetimepicker.js';
         });
 
         module.config(function($sceDelegateProvider, gaGlobalOptions) {

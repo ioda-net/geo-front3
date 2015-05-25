@@ -16,6 +16,7 @@ var rename = require('gulp-rename');
 var renameRegex = require('gulp-regex-rename');
 var run = require('gulp-run');  // Run system commands
 var ghelp = require('gulp-showhelp');
+var uglify = require('gulp-uglify');
 var watch = require('gulp-watch');
 
 // To load and manipulate configuration
@@ -103,7 +104,7 @@ gulp.task('build-karma-conf-from-template', function (cb) {
 // Cache partials so they can be used in karma
 gulp.task('app-whitespace.js', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
-  var cmd = geoGulpUtils.formatArgvOpts([
+  var cmd = geoGulpUtils.formatCmd([
     'closure-compiler',
     jsFiles,
     '--compilation_level WHITESPACE_ONLY',
@@ -124,7 +125,7 @@ gulp.task('app-whitespace.js', ['js-files'], function () {
 
 
 gulp.task('translate', function () {
-  var cmd = geoGulpUtils.formatArgvOpts([
+  var cmd = geoGulpUtils.formatCmd([
     'python3',
     'scripts/translation2json.py',
     'src/locales/translations.csv',
@@ -162,7 +163,7 @@ gulp.task('lint', function () {
 
 
 gulp.task('gslint', function () {
-  var cmd = geoGulpUtils.formatArgvOpts([
+  var cmd = geoGulpUtils.formatCmd([
     'gjslint',
     '-r',
     'src/components',
@@ -200,6 +201,7 @@ gulp.task('index.html', function (cb) {
   }
 
   var indexConfig = extend({}, config['default']);
+  indexConfig.prod = config.prod;
 
   config.devices.forEach(function (device) {
     gulp.src('src/*.nunjucks.html')
@@ -238,7 +240,7 @@ gulp.task('app.css', function () {
 
 
 gulp.task('deps.js', function () {
-  var cmd = geoGulpUtils.formatArgvOpts([
+  var cmd = geoGulpUtils.formatCmd([
     'python',
     'node_modules/google-closure-library/closure/bin/build/depswriter.py',
     '--root_with_prefix="src/components components"',
@@ -275,6 +277,7 @@ gulp.task('prod', function (cb) {
             'copy-fonts',
             'copy-locales',
             'copy-checker',
+            'copy-IE',
             'appcache',
             'build.js',
             'app-whitespace.js'
@@ -314,6 +317,12 @@ gulp.task('copy-checker', function () {
 });
 
 
+gulp.task('copy-IE', function () {
+  return gulp.src('src/lib/IE/*.js')
+          .pipe(gulp.dest('prd/lib'));
+});
+
+
 gulp.task('appcache', ['load-prod-conf'], function () {
   var appcacheConfig = extend({}, config['default']);
   config['default'].version = new Date().getTime();
@@ -330,20 +339,25 @@ gulp.task('appcache', ['load-prod-conf'], function () {
 
 gulp.task('build.js', ['closure-compiler'], function () {
   return gulp.src([
-    'src/lib/jquery-2.0.3.min.js',
-    'src/lib/bootstrap-3.3.1.min.js',
-    'src/lib/moment-with-customlocales.min.js',
-    'src/lib/typeahead-0.9.3.min.js src/lib/angular.min.js',
+    'src/lib/jquery-2.0.3.js',
+    'src/lib/bootstrap-3.3.1.js',
+    'src/lib/moment-with-customlocales.js',
+    'src/lib/typeahead-0.9.3.js',
+    'src/lib/angular.js',
     'src/lib/proj4js-compressed.js',
-    'src/lib/EPSG*.js',
+    'src/lib/EPSG21781.js',
+    'src/lib/EPSG2056.js',
+    'src/lib/EPSG32631.js',
+    'src/lib/EPSG32632.js',
     'src/lib/ol.js',
-    'src/lib/angular-translate.min.js',
-    'src/lib/angular-translate-loader-static-files.min.js',
+    'src/lib/angular-translate.js',
+    'src/lib/angular-translate-loader-static-files.js',
     'src/lib/fastclick.min.js',
     'src/lib/localforage.min.js',
     'src/lib/filesaver.min.js',
     '/tmp/geo-front3/closure-compiler'
   ])
+          .pipe(uglify())
           .pipe(concat('build.js'))
           .pipe(gulp.dest('prd/lib'));
   ;
@@ -352,7 +366,7 @@ gulp.task('build.js', ['closure-compiler'], function () {
 
 gulp.task('closure-compiler', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
-  var cmd = geoGulpUtils.formatArgvOpts([
+  var cmd = geoGulpUtils.formatCmd([
     'closure-compiler',
     jsFiles,
     '--compilation_level SIMPLE_OPTIMIZATIONS',
@@ -370,7 +384,7 @@ gulp.task('closure-compiler', ['js-files'], function () {
 
 
 gulp.task('js-files', ['annotate'], function () {
-  var closurebuilder = geoGulpUtils.formatArgvOpts([
+  var closurebuilder = geoGulpUtils.formatCmd([
     'python node_modules/google-closure-library/closure/bin/build/closurebuilder.py',
     '--root=/tmp/geo-front3/annotated',
     '--root=src/lib/closure',
@@ -378,10 +392,10 @@ gulp.task('js-files', ['annotate'], function () {
     '--namespace="__ga_template_cache__"',
     '--output_mode=list'
   ]);
-  var removeUnusefulLine = geoGulpUtils.formatArgvOpts([
+  var removeUnusefulLine = geoGulpUtils.formatCmd([
     "sed 's/^.*base\.js //'"
   ]);
-  var formatFile = geoGulpUtils.formatArgvOpts([
+  var formatFile = geoGulpUtils.formatCmd([
     "sed",
     "-e ':a'",
     "-e 'N'",
