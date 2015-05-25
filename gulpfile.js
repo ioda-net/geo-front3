@@ -59,7 +59,15 @@ gulp.task('help', function () {
 }).help = 'shows this help message.';
 
 
-gulp.task('test', ['build-karma-conf-from-template'], function (cb) {
+gulp.task('test', function (cb) {
+  runSequence(['build-karma-conf-from-template', 'app-whitespace.js'], 'launch-test', cb);
+}).help = {
+  '': 'Launch tests with karam.',
+  '--prod': 'If given, launch tests against production file.'
+};
+
+
+gulp.task('launch-test', function (cb) {
   var configFile;
   if (process.argv[3] && process.argv[3].match(/prod/)) {
     configFile = 'test/karma-conf.prod.js';
@@ -71,10 +79,7 @@ gulp.task('test', ['build-karma-conf-from-template'], function (cb) {
     configFile: configFile,
     singleRun: true
   }, cb);
-}).help = {
-  '': 'Launch tests with karam.',
-  '--prod': 'If given, launch tests against production file.'
-};
+});
 
 
 gulp.task('build-karma-conf-from-template', function (cb) {
@@ -95,6 +100,29 @@ gulp.task('build-karma-conf-from-template', function (cb) {
 });
 
 
+// Cache partials so they can be used in karma
+gulp.task('app-whitespace.js', ['js-files'], function () {
+  var jsFiles = geoGulpUtils.getJsFiles();
+  var cmd = geoGulpUtils.formatArgvOpts([
+    'closure-compiler',
+    jsFiles,
+    '--compilation_level WHITESPACE_ONLY',
+    '--formatting PRETTY_PRINT',
+    '--js_output_file',
+    'test/app-whitespace.js'
+  ]);
+
+  if (fs.existsSync('test/app-whitespace.js')) {
+    return run('echo "test/app-whitespace.js already exists"').exec();
+  } else {
+    return run(cmd,
+            {
+              verbosity: 0
+            }).exec();
+  }
+});
+
+
 gulp.task('translate', function () {
   var cmd = geoGulpUtils.formatArgvOpts([
     'python3',
@@ -111,6 +139,9 @@ gulp.task('clean', function (cb) {
   del([
     'src/deps.js',
     'src/style/app.css',
+    'test/app-whitespace.js',
+    'test/karma-conf.dev.js',
+    'test/karma-conf.prod.js',
     'prd'
   ], cb);
 }).help = 'remove generated files.';
@@ -355,7 +386,7 @@ gulp.task('js-files', ['annotate'], function () {
     "-e ':a'",
     "-e 'N'",
     "-e '$!ba'",
-    "-e 's/\\n/--js /g'"
+    "-e 's/\\n/ --js /g'"
   ]);
 
   return run(closurebuilder, {silent: true}).exec()
@@ -371,14 +402,14 @@ gulp.task('annotate', function () {
   // In order to build this cache, we must map each file content to its file name. The content of
   // the file is minified with htmlMin. The templateCacheConfig will contain the mapping in its
   // partials property.
-  var templateCacheConfig = extend({}, config['default']);
+  var templateCacheConfig = {};
   var htmlMinConf = {
     collapseWhitespace: true,
     conservativeCollapse: true,
     preserveLineBreaks: false,
     removeComments: true
   };
-  var partialsGlob = path.join(__dirname, 'src/components/**/partials/**/*.html');
+  var partialsGlob = path.join('src/components/**/partials/**/*.html');
 
   templateCacheConfig.partials = geoGulpUtils.getPartials(partialsGlob, htmlMinConf);
 
@@ -394,26 +425,6 @@ gulp.task('annotate', function () {
             add: true
           }))
           .pipe(gulp.dest('/tmp/geo-front3/annotated'));
-});
-
-
-// Cache partials so they can be used in karma
-gulp.task('app-whitespace.js', ['js-files'], function () {
-  var jsFiles = geoGulpUtils.getJsFiles();
-  var cmd = geoGulpUtils.formatArgvOpts([
-    'closure-compiler',
-    jsFiles,
-    '--compilation_level WHITESPACE_ONLY',
-    '--formatting PRETTY_PRINT',
-    '--js_output_file .build-artefacts/app-whitespace.js'
-  ]);
-
-  run(cmd,
-          {
-            verbosity: 0
-          }).exec();
-
-  cb();
 });
 
 

@@ -27,7 +27,7 @@ module.exports = function(config) {
 	       'lib/EPSG32632.js',
 	       '../test/closure-loader-globals.js',
 	       'lib/ol-debug.js',
-	       '../.build-artefacts/app-whitespace.js',
+	       '../test/app-whitespace.js',
 	    {% endif %}
 	       '../test/angular/angular-mocks.js',
 	       '../test/expect-0.2.0/expect.js',

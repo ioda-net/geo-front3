@@ -32,3 +32,4 @@
 # Vim swap files
 *.swp
 /nbproject/private/
+/test/app-whitespace.js
