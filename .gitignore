@@ -33,3 +33,4 @@
 *.swp
 /nbproject/private/
 /test/app-whitespace.js
+/re3-translations.json
