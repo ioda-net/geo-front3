@@ -128,8 +128,10 @@ gulp.task('translate', function () {
   var cmd = geoGulpUtils.formatCmd([
     'python3',
     'scripts/translation2json.py',
-    'src/locales/translations.csv',
-    'src/locales/'
+    '--gspread 1F3R46w4PODfsbJq7jd79sapy3B7TXhQcYM7SEaccOA0',
+    '--key re3-translations.json',
+    '--files src/locales/translations.csv',
+    '--output-folder src/locales/'
   ]);
 
   return run(cmd).exec();
