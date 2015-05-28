@@ -8,6 +8,7 @@ APACHE_BASE_PATH ?= /$(shell id -un)
 LAST_APACHE_BASE_PATH := $(shell if [ -f .build-artefacts/last-apache-base-path ]; then cat .build-artefacts/last-apache-base-path 2> /dev/null; else echo '-none-'; fi)
 API_URL ?= //mf-chsdi3.dev.bgdi.ch
 LAST_API_URL := $(shell if [ -f .build-artefacts/last-api-url ]; then cat .build-artefacts/last-api-url 2> /dev/null; else echo '-none-'; fi)
+PUBLIC_URL ?= //public.dev.bgdi.ch
 LESS_PARAMETERS ?= '-ru'
 KEEP_VERSION ?= 'false'
 LAST_VERSION := $(shell if [ -f .build-artefacts/last-version ]; then cat .build-artefacts/last-version 2> /dev/null; else echo '-none-'; fi)
@@ -17,7 +18,11 @@ GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat 
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= tags/v3.4.0
+OL3_VERSION ?= 632205d902f8dcc1f03eb1dd1736d26a1b3ac2a3
+DEFAULT_TOPIC_ID ?= ech
+TRANSLATION_FALLBACK_CODE ?= de
+DEFAULT_EXTENT ?= '[420000, 30000, 900000, 350000]'
+DEFAULT_RESOLUTION ?= 500.0
 
 ## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd

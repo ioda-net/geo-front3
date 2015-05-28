@@ -28,6 +28,7 @@
 @import "../components/help/style/help.less";
 @import "../components/offline/style/offline.less";
 @import "../components/query/style/query.less";
+@import "../components/timestampcontrol/style/timestampcontrol.less";
 
 
 @header-height: 89;
@@ -80,6 +81,30 @@ form {
 
 .ga-dragging {
   cursor: move;
+}
+
+.ga-red-tooltip {
+  opacity: 1;
+
+  .tooltip-inner {
+    background-color: #ed1c24;
+  }
+
+  &.top .tooltip-arrow {
+    border-top-color: #ed1c24;
+  }
+
+  &.right .tooltip-arrow {
+    border-right-color: #ed1c24;
+  }
+
+  &.bottom .tooltip-arrow {
+    border-bottom-color: #ed1c24;
+  }
+
+  &.left .tooltip-arrow {
+    border-left-color: #ed1c24;
+  }
 }
 
 /* This allow the display of not-allowed cursor on hover */
@@ -252,7 +277,7 @@ input[type=text][readonly] {
   background-color: rgba(255, 255, 255, 0.9);
   .box-shadow(6px 6px 12px rgba(0, 0, 0, 0.175));
   .pull-right {
-    margin: 29px 1.6em 0 0;
+    margin: 34px 1.6em 0 0;
     padding: 0;
     & > div {
       display: inline-block;
@@ -296,13 +321,21 @@ input[type=text][readonly] {
   float: left;
   left: 1.6em;
   position: relative;
-  margin-top: 29px;
+  margin-top: 27px;
   z-index: 10; /* Put search on top of the form */
-  
+
+  @media (min-width: 992px) {
+    margin-top: 12px;
+  }
+
   [ga-help] {
     position: absolute;
     padding-left: 10px;
     height: 30px;
+
+    @media (min-width: 992px) and (min-height:600px) {
+      top: 21px;
+    }
   }
 
   @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
@@ -799,12 +832,6 @@ a .ga-icon-separator {
 }
 
 #measure-popup {
-  @media (max-width: @screen-tablet) {
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-  }
-
   max-width: none;
   max-height: none;
   overflow: hidden;
@@ -812,10 +839,20 @@ a .ga-icon-separator {
   border-radius: 0;
   background-clip: initial;
   height: 240px;
-
+  
+  &.ga-profile-active {
+    right: 0px;
+  }
+  
   .ga-popup-content {
     max-height: inherit;
     overflow: visible;
+  }
+  
+  @media (max-width: @screen-tablet) {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
   }
 
   @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
@@ -826,6 +863,12 @@ a .ga-icon-separator {
 }
 
 #draw-popup {
+  max-width: 385px;
+
+  @media (max-width: @screen-tablet) {
+    max-width: none;
+  } 
+
   @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
     .ga-icons, .ga-choose-icon {
       width: 100%;

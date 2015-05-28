@@ -19,5 +19,6 @@ translation_fallback_code = fr
 languages[] = fr
 languages[] = de
 languages[] = en
-default_extent = [550000.0, 210000.0, 620000.0, 245000.0]
+; JSON.parse since 20150528
+default_extent = '[550000.0, 210000.0, 620000.0, 245000.0]'
 default_resolution = 50.0

@@ -4,6 +4,7 @@
   goog.require('ga_networkstatus_service');
   goog.require('ga_offline_service');
   goog.require('ga_storage_service');
+  goog.require('ga_styles_from_literals_service');
   goog.require('ga_styles_service');
   goog.require('ga_urlutils_service');
 
@@ -12,6 +13,7 @@
     'ga_networkstatus_service',
     'ga_offline_service',
     'ga_storage_service',
+    'ga_styles_from_literals_service',
     'ga_styles_service',
     'ga_urlutils_service'
   ]);
@@ -112,6 +114,14 @@
               this.set('bodId', val);
             }
           },
+          adminId: {
+            get: function() {
+              return this.get('adminId') || this.bodId;
+            },
+            set: function(val) {
+              this.set('adminId', val);
+            }
+          },
           label: {
             get: function() {
               return this.get('label');
@@ -186,9 +196,21 @@
             writable: true,
             value: true
           },
+          useThirdPartyData: {
+            writable: true,
+            value: false
+          },
           preview: {
             writable: true,
             value: false
+          },
+          geojsonUrl: {
+            writable: true,
+            value: null
+          },
+          updateDelay: {
+            writable: true,
+            value: null
           }
         });
       };
@@ -304,6 +326,9 @@
             attributions = [
               gaMapUtils.getAttribution(options.attribution)
             ];
+            if (gaUrlUtils.isValid(options.attribution)) {
+              options.attribution = gaUrlUtils.getHostname(options.attribution);
+            }
           }
 
           var source = new ol.source.ImageWMS({
@@ -327,6 +352,7 @@
           gaDefinePropertiesForLayer(layer);
           layer.preview = options.preview;
           layer.displayInLayerManager = !layer.preview;
+          layer.useThirdPartyData = true;
           layer.label = options.label;
           return layer;
         };
@@ -341,7 +367,7 @@
             url: getCapLayer.wmsUrl,
             label: getCapLayer.Title,
             extent: getCapLayer.extent,
-            attribution: gaUrlUtils.getHostname(getCapLayer.wmsUrl)
+            attribution: getCapLayer.wmsUrl
           };
           return createWmsLayer(wmsParams, wmsOptions);
         };
@@ -425,7 +451,7 @@
         // Test regex here: http://regex101.com/r/tF3vM0
         // List of google icons: http://www.lass.it/Web/viewer.aspx?id=4
         kml = kml.replace(
-          /<href>http(s?)(?!(s?):\/\/maps\.(?:google|gstatic)\.com.*(blue|green|orange|pink|purple|red|yellow|pushpin).*\.png)/g,
+          /<href>http(?!(s?):\/\/(maps\.(?:google|gstatic)\.com.*(blue|green|orange|pink|purple|red|yellow|pushpin).*\.png|.*(bgdi|admin)\.ch))/g,
           '<href>' + gaGlobalOptions.ogcproxyUrl + 'http'
         );
 
@@ -536,12 +562,13 @@
             }
             var attributions;
             if (options.attribution) {
-              //Insure attribution on map is same as printed
-              options.attribution = gaMapUtils.getAttribution(
-                  options.attribution).getHTML();
               attributions = [
                 gaMapUtils.getAttribution(options.attribution)
               ];
+              if (gaUrlUtils.isValid(options.attribution)) {
+                options.attribution =
+                    gaUrlUtils.getHostname(options.attribution);
+              }
             }
             var source = new ol.source.Vector({
               features: features,
@@ -549,6 +576,7 @@
             });
             var layerOptions = {
               id: options.id,
+              adminId: options.adminId,
               url: options.url,
               type: 'KML',
               label: options.label || kmlFormat.readName(kml) || 'KML',
@@ -575,6 +603,7 @@
               olLayer = new ol.layer.Vector(layerOptions);
             }
             gaDefinePropertiesForLayer(olLayer);
+            olLayer.useThirdPartyData = true;
             return olLayer;
           });
         };
@@ -659,7 +688,8 @@
 
     this.$get = function($http, $q, $rootScope, $translate, $window,
         gaBrowserSniffer, gaDefinePropertiesForLayer, gaMapUtils,
-        gaNetworkStatus, gaStorage, gaTileGrid, gaUrlUtils) {
+        gaNetworkStatus, gaStorage, gaTileGrid, gaUrlUtils,
+        gaStylesFromLiterals, gaGlobalOptions) {
 
       var Layers = function(wmtsGetTileUrlTemplate,
           layersConfigUrlTemplate, legendUrlTemplate) {
@@ -717,6 +747,7 @@
             imageTile.getImage().src = src;
           }
         };
+
 
         /**
          * Load layers for a given topic and language. Return a promise.
@@ -881,6 +912,40 @@
               attribution: layer.attribution,
               layers: subLayers
             });
+          } else if (layer.type == 'geojson') {
+            // cannot request resources over https in S3
+            var fullUrl = gaGlobalOptions.ogcproxyUrl + layer.geojsonUrl;
+            var olSource = new ol.source.GeoJSON();
+            olLayer = new ol.layer.Vector({
+              source: olSource
+            });
+            var setLayerSource = function() {
+              var geojsonFormat = new ol.format.GeoJSON();
+              $http.get(fullUrl, {
+                cache: false
+              }).success(function(data) {
+                olSource.clear();
+                olSource.addFeatures(
+                  geojsonFormat.readFeatures(data)
+                );
+              });
+            };
+            var setLayerStyle = function() {
+              // IE doesn't understand agnostic URLs
+              $http.get(location.protocol + layer.styleUrl, {
+                cache: true
+              }).success(function(data) {
+                var olStyleForVector = gaStylesFromLiterals(data);
+                olLayer.setStyle(function(feature) {
+                  return [olStyleForVector.getFeatureStyle(feature)];
+                });
+              });
+              // Handle error
+            };
+            setLayerStyle();
+            if (!layer.updateDelay) {
+              setLayerSource();
+            }
           }
           if (angular.isDefined(olLayer)) {
             gaDefinePropertiesForLayer(olLayer);
@@ -889,6 +954,8 @@
             olLayer.type = layer.type;
             olLayer.timeEnabled = layer.timeEnabled;
             olLayer.timestamps = layer.timestamps;
+            olLayer.geojsonUrl = layer.geojsonUrl;
+            olLayer.updateDelay = layer.updateDelay;
           }
           return olLayer;
         };
@@ -978,7 +1045,7 @@
           }
         });
 
-        $rootScope.$on('$translateChangeEnd', function(event) {
+        $rootScope.$on('$translateChangeEnd', function() {
           // do nothing if there's no topic set
           if (angular.isDefined(currentTopic)) {
             var currentTopicId = currentTopic.id;
@@ -1006,7 +1073,7 @@
    * Service provides map util functions.
    */
   module.provider('gaMapUtils', function() {
-    this.$get = function($window, gaGlobalOptions) {
+    this.$get = function($window, gaGlobalOptions, gaUrlUtils) {
       var attributions = {};
       var resolutions = [650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
           2.5, 2.0, 1.0, 0.5, 0.25, 0.1];
@@ -1091,6 +1158,13 @@
          */
         getAttribution: function(text) {
           var key = text;
+          // If the attribution text is simply an url, we display the hostname
+          // and if the url point to a 3 party data we display the text in red
+          // with a warning.
+          if (gaUrlUtils.isValid(text)) {
+            key = gaUrlUtils.getHostname(text);
+            text = '<span class="ga-warning-tooltip">' + key + '</span>';
+          }
           if (key in attributions) {
             return attributions[key];
           } else {
@@ -1099,6 +1173,7 @@
             return a;
           }
         },
+
         moveTo: function(map, zoom, center) {
           var view = map.getView();
           view.setZoom(zoom);
@@ -1124,6 +1199,17 @@
         // @param olLayer  An ol layer
         isLocalKmlLayer: function(olLayer) {
           return this.isKmlLayer(olLayer) && !/^https?:\/\//.test(olLayer.url);
+        },
+
+        // Test if a KML comes from our s3 storage
+        // @param olLayer  An ol layer or an id of a layer
+        isStoredKmlLayer: function(olLayerOrId) {
+          var id = olLayerOrId;
+          if (id instanceof ol.layer.Layer) {
+            id = olLayerOrId.id;
+          }
+          var regex = /https?:\/\/public\..*(\.admin\.ch|\.bgdi\.ch)\/.*/;
+          return this.isKmlLayer(olLayerOrId) && regex.test(id);
         },
 
         // Test if a layer is an external WMS layer added by th ImportWMS tool
@@ -1226,7 +1312,97 @@
          */
         background: function(layer) {
           return layer.background;
+        },
+        /**
+         * "Real-time" layers (only geojson layers for now)
+         */
+        realtime: function(layer) {
+          return layer.updateDelay != null;
         }
+      };
+    };
+  });
+
+  module.provider('gaRealtimeLayersManager', function() {
+    this.$get = function($rootScope, $http, $timeout,
+        gaLayerFilters, gaMapUtils, gaGlobalOptions) {
+
+      var timers = [];
+      var realTimeLayersId = [];
+      var geojsonFormat = new ol.format.GeoJSON();
+
+      function setLayerSource(layer) {
+        var fullUrl = gaGlobalOptions.ogcproxyUrl + layer.geojsonUrl;
+        var olSource = layer.getSource();
+        $http.get(fullUrl, {
+          cache: false
+        }).success(function(data) {
+          olSource.clear();
+          olSource.addFeatures(
+            geojsonFormat.readFeatures(data)
+          );
+          var layerIdIndex = realTimeLayersId.indexOf(layer.bodId);
+          if (layerIdIndex != -1 && !layer.preview) {
+            $timeout.cancel(timers.splice(layerIdIndex, 1));
+            timers.push(setLayerUpdateInterval(layer));
+            if (data.timestamp) {
+              $rootScope.$broadcast('gaNewLayerTimestamp', data.timestamp);
+            }
+          }
+        });
+      }
+      // updateDeplay should be higher than the time
+      // needed to upload the geojson file
+      function setLayerUpdateInterval(layer) {
+        return $timeout(function() {
+          setLayerSource(layer);
+        }, layer.updateDelay);
+      }
+
+      return function(map) {
+        var scope = $rootScope.$new();
+        scope.layers = map.getLayers().getArray();
+        scope.layerFilter = gaLayerFilters.realtime;
+
+        scope.$watchCollection('layers | filter:layerFilter',
+            function(newLayers, oldLayers) {
+          // Layer Removed
+          for (var i = 0; i < oldLayers.length; i++) {
+            var bodId = oldLayers[i].bodId;
+            var oldLayerIdIndex = realTimeLayersId.indexOf(bodId);
+            if (oldLayerIdIndex != -1 &&
+                !gaMapUtils.getMapLayerForBodId(map, bodId)) {
+              realTimeLayersId.splice(oldLayerIdIndex, 1);
+              $timeout.cancel(timers.splice(oldLayerIdIndex, 1));
+              if (realTimeLayersId.length == 0) {
+                $rootScope.$broadcast('gaNewLayerTimestamp', '');
+              }
+            }
+          }
+          // Layer Added
+          for (var i = 0; i < newLayers.length; i++) {
+            var bodId = newLayers[i].bodId;
+            var newLayerIdIndex = realTimeLayersId.indexOf(bodId);
+            if (newLayerIdIndex == -1) {
+              if (!newLayers[i].preview) {
+                realTimeLayersId.push(bodId);
+              }
+              setLayerSource(newLayers[i]);
+            }
+          }
+        });
+
+        // Update geojson source on language change
+        $rootScope.$on('$translateChangeEnd', function(evt) {
+          for (var i = 0; i < realTimeLayersId.length; i++) {
+            var bodId = realTimeLayersId[i];
+            var olLayer = gaMapUtils.getMapLayerForBodId(map, bodId);
+            var olSource = olLayer.getSource();
+            var indexLayerId = realTimeLayersId.indexOf(bodId);
+            $timeout.cancel(timers.splice(indexLayerId, 1));
+            setLayerSource(olLayer);
+          }
+        });
       };
     };
   });
@@ -1247,7 +1423,7 @@
   module.provider('gaLayersPermalinkManager', function() {
 
     this.$get = function($rootScope, gaLayers, gaPermalink, $translate, $http,
-        gaKml, gaMapUtils, gaWms, gaLayerFilters, gaUrlUtils) {
+        gaKml, gaMapUtils, gaWms, gaLayerFilters, gaUrlUtils, gaFileStorage) {
 
       var layersParamValue = gaPermalink.getParams().layers;
       var layersOpacityParamValue = gaPermalink.getParams().layers_opacity;
@@ -1349,6 +1525,13 @@
           deregFns.length = 0;
 
           angular.forEach(layers, function(layer) {
+            if (gaMapUtils.isStoredKmlLayer(layer)) {
+              deregFns.push(scope.$watch(function() {
+                return layer.id;
+              }, function() {
+                updateLayersParam(layers);
+              }));
+            }
             deregFns.push(scope.$watch(function() {
               return layer.getOpacity();
             }, function() {
@@ -1369,8 +1552,6 @@
         });
 
         var deregister = $rootScope.$on('gaLayersChange', function() {
-          var allowThirdData = false;
-          var confirmedOnce = false;
           var nbLayersToAdd = layerSpecs.length;
 
           angular.forEach(layerSpecs, function(layerSpec, index) {
@@ -1382,26 +1563,6 @@
                 false : true;
             var timestamp = (index < layerTimestamps.length &&
                 layerTimestamps != '') ? layerTimestamps[index] : '';
-
-            if (gaMapUtils.isKmlLayer(layerSpec) ||
-                gaMapUtils.isExternalWmsLayer(layerSpec)) {
-              var url = '';
-              if (gaMapUtils.isKmlLayer(layerSpec)) {
-                url = layerSpec.replace('KML||', '');
-              } else if (gaMapUtils.isExternalWmsLayer(layerSpec)) {
-                url = layerSpec.split('||')[2];
-              }
-              if (!confirmedOnce &&
-                  !/(admin|bgdi)\.ch$/.test(gaUrlUtils.getHostname(url))) {
-                allowThirdData =
-                  confirm($translate.instant('third_party_data_warning'));
-                if (allowThirdData) {
-                  confirmedOnce = true;
-                }
-              } else {
-                allowThirdData = true;
-              }
-            }
 
             var bodLayer = gaLayers.getLayer(layerSpec);
             if (bodLayer) {
@@ -1429,14 +1590,16 @@
                 map.addLayer(layer);
               }
 
-            } else if (allowThirdData && gaMapUtils.isKmlLayer(layerSpec)) {
+            } else if (gaMapUtils.isKmlLayer(layerSpec)) {
+
               // KML layer
+              var url = layerSpec.replace('KML||', '');
               try {
                 gaKml.addKmlToMapForUrl(map, url,
                   {
                     opacity: opacity,
                     visible: visible,
-                    attribution: gaUrlUtils.getHostname(url)
+                    attribution: url
                   },
                   index + 1);
                 mustReorder = true;
@@ -1444,8 +1607,8 @@
                 // Adding KML layer failed, native alert, log message?
               }
 
-            } else if (allowThirdData &&
-                gaMapUtils.isExternalWmsLayer(layerSpec)) {
+            } else if (gaMapUtils.isExternalWmsLayer(layerSpec)) {
+
               // External WMS layer
               var infos = layerSpec.split('||');
               try {
@@ -1454,11 +1617,11 @@
                     LAYERS: infos[3]
                   },
                   {
-                    url: url,
+                    url: infos[2],
                     label: infos[1],
                     opacity: opacity,
                     visible: visible,
-                    attribution: gaUrlUtils.getHostname(infos[2])
+                    attribution: infos[2]
                   },
                   index + 1);
               } catch (e) {
@@ -1494,6 +1657,21 @@
             });
           }
 
+          // Add a modifiable KML layer
+          var adminId = gaPermalink.getParams().adminId;
+          if (adminId) {
+            gaFileStorage.getFileUrlFromAdminId(adminId).then(function(url) {
+              try {
+                gaKml.addKmlToMapForUrl(map, url, {
+                  adminId: adminId,
+                  attribution: gaUrlUtils.getHostname(url)
+                });
+                gaPermalink.deleteParam('adminId');
+              } catch (e) {
+                // Adding KML layer failed, native alert, log message?
+              }
+            });
+          }
         });
       };
     };
@@ -1804,6 +1982,9 @@
           var layers = map.getLayers().getArray();
           for (var i = 0; i < layers.length; i++) {
             if (layers[i].preview && !(layers[i] instanceof ol.layer.Vector)) {
+              map.removeLayer(layers[i]);
+              i--;
+            } else if (layers[i].preview && layers[i].type == 'geojson') {
               map.removeLayer(layers[i]);
               i--;
             }
