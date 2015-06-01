@@ -850,6 +850,13 @@
             var wmsUrl = gaUrlUtils.remove(
                 layer.wmsUrl, ['request', 'service', 'version'], true);
 
+            // getHostname requires the scheme to work properly
+            // Will fail if some layers must be fetch in https or if the portal is https
+            var hostname = gaUrlUtils.getHostname($window.location.protocol + wmsUrl);
+            if (gaGlobalOptions.externalWmsHostnames.indexOf(hostname) > -1) {
+              crossOrigin = undefined;
+            }
+
             var wmsParams = {
               LAYERS: layer.wmsLayers,
               FORMAT: 'image/' + layer.format

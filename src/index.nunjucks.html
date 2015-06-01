@@ -702,6 +702,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
 
         module.constant('gaGlobalOptions', {
+          externalWmsHostnames: JSON.parse(${external_wms_hostnames}),
           mapUrl : location.origin + '${apache_base_path}',
           apiUrl : location.protocol + '${api_url}',
           publicUrl : location.protocol + '${public_url}',

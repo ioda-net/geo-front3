@@ -23,3 +23,4 @@ languages[] = en
 ; JSON.parse since 20150528 Beware to syntax
 default_extent = "'[550000.0, 210000.0, 620000.0, 245000.0]'"
 default_resolution = 50.0
+external_wms_hostnames =  "'[\"www.geoservice.apps.be.ch\"]'"
