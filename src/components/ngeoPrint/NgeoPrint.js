@@ -69,8 +69,9 @@ ngeo.CreatePrint;
  * @constructor
  * @param {string} url URL to MapFish print web service.
  * @param {angular.$http} $http Angular $http service.
+ * @param {angular.$window} $window Angural $window service
  */
-ngeo.Print = function(url, $http) {
+ngeo.Print = function(url, $http, $window) {
   /**
    * @type {string}
    * @private
@@ -82,6 +83,12 @@ ngeo.Print = function(url, $http) {
    * @private
    */
   this.$http_ = $http;
+
+  /**
+   * @type {angular.$window}
+   * @private
+   */
+  this.$window_ = $window;
 };
 
 
@@ -198,18 +205,43 @@ ngeo.Print.prototype.encodeImageLayer_ = function(arr, layer) {
  * @private
  */
 ngeo.Print.prototype.encodeImageWmsLayer_ = function(arr, layer) {
-  goog.asserts.assertInstanceof(layer, ol.layer.Image);
+  var url = this.getUrlImageWms_(layer);
   var source = layer.getSource();
-  goog.asserts.assertInstanceof(source, ol.source.ImageWMS);
-  var url = source.getUrl();
   var params = source.getParams();
   var object = /** @type {MapFishPrintWmsLayer} */ ({
     baseURL: url,
-    imageFormat: 'FORMAT' in params ? params['FORMAT'] : 'image/png',
+    imageFormat: 'image/png',
+    customParams: {
+      transparent: true
+    },
     layers: params['LAYERS'].split(','),
     type: 'wms'
   });
   arr.push(object);
+};
+
+
+
+/**
+ * @param {ol.source.Tile|ol.source.Image} layer
+ * @return {string} url
+ * @private
+ */
+ngeo.Print.prototype.getUrlImageWms_ = function(layer) {
+  var source = layer.getSource();
+  var url;
+  if (source instanceof ol.source.ImageWMS) {
+    goog.asserts.assertInstanceof(layer, ol.layer.Image);
+    goog.asserts.assertInstanceof(source, ol.source.ImageWMS);
+    url = source.getUrl();
+  } else if (source instanceof ol.source.TileWMS) {
+    goog.asserts.assertInstanceof(layer, ol.layer.Tile);
+    goog.asserts.assertInstanceof(source, ol.source.TileWMS);
+    console.log(source.getUrls()[0])
+    var url = this.$window_.location.protocol + source.getUrls()[0];
+  }
+
+  return url;
 };
 
 
@@ -223,6 +255,8 @@ ngeo.Print.prototype.encodeTileLayer_ = function(arr, layer) {
   var source = layer.getSource();
   if (source instanceof ol.source.WMTS) {
     this.encodeTileWmtsLayer_(arr, layer);
+  } else if (source instanceof ol.source.TileWMS) {
+    this.encodeImageWmsLayer_(arr, layer);
   }
 };
 
@@ -552,16 +586,17 @@ ngeo.Print.prototype.getReportUrl = function(ref) {
 
 /**
  * @param {angular.$http} $http Angular $http service.
+ * @param {angular.$window} $window Angular $window service.
  * @return {ngeo.CreatePrint} The function to create a print service.
  * @ngInject
  */
-ngeo.createPrintServiceFactory = function($http) {
+ngeo.createPrintServiceFactory = function($http, $window) {
   return (
       /**
        * @param {string} url URL to MapFish print service.
        */
       function(url) {
-        return new ngeo.Print(url, $http);
+        return new ngeo.Print(url, $http, $window);
       });
 };
 
