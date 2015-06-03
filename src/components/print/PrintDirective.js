@@ -4,78 +4,57 @@
   goog.require('ngeo_create_print');
   goog.require('ngeo_print_utils');
 
-  /** @const **/
-  var app = {};
-
-  /**
-   * @const
-   * @private
-   */
-  app.WMS_URL_ = 'http://mapserver.local/wms/geojb';
-
-  /**
-   * @const
-   * @private
-   */
-  app.PRINT_URL_ = 'http://print.local';
-
-  /**
-   * @const
-   * @private
-   */
-  app.PRINT_SCALES_ = [100, 250, 500, 2500, 5000, 10000, 25000, 50000,
-    100000, 500000];
-
-  /**
-   * @const
-   * @private
-   */
-  app.PRINT_LAYOUT_ = 'A4 landscape';
-
-  /**
-   * @const
-   * @private
-   */
-  app.PRINT_DPI_ = 72;
-
-  /**
-   * @const
-   * @private
-   */
-  app.PRINT_PAPER_SIZE_ = [555, 675];
-
   var module = angular.module('ga_print_directive',
           ['ngeo_create_print',
             'ngeo_print_utils'
           ]);
 
   module.controller('GaPrintDirectiveController', function($scope,
-          $window, $timeout,
+          $window, $timeout, $q, $http,
           ngeoCreatePrint, ngeoPrintUtils) {
 
-    var print = ngeoCreatePrint(app.PRINT_URL_);
+    $scope.options.printUrl = 'http://print.local';
+    $scope.options.printConfigUrl = $scope.options.printUrl + '/geoportailv3/capabilities.json';
+
+    var print = ngeoCreatePrint($scope.options.printUrl);
+    var printConfigLoaded = false;
+
+    // Get print config
+    var updatePrintConfig = function() {
+      canceller = $q.defer();
+      var http = $http.get($scope.options.printConfigUrl, {
+        timeout: canceller.promise
+      }).success(function(data) {
+        $scope.capabilities = data;
+
+        angular.forEach($scope.capabilities.layouts, function(lay) {
+          lay.stripped = lay.name.substr(2);
+        });
+
+        // default values:
+        $scope.layout = data.layouts[0];
+        $scope.dpis = $scope.layout.attributes[4].clientInfo.dpiSuggestions;
+        $scope.dpi = $scope.dpis[0];
+        $scope.scales = $scope.layout.attributes[4].clientInfo.scales;
+        $scope.scale = $scope.scales[0];
+        $scope.options.legend = false;
+        $scope.options.graticule = false;
+      });
+    };
 
     $scope.submit = function() {
       var map = $scope.map;
       var mapSize = map.getSize();
       var viewResolution = map.getView().getResolution();
 
-      // we test mapSize and viewResolution just to please the compiler
-      var scale = mapSize !== undefined && viewResolution !== undefined ?
-              ngeoPrintUtils.getOptimalScale(mapSize, viewResolution,
-                      app.PRINT_PAPER_SIZE_, app.PRINT_SCALES_) :
-              app.PRINT_SCALES_[0];
-
-      var dpi = app.PRINT_DPI_;
-      var layout = app.PRINT_LAYOUT_;
-
       $scope.printState = 'Printing...';
 
-      var spec = print.createSpec(map, scale, dpi, layout, {
-        'datasource': [],
-        'debug': 0,
-        'comments': 'My comments',
-        'title': 'My print'
+      var url = $window.location.toString();
+      var spec = print.createSpec(map, $scope.scale, $scope.dpi, $scope.layout.name, {
+        name: 'Ma super carte',
+        qrimage: $scope.options.qrcodeUrl + encodeURIComponent(url),
+        url: url,
+        scale: $scope.scale
       });
 
       print.createReport(spec).then(
@@ -116,6 +95,14 @@
     function handleCreateReportError() {
       $scope.printState = 'print error';
     }
+
+    // Listeners
+    $scope.$on('gaTopicChange', function(event, topic) {
+      if (!printConfigLoaded) {
+        updatePrintConfig();
+        printConfigLoaded = true;
+      }
+    });
   });
 
   module.directive('gaPrint',
