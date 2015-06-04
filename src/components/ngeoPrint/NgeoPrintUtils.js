@@ -1,8 +1,15 @@
 /**
  * @fileoverview Provides a service with print utility functions.
+ *
+ * This module comes from the ngeo project:
+ *  https://github.com/camptocamp/ngeo
+ * It is published under the MIT license:
+ *  https://github.com/camptocamp/ngeo/blob/master/LICENSE
+ *
+ * It is used to print with mapfish v3
  */
 
-goog.provide('ngeo_print_utils');
+goog.provide('ngeo.PrintUtils');
 
 goog.require('ngeo');
 
@@ -128,5 +135,5 @@ ngeo.PrintUtils.prototype.getOptimalScale = function(
 };
 
 
-angular.module('ngeo_print_utils', [])
+ngeoModule
         .service('ngeoPrintUtils', ngeo.PrintUtils);
