@@ -1,4 +1,5 @@
 *.kdev4
+gulp
 /node_modules
 /src/deps.js
 /src/style/app.css
