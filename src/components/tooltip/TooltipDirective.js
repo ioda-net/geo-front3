@@ -32,7 +32,7 @@
             isActive: '=gaTooltipActive'
           },
           link: function($scope, element, attrs) {
-            var htmls = [],
+            var featuresToDisplay = [],
                 onCloseCB = angular.noop,
                 map = $scope.map,
                 popup,
@@ -63,7 +63,7 @@
               // We use $timeout to execute the showFeature when the
               // popup is correctly closed.
               $timeout(function() {
-                showFeatures(mapExtent, size, data.features);
+                showFeatures(data.features);
                 onCloseCB = data.onCloseCB;
               }, 0);
 
@@ -121,7 +121,7 @@
               // Create new cancel object
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
-              htmls.splice(0, htmls.length);
+              featuresToDisplay.splice(0, featuresToDisplay.length);
               if (popup) {
                 popup.close();
                 $timeout(function() {
@@ -244,8 +244,7 @@
                         replace('{{descr}}', feature.get('description') || '').
                         replace('{{name}}', (name) ? '(' + name + ')' : '');
                     feature.set('htmlpopup', htmlpopup);
-                    showFeatures(layerToQuery.getExtent(), size,
-                        [feature]);
+                    showFeatures([feature]);
                     // Iframe communication from inside out
                     if (top != window) {
                       var featureId = feature.getId();
@@ -279,14 +278,14 @@
                     timeout: canceler.promise,
                     params: params
                   }).success(function(features) {
-                    showFeatures(mapExtent, size, features.results);
+                    showFeatures(features.results);
                   });
                 }
               }
             }
 
             // Highlight the features found
-            function showFeatures(mapExtent, size, foundFeatures) {
+            function showFeatures(foundFeatures) {
               if (foundFeatures && foundFeatures.length > 0) {
 
                 // Remove the tooltip, if a layer is removed, we don't care
@@ -319,29 +318,16 @@
                       }
                     }
 
-                    var htmlUrl = $scope.options.htmlUrlTemplate
-                                  .replace('{Topic}', currentTopic)
-                                  .replace('{Layer}', value.layerBodId)
-                                  .replace('{Feature}', value.featureId);
-                    $http.get(htmlUrl, {
-                      timeout: canceler.promise,
-                      params: {
-                        lang: $translate.use(),
-                        mapExtent: mapExtent.join(','),
-                        imageDisplay: size[0] + ',' + size[1] + ',96'
-                      }
-                    }).success(function(html) {
-                      showPopup(html);
-                    });
+                    showPopup(foundFeatures);
                   }
                 });
               }
             }
 
             // Show the popup with all features informations
-            function showPopup(html) {
+            function showPopup(foundFeatures) {
               // Show popup on first result
-              if (htmls.length === 0) {
+              if (featuresToDisplay.length === 0) {
                 if (!popup) {
                   popup = gaPopup.create({
                     className: 'ga-tooltip',
@@ -354,22 +340,23 @@
                     },
                     title: 'object_information',
                     content: popupContent,
-                    htmls: htmls,
+                    results: featuresToDisplay,
+                    type: 'features',
                     showPrint: true
                   });
                 }
-                popup.open();
-                //always reposition element when newly opened
-                if (!gaBrowserSniffer.mobile) {
-                  popup.element.css({
-                    left: ((map.getSize()[0] / 2) -
-                        (parseFloat(popup.element.css('max-width')) / 2))
-                  });
-                }
               }
-              // Add result to array. ng-repeat will take
-              // care of the rest
-              htmls.push($sce.trustAsHtml(html));
+              foundFeatures.forEach(function(feature) {
+                featuresToDisplay.push(feature);
+              });
+              popup.open();
+              //always reposition element when newly opened
+              if (!gaBrowserSniffer.mobile) {
+                popup.element.css({
+                  left: ((map.getSize()[0] / 2) -
+                      (parseFloat(popup.element.css('max-width')) / 2))
+                });
+              }
             }
 
             function yearFromString(timestamp) {

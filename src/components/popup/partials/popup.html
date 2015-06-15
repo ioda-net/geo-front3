@@ -17,3 +17,19 @@
   </div>
 </div>
 <div class="popover-content ga-popup-content" ng-transclude></div>
+
+ <div class="htmlpopup-container feature" ng-if="options.type === 'features'" ng-repeat="feature in options.results">
+  <div class="htmlpopup-header">
+    <span>{{feature.properties.label}}</span>
+  </div>
+  <div class="htmlpopup-content">
+      <span>Information</span>
+      <br>
+      <table>
+        <tr ng-repeat="(key, value) in feature.properties">
+          <td ng-if="key !== 'label'">{{key}}:</td>
+          <td ng-if="key !== 'label'">{{value}}</td>
+        </tr>
+      </table>
+  </div>
+</div>
