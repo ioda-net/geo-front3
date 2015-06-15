@@ -1,0 +1,19 @@
+# This file contains the values to generate the templates.
+# Copy in config-dev.ini and config-prod.ini to correctly generate templates
+
+# We must generate a template for all these devices. To do that, we must loop
+# over this array. Thus devices cannot go into default.
+# index is for desktop
+devices = ["index", "embed", "mobile"]
+
+api_url = "//pserve.geoadmin.local"
+public_url = "//pserve.geoadmin.local/files"
+apache_base_path = "/"
+default_topic_id = "geojb"
+translation_fallback_code = "fr"
+# The languages array is used in a loop to build appcache
+languages = ["fr", "de", "en"]
+default_extent = "[550000.0, 210000.0, 620000.0, 245000.0]"
+default_resolution = 50.0
+external_wms_hostnames =  '["www.geoservice.apps.be.ch"]'
+portal_name = "geojb"

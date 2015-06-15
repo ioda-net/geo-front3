@@ -22,7 +22,7 @@ var watch = require('gulp-watch');
 // To load and manipulate configuration
 var extend = require('extend'); // Allow to clone a JS object. Used to modify the config locally.
 var fs = require('fs');
-var ini = require('ini');
+var toml = require('toml');
 
 // For tests
 var karma = require('karma').server;
@@ -190,7 +190,8 @@ gulp.task('dev', function (cb) {
 
 
 gulp.task('load-dev-conf', function (cb) {
-  config = ini.parse(fs.readFileSync('./config-dev.ini', 'utf-8'));
+  config = toml.parse(fs.readFileSync('./config-dev.toml', 'utf-8'));
+  config.prod = false;
   cb();
 });
 
@@ -202,7 +203,7 @@ gulp.task('index.html', function (cb) {
     gulp.start('load-dev-conf');
   }
 
-  var indexConfig = extend({}, config['default']);
+  var indexConfig = extend({}, config);
   indexConfig.prod = config.prod;
 
   config.devices.forEach(function (device) {
@@ -255,7 +256,7 @@ gulp.task('deps.js', function () {
 
 
 gulp.task('watch', function (cb) {
-  watch(['src/*.nunjucks.html', 'config-dev.ini'], function () {
+  watch(['src/*.nunjucks.html', 'config-dev.toml'], function () {
     gulp.start('index.html');
   });
 
@@ -290,7 +291,8 @@ gulp.task('prod', function (cb) {
 
 
 gulp.task('load-prod-conf', function (cb) {
-  config = ini.parse(fs.readFileSync('./config-prod.ini', 'utf-8'));
+  config = toml.parse(fs.readFileSync('./config-prod.toml', 'utf-8'));
+  config.prod = true;
   cb();
 });
 
@@ -326,12 +328,12 @@ gulp.task('copy-IE', function () {
 
 
 gulp.task('appcache', ['load-prod-conf'], function () {
-  var appcacheConfig = extend({}, config['default']);
-  config['default'].version = new Date().getTime();
+  var appcacheConfig = extend({}, config);
+  config.version = new Date().getTime();
 
   return gulp.src('src/*.nunjucks.appcache')
           .pipe(data(function () {
-            return appcacheConfig['default'];
+            return appcacheConfig;
           }))
           .pipe(nunjucksRender())
           .pipe(extReplace('.appcache', '.nunjucks.html'))
