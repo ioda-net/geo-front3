@@ -18,29 +18,15 @@
         var popups = {};
 
         var create = function(bodid) {
-          var result = {html: ''},
-              popup;
+          var layer = {};
+          var popup;
 
           // Called to update the content
           var updateContent = function(init) {
-
-            var handleResult = function() {
-              if (init) {
-                popup.open();
-              }
-            };
-
-            gaLayers.getMetaDataOfLayer(bodid)
-              .success(function(data) {
-                result.html = $sce.trustAsHtml(data);
-                handleResult();
-              })
-              .error(function() {
-                handleResult();
-                //FIXME: better error handling
-                var msg = 'Could not retrieve information for ' + bodid;
-                alert(msg);
-              });
+            angular.extend(layer, gaLayers.getLayer(bodid));
+            if (init) {
+              popup.open();
+            }
           };
 
           //We assume popup does not exist yet
@@ -48,11 +34,12 @@
             title: $translate.instant('metadata_window_title'),
             destroyOnClose: false,
             content: popupContent,
-            result: result,
+            layer: layer,
             className: 'ga-tooltip-metadata',
             x: 400,
             y: 200,
-            showPrint: true
+            showPrint: true,
+            type: 'infobox'
           });
           popups[bodid] = popup;
 
