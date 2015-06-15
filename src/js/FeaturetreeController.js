@@ -34,7 +34,8 @@
       evt.stopPropagation();
       var show = false, nbFeatures = 0, hasMoreResults = false;
       angular.forEach(featuresByLayer, function(layer) {
-        if (layer.features && layer.features.length > 0) {
+        // If idenditify for one layers is a bad request, layer is undefined.
+        if (layer && layer.features && layer.features.length > 0) {
           show = true;
           hasMoreResults = (hasMoreResults || layer.hasMoreResults);
           nbFeatures += layer.features.length;

@@ -117,46 +117,59 @@
               features = [];
 
               angular.forEach(tree, function(layerNode, layerBodId) {
-                var oldNode = scope.tree[layerBodId];
-                var newNode = {
-                  label: gaLayers.getLayer(layerBodId).label +
-                     ' (' + ((layerNode.hasMoreResults) ? '+' : '') +
-                     layerNode.features.length + ' ' +
-                     getItemText(layerNode.features.length) + ')',
-                  hasMoreResults: layerNode.hasMoreResults,
-                  offset: layerNode.offset,
-                  open: oldNode ? oldNode.open : true,
-                  features: []
-                };
-                newTree[layerBodId] = newNode;
-
-                for (var i = 0, ii = layerNode.features.length; i < ii; i++) {
-                  var feature = layerNode.features[i];
-                  //look if feature exists already. We do this
-                  //to avoid loading the same feature again and
-                  //to preserve state (selected)
-                  if (oldNode) {
-                    for (var j = 0, jj = oldNode.features.length; j < jj; j++) {
-                      var oldFeature = oldNode.features[j];
-                      if (oldFeature.id === feature.id) {
-                        feature = oldFeature;
-                        break;
-                      }
-                    }
-                  }
-
-                  feature.geojson = (feature.type == 'Feature' &&
-                      feature.geometry) ? feature : null;
-                  feature.label = getTranslatedLabel(feature.properties);
-                  newNode.features.push(feature);
-                  features.push(feature);
-                  if (scope.isActive) {
-                    drawFeature(feature);
-                  }
+                // If idenditify for one layers is a bad request, layerNode is
+                // undefined.
+                if (layerNode) {
+                  var oldNode = scope.tree[layerBodId];
+                  var newNode = getNewNode(layerNode, oldNode, layerBodId);
+                  newTree[layerBodId] = newNode;
+                  updateFeatures(layerNode, newNode, oldNode);
                 }
               });
               scope.tree = newTree;
               scope.$emit('gaUpdateFeatureTree', scope.tree);
+            };
+
+            var getNewNode = function(layerNode, oldNode, layerBodId) {
+              var newNode = {
+                label: gaLayers.getLayer(layerBodId).label +
+                  ' (' + ((layerNode.hasMoreResults) ? '+' : '') +
+                  layerNode.features.length + ' ' +
+                  getItemText(layerNode.features.length) + ')',
+                hasMoreResults: layerNode.hasMoreResults,
+                offset: layerNode.offset,
+                open: oldNode ? oldNode.open : true,
+                features: []
+              };
+
+              return newNode;
+            };
+
+            var updateFeatures = function(layerNode, newNode, oldNode) {
+              for (var i = 0, ii = layerNode.features.length; i < ii; i++) {
+                var feature = layerNode.features[i];
+                //look if feature exists already. We do this
+                //to avoid loading the same feature again and
+                //to preserve state (selected)
+                if (oldNode) {
+                  for (var j = 0, jj = oldNode.features.length; j < jj; j++) {
+                    var oldFeature = oldNode.features[j];
+                    if (oldFeature.id === feature.id) {
+                      feature = oldFeature;
+                      break;
+                    }
+                  }
+                }
+
+                feature.geojson = (feature.type == 'Feature' &&
+                    feature.geometry) ? feature : null;
+                feature.label = getTranslatedLabel(feature.properties);
+                newNode.features.push(feature);
+                features.push(feature);
+                if (scope.isActive) {
+                  drawFeature(feature);
+                }
+              }
             };
 
             // Selects a feature and displays the htm popup corresponding
