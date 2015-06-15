@@ -274,7 +274,7 @@ itemscope itemtype="http://schema.org/WebApplication"
            ga-tooltip-active="!globals.isMeasureActive && !globals.isDrawActive"></div>
     </div>
 {% if device != 'embed' %}
-    <div ng-cloak translate-cloak id="pulldown" ng-show="!globals.offline" ng-class="{'selection-and-catalog-shown': (globals.catalogShown && globals.selectionShown)}">
+<div ng-cloak translate-cloak id="pulldown" ng-show="!globals.offline" ng-class="{'selection-and-catalog-shown': (globals.catalogShown && globals.selectionShown)}">
       <div id="pulldown-content" class="content ${"in" if device == "index" else "collapse"}">
         <div class="panel">
           <a id="shareHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#share">
@@ -733,7 +733,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
 
           gaLayersProvider.layersConfigUrlTemplate =
-              gaGlobalOptions.cachedApiUrl + '/rest/services/all/MapServer/layersConfig?lang={Lang}';
+              '/json/' + gaGlobalOptions.portalName + '/layersConfig.json';
 
           gaLayersProvider.legendUrlTemplate =
               gaGlobalOptions.cachedApiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
