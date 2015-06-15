@@ -11,8 +11,8 @@
               topicPlaceHolder + '/SearchServer?',
           featureUrl: gaGlobalOptions.cachedApiUrl +
               '/rest/services/{Topic}/MapServer/{Layer}/{Feature}',
-          applyTopicToUrl: function (url, topic) {
-            return url.replace(topicPlaceHolder, topic);
+          applyTopicToUrl: function (url) {
+            return url.replace(topicPlaceHolder, gaGlobalOptions.portalName);
           }
         };
       });
