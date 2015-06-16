@@ -2,16 +2,14 @@
   goog.provide('ga_popup_directive');
 
   goog.require('ga_browsersniffer_service');
-  goog.require('ga_print_service');
 
   var module = angular.module('ga_popup_directive', [
     'ga_browsersniffer_service',
-    'ga_print_service',
     'pascalprecht.translate'
   ]);
 
   module.directive('gaPopup',
-    function($rootScope, $translate, gaBrowserSniffer, gaPrintService) {
+    function($rootScope, $translate, gaBrowserSniffer) {
       var zIndex = 2000;
       var bringUpFront = function(el) {
         zIndex += 1;
@@ -85,11 +83,7 @@
             scope.toggle = false;
           };
 
-          scope.print = scope.options.print ||
-              (function() {
-                var contentEl = element.find('.ga-popup-content');
-                gaPrintService.htmlPrintout(contentEl.clone().html());
-              });
+          scope.print = scope.options.print;
 
           scope.reduce = function(evt) {
             evt.stopPropagation();
