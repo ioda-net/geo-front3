@@ -244,7 +244,7 @@ ngeo.Print.prototype.getUrlImageWms_ = function(layer) {
   } else if (source instanceof ol.source.TileWMS) {
     goog.asserts.assertInstanceof(layer, ol.layer.Tile);
     goog.asserts.assertInstanceof(source, ol.source.TileWMS);
-    var url = this.$window_.location.protocol + source.getUrls()[0];
+    var url = source.getUrls()[0];
   }
 
   return url;
