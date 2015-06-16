@@ -11,7 +11,7 @@ describe('ga_layer_metadata_popup_service', function() {
     $translate = $injector.get('$translate');
 
     var expectedUrlLayersConfig = 'http://example.com/sometopic?lang=somelang';
-    $httpBackend.whenGET(expectedUrlLayersConfig).respond({});
+    $httpBackend.whenGET(expectedUrlLayersConfig).respond({somelayer: {label: 'somelayer'}});
 
     $translate.use('somelang');
     $rootScope.$broadcast('gaTopicChange', { id: 'sometopic' });
@@ -26,17 +26,14 @@ describe('ga_layer_metadata_popup_service', function() {
   it('creates a legend popup with the right content', function() {
     $httpBackend.flush();
 
-    var expectedUrlLegend = 'http://legendservice.com/sometopic/somelayer?lang=somelang';
-    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some raw html</div>');
     gaLayerMetadataPopup.toggle('somelayer');
     $rootScope.$digest();
-    $httpBackend.flush();
 
     var popupLegend = $('.ga-tooltip-metadata');
     expect(popupLegend.length).to.be(1);
     expect(popupLegend.parents().length).to.be(2);
     expect(popupLegend.css('display')).to.be('block');
-    var popupContent = '<div>Some raw html</div>';
+    var popupContent = '<span class="ng-binding">somelayer</span>';
     expect(popupLegend.find('.ga-popup-content').html().indexOf(popupContent) > -1).to.be(true);
 
     gaLayerMetadataPopup.toggle('somelayer');
@@ -55,11 +52,8 @@ describe('ga_layer_metadata_popup_service', function() {
     expect(popupLegend.length).to.be(1);
     expect(popupLegend.css('display')).to.be('block');
 
-    expectedUrlLegend = 'http://legendservice.com/sometopic/somenewlayer?lang=somelang';
-    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some new raw html</div>');
     gaLayerMetadataPopup.toggle('somenewlayer');
     $rootScope.$digest();
-    $httpBackend.flush();
 
     popupLegend = $('.ga-tooltip-metadata');
     expect(popupLegend.length).to.be(2);
@@ -69,10 +63,6 @@ describe('ga_layer_metadata_popup_service', function() {
     $httpBackend.whenGET(expectedUrlLayersConfig).respond({});
     $translate.use('someotherlang');
 
-    expectedUrlLegend = 'http://legendservice.com/sometopic/somelayer?lang=someotherlang';
-    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some translated raw html</div>');
-    expectedUrlLegend = 'http://legendservice.com/sometopic/somenewlayer?lang=someotherlang';
-    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some translated new raw html</div>');
     $rootScope.$digest();
     $httpBackend.flush();
 

@@ -31,7 +31,7 @@ describe('ga_popup_directive', function() {
     expect(help.length).to.be(0);
 
     elt = element.find('.ga-popup-content');
-    expect(elt.length).to.be(1);
+    expect(elt.length).to.be(2);
 
   });
 
