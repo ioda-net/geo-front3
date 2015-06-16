@@ -318,14 +318,14 @@
                       }
                     }
 
-                    showPopup(foundFeatures);
+                    showPopup(value);
                   }
                 });
               }
             }
 
             // Show the popup with all features informations
-            function showPopup(foundFeatures) {
+            function showPopup(feature) {
               // Show popup on first result
               if (featuresToDisplay.length === 0) {
                 if (!popup) {
@@ -346,9 +346,7 @@
                   });
                 }
               }
-              foundFeatures.forEach(function(feature) {
-                featuresToDisplay.push(feature);
-              });
+              featuresToDisplay.push(feature);
               popup.open();
               //always reposition element when newly opened
               if (!gaBrowserSniffer.mobile) {
