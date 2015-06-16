@@ -1,14 +1,16 @@
 (function() {
   goog.provide('ga_featuretree_controller');
-  
+
+  goog.require('ga_popup_service');
   goog.require('ga_print_service');
   
   var module = angular.module('ga_featuretree_controller',[
+    'ga_popup_service',
     'ga_print_service'
   ]);
 
   module.controller('GaFeaturetreeController', function($http, $scope,
-      $timeout, $translate, $window, gaGlobalOptions, gaPrintService) {
+      $timeout, $translate, $window, gaGlobalOptions, gaPopup, gaPrintService) {
     
     // List of layers using an extendHtmlPoup for the print instead of htmlPopup   
     var extended = {
@@ -56,6 +58,7 @@
     $scope.printProgressPercentage = 0;
     $scope.print = function() {
 
+      var featuresToPrint = [];
       var printElementsTotal = $scope.options.nbFeatures;
       if (printElementsTotal == 0) {
         return;
@@ -78,33 +81,12 @@
         winPrint =  window.open('','printout');
       }
 
-      var lang = $translate.use();
-      var printElementsLoaded = 0;
       var printLayers = [];
       printLayers['failure'] = {
         head: null,
         body: ''
       };
-      $scope.printInProgress = true;
-      $scope.printProgressPercentage = 0;
 
-      var printElementLoaded = function(html, bodId) {
-        if (/(<html|<head|<body)/i.test(html)) { // extendedHtmlPopup
-          var head = /<head[^>]*>((.|[\n\r])*)<\/head>/.exec(html)[1];
-          var body = /<body[^>]*>((.|[\n\r])*)<\/body>/.exec(html)[1];
-          printLayers[bodId].head = head;
-          printLayers[bodId].body += body;
-        } else { // htmlPopup 
-          printLayers[bodId].body += html;
-        }
-        printElementsLoaded++;
-        $scope.printProgressPercentage = Math.round(printElementsLoaded /
-            printElementsTotal * 100);
-        if (printElementsTotal == printElementsLoaded && $scope.printInProgress) {
-          printFinished(printLayers);
-        }
-      };
-      
       for (var bodId in featureTree) {
         printLayers[bodId] = {
           head: null,
@@ -112,21 +94,20 @@
         };
         var layer = featureTree[bodId];
         var layerUrl = $scope.options.msUrl + '/' + bodId;
-        for (var i in layer.features) {
-          $http.get(layerUrl + '/' + layer.features[i].id + '/' +
-              (extended[bodId] ? 'extendedHtmlPopup' : 'htmlPopup'), {
-            params: {
-              lang: lang
-            }
-          }).success(function(data, status, headers, config) {
-            printElementLoaded(data, bodId);
-          }).error(function(data, status, headers, config) {
-            printElementLoaded("<div>There was a problem loading this feature. Layer: " +
-                bodId + ", feature: " + layer.features[i].id +
-                ", status: " + status + "<div>", "failure");
-          });
-        }
+        layer.features.forEach(function(feature) {
+          featuresToPrint.push(feature);
+        });
       }
+      var popup = gaPopup.create({
+        className: 'ga-tooltip',
+        title: 'object_information',
+        results: featuresToPrint,
+        type: 'features',
+        showPrint: true
+      });
+      popup.print().then(function() {
+        popup.destroy();
+      });
     };
     
     var printFinished = function(printLayers) {

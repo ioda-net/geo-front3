@@ -16,45 +16,47 @@
     <button class="ga-btn icon-remove" title="{{titleClose}}" ng-click="close($event)"></button>
   </div>
 </div>
-<div class="popover-content ga-popup-content" ng-transclude></div>
+<div class="popover-content ga-popup-content" ng-if="!options.type" ng-transclude></div>
 
 
-<div class="htmlpopup-container feature" ng-if="options.type === 'features'" ng-repeat="feature in options.results">
-  <div class="htmlpopup-header">
-    <span>{{feature.properties.label}}</span>
-  </div>
-  <div class="htmlpopup-content">
+<div class="ga-popup-content">
+  <div class="htmlpopup-container feature" ng-if="options.type === 'features'" ng-repeat="feature in options.results track by feature.id">
+    <div class="htmlpopup-header">
+      <span>{{feature.properties.label}}</span>
+    </div>
+    <div class="htmlpopup-content">
       <span>Information</span>
       <br>
       <table>
         <tr ng-repeat="(key, value) in feature.properties">
-          <td ng-if="key !== 'label'">{{key}}:</td>
+          <td class="cell-left" ng-if="key !== 'label'">{{key}}:</td>
           <td ng-if="key !== 'label'">{{value}}</td>
         </tr>
       </table>
-  </div>
-</div>
-
-
-<div class="ng-binding ng-scope" ng-if="options.type === 'infobox'">
-  <div class="legend-container">
-    <div class="legend-header">
-      <p class="bod-title"><span>{{options.layer.label}}</span></p>
-      <p class="legend-abstract">{{options.layer.info.abstract}}</p>
     </div>
-    <div class="legend-footer">
-      <br>
-      <span ng-if="options.layer.hasLegend">Legend</span><br>
-      <a href="{{options.layer.legendUrl}}" target="_blank" ng-if="options.layer.hasLegend"><img ng-src="{{options.layer.legendUrl}}"></a><br>
-      <span>Information</span><br>
-      <table>
-        <tbody>
-          <tr ng-repeat="(key, value) in options.layer.info">
-            <td>{{key}}:</td>
-            <td>{{value}}</td>
-          </tr>
-        </tbody>
-      </table>
+  </div>
+
+
+  <div class="ng-binding ng-scope" ng-if="options.type === 'infobox'">
+    <div class="legend-container">
+      <div class="legend-header">
+        <p class="bod-title"><span>{{options.layer.label}}</span></p>
+        <p class="legend-abstract">{{options.layer.info.abstract}}</p>
+      </div>
+      <div class="legend-footer">
+        <br>
+        <span ng-if="options.layer.hasLegend">Legend</span><br>
+        <img ng-src="{{options.layer.legendUrl}}" ng-if="options.layer.hasLegend"><br>
+        <span>Information</span><br>
+        <table>
+          <tbody>
+            <tr ng-repeat="(key, value) in options.layer.info">
+              <td class="cell-left">{{key}}:</td>
+              <td>{{value}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
