@@ -105,8 +105,10 @@ gulp.task('build-karma-conf-from-template', function (cb) {
 gulp.task('app-whitespace.js', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
   var cmd = geoGulpUtils.formatCmd([
-    'closure-compiler',
+    'java -jar node_modules/google-closure-compiler/compiler.jar',
+    '--js node_modules/google-closure-library/closure/goog/base.js',
     jsFiles,
+    '--jscomp_error checkVars',
     '--compilation_level WHITESPACE_ONLY',
     '--formatting PRETTY_PRINT',
     '--js_output_file',
@@ -371,13 +373,15 @@ gulp.task('build.js', ['closure-compiler'], function () {
 gulp.task('closure-compiler', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
   var cmd = geoGulpUtils.formatCmd([
-    'closure-compiler',
+    'java -jar node_modules/google-closure-compiler/compiler.jar',
+    '--js node_modules/google-closure-library/closure/goog/base.js ',
     jsFiles,
-    '--compilation_level SIMPLE_OPTIMIZATIONS',
     '--jscomp_error checkVars',
+    '--compilation_level SIMPLE',
     '--externs externs/ol.js',
     '--externs externs/angular.js',
-    '--externs externs/jquery.js'
+    '--externs externs/jquery.js',
+    '--js_output_file /tmp/geo-front3/closure-compiler'
   ]);
 
   return run(cmd, {
@@ -391,7 +395,7 @@ gulp.task('js-files', ['annotate'], function () {
   var closurebuilder = geoGulpUtils.formatCmd([
     'python node_modules/google-closure-library/closure/bin/build/closurebuilder.py',
     '--root=/tmp/geo-front3/annotated',
-    '--root=src/lib/closure',
+    '--root=node_modules/google-closure-library',
     '--namespace="ga"',
     '--namespace="__ga_template_cache__"',
     '--output_mode=list'
@@ -447,5 +451,5 @@ gulp.task('annotate', function () {
 
 
 gulp.task('clean-tmp', function (cb) {
-  del(['/tm/geo-front3'], cb);
+  del(['/tmp/geo-front3'], {force: true}, cb);
 });

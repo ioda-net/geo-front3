@@ -1,8 +1,8 @@
-(function() {
-  goog.provide('ga_featuretree_controller');
+goog.provide('ga_featuretree_controller');
 
-  goog.require('ga_popup_service');
-  goog.require('ga_print_service');
+goog.require('ga_popup_service');
+goog.require('ga_print_service');
+(function() {
   
   var module = angular.module('ga_featuretree_controller',[
     'ga_popup_service',

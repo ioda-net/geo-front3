@@ -1,8 +1,8 @@
-(function() {
-  goog.provide('ga_popup_service');
+goog.provide('ga_popup_service');
 
-  goog.require('ga_draggable_directive');
-  goog.require('ga_print_service');
+goog.require('ga_draggable_directive');
+goog.require('ga_print_service');
+(function() {
 
   var module = angular.module('ga_popup_service', [
     'ga_draggable_directive',

@@ -43,11 +43,11 @@
 goog.provide('ngeo.CreatePrint');
 goog.provide('ngeo.Print');
 
-// Commented until https://github.com/geoadmin/mf-geoadmin3/pull/2409 is merged
-//goog.require('goog.color');
-//goog.require('goog.math');
-//goog.require('goog.object');
+goog.require('goog.color');
+goog.require('goog.math');
+goog.require('goog.object');
 goog.require('ngeo');
+// Commented until https://github.com/geoadmin/mf-geoadmin3/pull/2409 is merged
 //goog.require('ol.format.GeoJSON');
 //goog.require('ol.layer.Image');
 //goog.require('ol.layer.Tile');
