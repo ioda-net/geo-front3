@@ -134,10 +134,9 @@ goog.require('ngeo.PrintUtils');
 
     var getGrid = function(spec) {
       if ($scope.options.grid) {
-        var backgroundLayerId = gaLayers.getBackgroundLayers()[0].id;
-        var wmsUrl = gaLayers.getLayerProperty(backgroundLayerId, 'wmsUrl');
+        var wmsUrl = gaLayers.getLayerProperty('grid', 'wmsUrl');
         spec.attributes.map.layers.splice(0, 0, {
-          baseURL: $window.location.protocol + wmsUrl,
+          baseURL: wmsUrl,
           customParams: {TRANSPARENT: true},
           imageFormat: 'image/png',
           layers: ['grid'],
