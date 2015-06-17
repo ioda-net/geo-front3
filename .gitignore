@@ -8,6 +8,7 @@
 /src/embed.html
 /src/TemplateCacheModule.js
 /prd
+/prod
 /.build-artefacts
 /apache/app.conf
 /test/karma-conf.dev.js
@@ -15,7 +16,7 @@
 /deploy/deploy-branch.cfg
 /src/locales/*.csv
 /scripts/00-*.conf
-/config*.toml
+/config
 # FIXME
 # The following are developer-specific and should probably be in the
 # developers' .gitconfig file.

@@ -48,7 +48,8 @@
     "html-minifier": "0.7.2",
     "toml": "~2.2.3",
     "google-closure-compiler": "~20150609.0.0",
-    "google-closure-library": "~20150609.0.0"
+    "google-closure-library": "~20150609.0.0",
+    "minimist": "~1.1.1"
   },
   "dependencies": {
     "bootstrap": "3.3.1"

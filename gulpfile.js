@@ -34,6 +34,7 @@ var cleancss = new LessPluginCleanCSS({advanced: true});
 // Various
 var del = require('del');
 var merge = require('merge-stream'); // Used to avoid temporary files
+var minimist = require('minimist');
 var path = require('path');
 var runSequence = require('run-sequence');
 var geoGulpUtils = require('./scripts/geo-gulp-utils');
@@ -51,6 +52,12 @@ nunjucksRender.nunjucks.configure({
 
 var config = null;
 var testConfig = null;
+var knownCliOptions = {
+  string: 'portal',
+  default: {portal: 'geojb'}
+};
+var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
+var prodDestDir = 'prod/' + cliOptions.portal;
 
 
 gulp.task('default', ['help']);
@@ -144,7 +151,7 @@ gulp.task('clean', function (cb) {
     'test/app-whitespace.js',
     'test/karma-conf.dev.js',
     'test/karma-conf.prod.js',
-    'prd'
+    'prod'
   ], cb);
 }).help = 'remove generated files.';
 
@@ -189,7 +196,8 @@ gulp.task('dev', function (cb) {
 
 
 gulp.task('load-dev-conf', function (cb) {
-  config = toml.parse(fs.readFileSync('./config-dev.toml', 'utf-8'));
+  var filename = path.join('./config', cliOptions.portal + '-dev.toml');
+  config = toml.parse(fs.readFileSync(filename, 'utf-8'));
   config.prod = false;
   cb();
 });
@@ -215,7 +223,7 @@ gulp.task('index.html', function (cb) {
             .pipe(extReplace(''))
             .pipe(rename(device + '.html'))
             .pipe(gulpif(config.prod,
-                    gulp.dest('prd'),
+                    gulp.dest(prodDestDir),
                     gulp.dest('src')
                     ));
   });
@@ -235,7 +243,7 @@ gulp.task('app.css', function () {
   return gulp.src('src/style/app.less')
           .pipe(less(lessOptions))
           .pipe(gulpif(config.prod,
-                  gulp.dest('prd/style'),
+                  gulp.dest(prodDestDir + '/style'),
                   gulp.dest('src/style')
                   ));
 });
@@ -290,7 +298,8 @@ gulp.task('prod', function (cb) {
 
 
 gulp.task('load-prod-conf', function (cb) {
-  config = toml.parse(fs.readFileSync('./config-prod.toml', 'utf-8'));
+  var filename = path.join('./config', cliOptions.portal + '-prod.toml');
+  config = toml.parse(fs.readFileSync(filename, 'utf-8'));
   config.prod = true;
   cb();
 });
@@ -298,31 +307,31 @@ gulp.task('load-prod-conf', function (cb) {
 
 gulp.task('copy-images', function () {
   return gulp.src('src/img/**/*')
-          .pipe(gulp.dest('prd/img'));
+          .pipe(gulp.dest(prodDestDir + '/img'));
 });
 
 
 gulp.task('copy-fonts', function () {
   return gulp.src('src/style/font-awesome-3.2.1/font/*')
-          .pipe(gulp.dest('prd/style/font-awesome-3.2.1/font'));
+          .pipe(gulp.dest(prodDestDir + '/style/font-awesome-3.2.1/font'));
 });
 
 
 gulp.task('copy-locales', function () {
   return gulp.src('src/locales/*.json')
-          .pipe(gulp.dest('prd/locales'));
+          .pipe(gulp.dest(prodDestDir + '/locales'));
 });
 
 
 gulp.task('copy-checker', function () {
   return gulp.src('src/checker')
-          .pipe(gulp.dest('prd'));
+          .pipe(gulp.dest(prodDestDir));
 });
 
 
 gulp.task('copy-IE', function () {
   return gulp.src('src/lib/IE/*.js')
-          .pipe(gulp.dest('prd/lib'));
+          .pipe(gulp.dest(prodDestDir + '/lib'));
 });
 
 
@@ -336,7 +345,7 @@ gulp.task('appcache', ['load-prod-conf'], function () {
           }))
           .pipe(nunjucksRender())
           .pipe(extReplace('.appcache', '.nunjucks.html'))
-          .pipe(gulp.dest('prd'));
+          .pipe(gulp.dest(prodDestDir));
 });
 
 
@@ -362,7 +371,7 @@ gulp.task('build.js', ['closure-compiler'], function () {
   ])
           .pipe(uglify())
           .pipe(concat('build.js'))
-          .pipe(gulp.dest('prd/lib'));
+          .pipe(gulp.dest(prodDestDir + '/lib'));
   ;
 });
 
