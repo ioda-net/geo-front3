@@ -20,6 +20,7 @@
 @import "../components/tooltip/style/tooltip.less";
 @import "../components/slider/style/slider.less";
 @import "../components/timeselector/style/timeselector.less";
+@import "../components/backgroundselector/style/backgroundselector.less";
 @import "../components/swipe/style/swipe.less";
 @import "../components/featuretree/style/featuretree.less";
 @import "../components/measure/style/measure.less";
@@ -29,6 +30,7 @@
 @import "../components/offline/style/offline.less";
 @import "../components/query/style/query.less";
 @import "../components/timestampcontrol/style/timestampcontrol.less";
+@import "../components/translation/style/translation.less";
 
 
 @header-height: 89;
@@ -186,6 +188,12 @@ button.ga-btn, .ol-control button {
 
   #search-container {
     width: 80%;
+
+    a {
+      background-color: rgba(255, 255, 255, 1);
+      border-radius: 3px;
+      padding: 1px 6px;
+    }
   }
   
   &.ga-full-screen-no-inputs #search-container, 
@@ -200,7 +208,7 @@ button.ga-btn, .ol-control button {
   position: absolute;
   right: 0px;
   bottom: 27px;
-  z-index: 1000;
+  z-index: 1010;
   background: rgba(255,255,255,.7);
   border-radius: .2em 0 0 0;
   padding: .2em .4em;
@@ -316,16 +324,16 @@ input[type=text][readonly] {
 }
 
 #search-container {
-  width: 25%;
+  width: 33%;
   min-width: 250px;
   float: left;
   left: 1.6em;
   position: relative;
-  margin-top: 27px;
+  margin-top: 12px;
   z-index: 10; /* Put search on top of the form */
 
-  @media (min-width: 992px) {
-    margin-top: 12px;
+  @media (max-width: 992px) {
+    margin-top: 27px;
   }
 
   [ga-help] {
@@ -365,21 +373,19 @@ input[type=text][readonly] {
       width: 96%;
       margin-left: 2%;
     }
-    
-    .ga-search-input-container:after {
-      left: 1.2em;
-      color: #666;
+
+    input, .icon-search {
+      margin-left: 2%;
+    }
+
+    .icon-remove-sign {
+      margin-right: 2%;
     }
       
     .ga-search-dropdown {
       top: 37px !important;
       border-width: 1px 0;
       padding: 0;
-    }
-
-    .icon-remove-sign {
-      right: 0;
-      padding: 0 .5em;
     }
   }
 }
@@ -417,23 +423,12 @@ input[type=text][readonly] {
   position: absolute;
   top: 0.2em;
   right: 2em;
-  
-  @media (max-height: @screen-sm-max-height) {
-    right: 12em;
-    top: 1em;
-  }
 
   & > div {
     display: inline-block;
   }
-  select {
-    height: 20px;
-    line-height: 20px;
-    padding: 1px .3em;
-  }
   a {
     font-size: 80%;
-    color: #333;
   }
 }
 

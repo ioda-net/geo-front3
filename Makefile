@@ -18,7 +18,7 @@ GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat 
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= 632205d902f8dcc1f03eb1dd1736d26a1b3ac2a3
+OL3_VERSION ?= v3.6.0
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 DEFAULT_EXTENT ?= '[420000, 30000, 900000, 350000]'
@@ -438,6 +438,26 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 
 .build-artefacts/lint.timestamp: .build-artefacts/python-venv/bin/gjslint $(SRC_JS_FILES)
 	.build-artefacts/python-venv/bin/gjslint -r src/components src/js --jslint_error=all
+	touch $@
+
+.build-artefacts/python-venv/bin/mako-render: .build-artefacts/python-venv
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "Mako==1.0.0"
+	touch $@
+	cp scripts/cmd.py .build-artefacts/python-venv/local/lib/python2.7/site-packages/mako/cmd.py
+
+.build-artefacts/python-venv/bin/htmlmin: .build-artefacts/python-venv
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin"
+	touch $@
+
+.build-artefacts/translate-requirements-installation.timestamp: .build-artefacts/python-venv
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "PyYAML==3.10"
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "oauth2client==1.4.11"
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "gspread==0.2.5"
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "pyopenssl==0.15.1"
+	touch $@
+
+.build-artefacts/ol-requirements-installation.timestamp: .build-artefacts/python-venv
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "regex"
 	touch $@
 
 .build-artefacts/python-venv/bin/gjslint: .build-artefacts/python-venv

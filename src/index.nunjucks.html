@@ -149,7 +149,6 @@ itemscope itemtype="http://schema.org/WebApplication"
       <div ng-controller="GaTranslationController">
         <div ga-translation-selector ga-translation-selector-options="options"></div>
       </div>
-      <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
     </div>
 {% endif %}
 {% if device != 'embed' %}
@@ -168,9 +167,6 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   {% if device == 'index' %}
       <div class="navbar-form pull-right hidden-xs">
-        <div id="background-selection">
-          <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
-        </div>
         <div id="toptools">
           <div ga-fullscreen ga-fullscreen-map="map"></div>&nbsp;&nbsp;
           <a href="" ng-click="globals.feedbackPopupShown = !globals.feedbackPopupShown">
@@ -233,6 +229,11 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 {% endif %}
 
+<div ng-cloak translate-cloak
+         ga-background-selector
+         ga-background-selector-map="map"
+         ng-hide="globals.embed || globals.offline"></div>
+
 {% if device != 'embed' %}
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
       <div  class="pull-left" ga-scale-line ga-scale-line-map="map"></div>
@@ -277,7 +278,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 <div ng-cloak translate-cloak id="pulldown" ng-show="!globals.offline" ng-class="{'selection-and-catalog-shown': (globals.catalogShown && globals.selectionShown)}">
       <div id="pulldown-content" class="content ${"in" if device == "index" else "collapse"}">
         <div class="panel">
-          <a id="shareHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#share">
+          <a id="shareHeading" class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#share" ga-collapsible-show="globals.isShareActive">
             <i class="visible-collapsed icon-caret-right spacer"></i>
             <i class="hidden-collapsed icon-caret-down"></i>
             <i class="icon-share"></i>
@@ -285,7 +286,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           </a>
           <div id="share" class="panel-collapse collapse">
             <div class="panel-body" ng-controller="GaShareController">
-              <div ga-share ga-share-options="options"></div>
+              <div ga-share ga-share-options="options" ga-share-active="globals.isShareActive"></div>
             </div>
           </div>
         </div> <!-- .panel -->
@@ -447,10 +448,6 @@ itemscope itemtype="http://schema.org/WebApplication"
                 <label ng-controller="GaTranslationController">
                   <span translate>lang_chooser_label</span>
                   <div ga-translation-selector ga-translation-selector-options="options"></div>
-                </label>
-                <label>
-                  <span translate>bg_chooser_label</span>
-                  <div ga-background-layer-selector ga-background-layer-selector-map="map"></div>
                 </label>
               </div>
               <hr>
@@ -710,7 +707,6 @@ itemscope itemtype="http://schema.org/WebApplication"
           resourceUrl: location.origin + pathname + '${versionslashed}',
           ogcproxyUrl : location.protocol + '${api_url}' + '/ogcproxy?url=',
           whitelist: [
-            'http://www.kmlvalidator.org/validate.htm',
             'https://' + window.location.host + '/**'
           ],
           defaultTopicId: '${default_topic_id}',
@@ -736,7 +732,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               '/json/' + gaGlobalOptions.portalName + '/layersConfig.json';
 
           gaLayersProvider.legendUrlTemplate =
-              gaGlobalOptions.cachedApiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
+              gaGlobalOptions.apiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
         });
 
         module.config(function(gaExportKmlProvider, gaGlobalOptions) {

@@ -104,8 +104,8 @@ goog.require('ga_map_service');
                   layer = item;
                 }
               });
-              unChangeFeature = layer.getSource().on('changefeature',
-                  saveDebounced);
+              unChangeFeature = layer.getSource().on(['addfeature',
+                  'changefeature', 'removefeature'], saveDebounced);
             }
 
             if (scope.options.broadcastLayer) {

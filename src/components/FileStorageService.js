@@ -31,7 +31,7 @@ goog.provide('ga_file_storage_service');
           if (!fileUrl) {
             return;
           }
-          return fileUrl.replace(getPublicUrl() + '/', '');
+          return fileUrl.split('/').pop();
         };
 
         // Get the accessible url of the file from an adminId

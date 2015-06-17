@@ -24,34 +24,22 @@
     display: inline-block;
     width: 100%;
     position: relative;
-    padding-top: 2px;
-    
-    &::after {
-      content: '\f002';
-      font-family: FontAwesome;
-      position: absolute;
-      top: 0;
-      left: .5em;
-      height: 30px;
-      line-height: 30px;
-      color: #c6c6c6;
-    }
+    margin-top: 2px;
   }
 
-  .ga-search-title {
-
-    @media (max-height: 600px) {
-      display: none!important;
+  @media (max-width: 992px), (max-height: @screen-sm-max-height) {
+    .ga-search-title {
+      display: none;
     }
-    @media (max-width: 992px) {
-      display: none!important;
+    .ga-search-input-container {
+      margin-top: 0;
     }
   }
 
   .ga-search-input {
     background: white !important;
-    padding-left: 2em;
-    padding-right: 2.5em;
+    padding-left: 2.8em;
+    padding-right: 2.1em;
   }
 
   .ga-search-dropdown {
@@ -59,7 +47,7 @@
     width: 100%;
     font-size: 11px;
     min-width: 160px;
-    padding: 5px 0 21px;
+    padding: 0px 0 5px;
     background-color: @dropdown-background-color;
     border: 1px solid #ccc;
     .box-shadow(0 5px 10px rgba(0,0,0,.2));
@@ -104,7 +92,6 @@
       -webkit-overflow-scrolling: touch;
       .ga-search-result {
         display: block;
-        background-color: #E6E6E6;
         margin-top: 1px;
 
         &:hover, &:focus {
@@ -141,6 +128,8 @@
     padding-bottom: 5px;
     padding-left: 20px;
     font-weight: bold;
+    background-color: #E9E9E9;
+    font-size: 14px;
   }
   
   .icon-info-sign {
@@ -153,22 +142,28 @@
       margin-right: 5px;
     }
   }
-  
-  .icon-remove-sign {
+
+  .icon-search, .icon-remove-sign {
     position: absolute;
-    right: 0.6em;
     top: 0;
-    cursor: pointer;
+    width: 30px;
     height: 30px;
-    line-height: 30px;
+    line-height: 28px;
+    text-align: center;
+  }
+
+  .icon-search {
+    left: 0;
+    background-color: #eeeeee;
+    border: 1px solid #cccccc;
+  }
+
+  .icon-remove-sign {
+    right: 0;
+    cursor: pointer;
     
     @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
-      right: 0.2em;
       font-size: 24px;
-    }
-
-    @media (min-width: 992px) and (min-height: 600px) {
-        top: 21px;
     }
   }
   
