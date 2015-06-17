@@ -50,6 +50,7 @@ nunjucksRender.nunjucks.configure({
 
 
 var config = null;
+var testConfig = null;
 
 
 gulp.task('default', ['help']);
@@ -61,23 +62,20 @@ gulp.task('help', function () {
 
 
 gulp.task('test', function (cb) {
-  runSequence(['build-karma-conf-from-template', 'app-whitespace.js'], 'launch-test', cb);
-}).help = {
-  '': 'Launch tests with karam.',
-  '--prod': 'If given, launch tests against production file.'
-};
+  testConfig = 'test/karma-conf.dev.js';
+  runSequence('launch-test', cb);
+}).help = 'Launch tests with karma.';
 
 
-gulp.task('launch-test', function (cb) {
-  var configFile;
-  if (process.argv[3] && process.argv[3].match(/prod/)) {
-    configFile = 'test/karma-conf.prod.js';
-  } else {
-    configFile = 'test/karma-conf.dev.js';
-  }
+gulp.task('test-prod', function (cb) {
+  testConfig = 'test/karma-conf.prod.js';
+  runSequence('launch-test', cb);
+}).help = 'Lanuch test against prod with karma';
 
+
+gulp.task('launch-test', ['build-karma-conf-from-template', 'app-whitespace.js'], function (cb) {
   karma.start({
-    configFile: configFile,
+    configFile: testConfig,
     singleRun: true
   }, cb);
 });
