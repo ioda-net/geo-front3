@@ -106,7 +106,6 @@ gulp.task('app-whitespace.js', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
   var cmd = geoGulpUtils.formatCmd([
     'java -jar node_modules/google-closure-compiler/compiler.jar',
-    '--js node_modules/google-closure-library/closure/goog/base.js',
     jsFiles,
     '--jscomp_error checkVars',
     '--compilation_level WHITESPACE_ONLY',
@@ -374,13 +373,12 @@ gulp.task('closure-compiler', ['js-files'], function () {
   var jsFiles = geoGulpUtils.getJsFiles();
   var cmd = geoGulpUtils.formatCmd([
     'java -jar node_modules/google-closure-compiler/compiler.jar',
-    '--js node_modules/google-closure-library/closure/goog/base.js ',
     jsFiles,
     '--jscomp_error checkVars',
     '--compilation_level SIMPLE',
-    '--externs externs/ol.js',
     '--externs externs/angular.js',
     '--externs externs/jquery.js',
+    '--externs externs/ol.js',
     '--js_output_file /tmp/geo-front3/closure-compiler'
   ]);
 
@@ -400,9 +398,6 @@ gulp.task('js-files', ['annotate'], function () {
     '--namespace="__ga_template_cache__"',
     '--output_mode=list'
   ]);
-  var removeUnusefulLine = geoGulpUtils.formatCmd([
-    "sed 's/^.*base\.js //'"
-  ]);
   var formatFile = geoGulpUtils.formatCmd([
     "sed",
     "-e ':a'",
@@ -410,10 +405,14 @@ gulp.task('js-files', ['annotate'], function () {
     "-e '$!ba'",
     "-e 's/\\n/ --js /g'"
   ]);
+  var appendJsFirstFile = geoGulpUtils.formatCmd([
+      "sed",
+      "-r 's/(.*)/ --js \\1/g'"
+  ]);
 
   return run(closurebuilder, {silent: true}).exec()
           .pipe(run(formatFile, {silent: true}))
-          .pipe(run(removeUnusefulLine, {silent: true}))
+          .pipe(run(appendJsFirstFile, {silent: true}))
           .pipe(rename('js-files'))
           .pipe(gulp.dest('/tmp/geo-front3/'));
 });
