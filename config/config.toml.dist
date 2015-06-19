@@ -15,5 +15,6 @@ translation_fallback_code = "fr"
 languages = ["fr", "de", "en"]
 default_extent = "[550000.0, 210000.0, 620000.0, 245000.0]"
 default_resolution = 50.0
+resolutions = "[50.0, 20.0, 10.0, 5.0, 2.5, 2.0, 1.0, 0.5, 0.25, 0.1]"
 external_wms_hostnames =  '["www.geoservice.apps.be.ch"]'
 portal_name = "geojb"
