@@ -63,7 +63,7 @@ goog.provide('ga_mouseposition_controller');
         ];
 
         $scope.options = {
-          projection: $scope.mousePositionProjections[0]
+          projection: $scope.mousePositionProjections[1]
         };
 
       });
