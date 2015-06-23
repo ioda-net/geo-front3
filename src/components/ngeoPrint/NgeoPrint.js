@@ -361,8 +361,15 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
         var style = styles[j];
         var styleId = goog.getUid(style).toString();
         var featureStyleProp = ngeo.Print.FEAT_STYLE_PROP_PREFIX_ + j;
+        var geometryType;
+        if (goog.isDef(geojsonFeature.geometry) &&
+                goog.isDef(geojsonFeature.geometry.type)) {
+          geometryType = geojsonFeature.geometry.type;
+        } else {
+          geometryType = 'FeatureCollection';
+        }
         this.encodeVectorStyle_(
-            mapfishStyleObject, style, styleId, featureStyleProp);
+            mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
         geojsonFeature.properties[featureStyleProp] = styleId;
       }
     }
@@ -385,13 +392,14 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
 
 /**
  * @param {MapFishPrintVectorStyle} object MapFish style object.
+ * @param {string} geometryType Type of the GeoJSON geometry
  * @param {ol.style.Style} style Style.
  * @param {string} styleId Style id.
  * @param {string} featureStyleProp Feature style property name.
  * @private
  */
 ngeo.Print.prototype.encodeVectorStyle_ =
-    function(object, style, styleId, featureStyleProp) {
+    function(object, geometryType, style, styleId, featureStyleProp) {
   var key = '[' + featureStyleProp + ' = \'' + styleId + '\']';
   if (key in object) {
     // do nothing if we already have a style object for this CQL rule
@@ -405,7 +413,7 @@ ngeo.Print.prototype.encodeVectorStyle_ =
   var imageStyle = style.getImage();
   var textStyle = style.getText();
   var strokeStyle = style.getStroke();
-  if (!goog.isNull(fillStyle)) {
+  if (!goog.isNull(fillStyle) && geometryType !== 'LineString') {
     this.encodeVectorStylePolygon_(
         styleObject.symbolizers, fillStyle, strokeStyle);
   } else if (!goog.isNull(strokeStyle)) {
