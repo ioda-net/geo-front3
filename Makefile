@@ -165,6 +165,10 @@ fastclick: .build-artefacts/fastclick .build-artefacts/closure-compiler/compiler
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
 	    --js_output_file  src/lib/fastclick.min.js
 
+.PHONY: typeahead
+typeahead: .build-artefacts/closure-compiler/compiler.jar
+	java -jar .build-artefacts/closure-compiler/compiler.jar src/lib/typeahead-0.9.3.js --compilation_level SIMPLE_OPTIMIZATIONS --js_output_file  src/lib/typeahead-0.9.3.min.js
+
 .PHONY: filesaver
 filesaver: .build-artefacts/filesaver
 	cp .build-artefacts/filesaver/FileSaver.js src/lib/filesaver.js
@@ -426,15 +430,15 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 # add lib/closure as a root. When compiling we remove base.js from the js files
 # passed to the Closure compiler.
 .build-artefacts/js-files: \
-	    $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule.js) \
-	    .build-artefacts/python-venv \
-	    .build-artefacts/closure-library
+            $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule.js) \
+            .build-artefacts/python-venv \
+            .build-artefacts/closure-library
 	${PYTHON_CMD} .build-artefacts/closure-library/closure/bin/build/closurebuilder.py \
-	    --root=.build-artefacts/annotated \
-	    --root=src/lib/closure \
-	    --namespace="ga" \
-	    --namespace="__ga_template_cache__" \
-	    --output_mode=list > $@
+            --root=.build-artefacts/annotated \
+            --root=.build-artefacts/closure-library \
+            --namespace="ga" \
+            --namespace="__ga_template_cache__" \
+            --output_mode=list > $@
 
 .build-artefacts/lint.timestamp: .build-artefacts/python-venv/bin/gjslint $(SRC_JS_FILES)
 	.build-artefacts/python-venv/bin/gjslint -r src/components src/js --jslint_error=all
@@ -474,6 +478,14 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	mkdir -p .build-artefacts
 	git clone http://github.com/google/closure-library/ $@
 	cd $@ && git reset --hard 0011afd534469ba111786fe68300a634e08a4d80 && cd ../../
+
+.build-artefacts/closure-compiler/compiler-latest.zip:
+	mkdir -p $(dir $@)
+	wget -O $@ http://dl.google.com/closure-compiler/compiler-latest.zip
+
+.build-artefacts/closure-compiler/compiler.jar: .build-artefacts/closure-compiler/compiler-latest.zip
+	unzip $< -d .build-artefacts/closure-compiler
+	touch $@
 
 $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)/.git/config:
 	rm -rf $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)

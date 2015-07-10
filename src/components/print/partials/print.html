@@ -1,4 +1,4 @@
-<form class="form-horizontal" >
+<form class="form-horizontal" ng-class="{ie: isIE}" >
   <div class="form-group">
     <label class="col-xs-4 control-label" translate>title</label>
     <div class="col-xs-8">
@@ -24,7 +24,7 @@
     </div>
   </div>
   <div class="form-group">
-    <div class="col-xs-4">
+    <div class="col-xs-4 ga-checkboxes">
       <div class="checkbox">
         <label class="ga-checkbox">
           <input ng-model="options.legend" type="checkbox"/>

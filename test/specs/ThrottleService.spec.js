@@ -1,10 +1,10 @@
 describe('ga_throttle_service', function() {
-  var gaThrottle, now, last, cpt, cptNoTrail;
+  var gaThrottle, now, last, cpt, cptNoTrail, runs;
 
   beforeEach(function() {
     inject(function($injector) {
       gaThrottle = $injector.get('gaThrottle');
-      cpt = 0, cptNoTrail = 0;
+      cpt = 0, cptNoTrail = 0, runs = 0;
       now = +new Date();
       last = now + 1000; 
     });
@@ -18,14 +18,19 @@ describe('ga_throttle_service', function() {
       cptNoTrail++;
     }, 100, true);
     while (now < last) {
+      runs++;
       funcThrottled();
       funcThrottledNoTrail();
       now = +new Date();
     }
     $timeout.flush();
-    // We can't test value of cpt (because it depends of the machine)
-    // but we test if the noTrailing options is used
-    // correctly. 
-    expect(cpt).to.be.eql(cptNoTrail + 1);
+    expect(runs).to.be.above(0);
+    expect(cpt).to.be.above(0);
+    expect(cptNoTrail).to.be.above(0);
+    expect(runs).to.be.greaterThan(cpt);
+    expect(runs).to.be.greaterThan(cptNoTrail);
+    expect(cpt).to.be.lessThan(12);
+    expect(cptNoTrail).to.be.lessThan(12);
+    expect(cpt >= cptNoTrail).to.be(true);
   }));
 });

@@ -8,7 +8,6 @@ goog.require('ngeo.PrintUtils');
 
   angular.module('ga_print', [
     'ga_print_directive',
-    'ga_print_style_service',
     'ngeo.CreatePrint',
     'ngeo.PrintUtils'
   ]);

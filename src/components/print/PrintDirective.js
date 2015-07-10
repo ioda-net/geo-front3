@@ -1,5 +1,6 @@
 goog.provide('ga_print_directive');
 
+goog.require('ga_browsersniffer_service');
 goog.require('ga_map_service');
 goog.require('ngeo.Print');
 goog.require('ngeo.PrintUtils');
