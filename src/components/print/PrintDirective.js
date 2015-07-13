@@ -93,6 +93,10 @@ goog.require('ngeo.PrintUtils');
     var printReportTimeout;
     $scope.submit = function() {
       var map = $scope.map;
+      var mapCenter = map.getView().getCenter();
+      var cornerCoords = ngeoPrintUtils.getBottomLeftCorner(mapCenter);
+      var coordsToPrint = 'x = ' + parseInt(cornerCoords[0], 10) + ', y = ' +
+              parseInt(cornerCoords[1], 10);
 
       $scope.options.printing = true;
       $scope.options.printsuccess = false;
@@ -107,7 +111,8 @@ goog.require('ngeo.PrintUtils');
           name: $scope.options.title,
           qrimage: $scope.options.qrcodeUrl + encodeURIComponent(url),
           url: url,
-          scale: $scope.scale
+          scale: $scope.scale,
+          bottomLeftCornerCoords: coordsToPrint
       });
 
       getGrid(spec);
