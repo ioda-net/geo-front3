@@ -48,6 +48,7 @@ ngeo.PrintUtils.DOTS_PER_INCH_ = 72;
  */
 ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
     function(getSize, getScale) {
+  var self = this;
 
   return (
       /**
@@ -73,9 +74,13 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
 
         var extentHalfWidth =
             (((size[0] / ppi) / ipm) * scale / resolution) / 2;
+        self.extentHalfHorizontalDistance_ =
+            (((size[0] / ppi) / ipm) * scale) / 2;
 
         var extentHalfHeight =
             (((size[1] / ppi) / ipm) * scale / resolution) / 2;
+        self.extentHalfVerticalDistance_ =
+                (((size[1] / ppi) / ipm) * scale) / 2;
 
         var minx = centerX - extentHalfWidth;
         var miny = centerY - extentHalfHeight;
@@ -132,6 +137,50 @@ ngeo.PrintUtils.prototype.getOptimalScale = function(
   }
 
   return optimal;
+};
+
+
+/**
+ * Get the coordinates of the bottom left corner of the printed map.
+ * @param {ol.Coordinate} mapCenter Center of the map to print.
+ * @return {ol.Coordinate} The coordinates of the bottom left corner.
+ */
+ngeo.PrintUtils.prototype.getBottomLeftCorner = function(mapCenter) {
+  return [mapCenter[0] - this.extentHalfHorizontalDistance_,
+    mapCenter[1] - this.extentHalfVerticalDistance_];
+};
+
+
+/**
+ * Get the coordinates of the bottom rigth corner of the printed map.
+ * @param {ol.Coordinate} mapCenter Center of the map to print.ç
+ * @return {ol.Coordinate} The coordinates of the bottom rigth corner.
+ */
+ngeo.PrintUtils.prototype.getBottomRightCorner = function(mapCenter) {
+  return [mapCenter[0] + this.extentHalfHorizontalDistance_,
+    mapCenter[1] - this.extentHalfVerticalDistance_];
+};
+
+
+/**
+ * Get the coordinates of the up left corner of the printed map.
+ * @param {ol.Coordinate} mapCenter Center of the map to print.
+ * @return {ol.Coordinate} The coordinates of the up left corner.
+ */
+ngeo.PrintUtils.prototype.getUpLeftCorner = function(mapCenter) {
+  return [mapCenter[0] - this.extentHalfHorizontalDistance_,
+    mapCenter[1] + this.extentHalfVerticalDistance_];
+};
+
+
+/**
+ * Get the coordinates of the up right corner of the printed map.
+ * @param {ol.Coordinate} mapCenter Center of the map to print.
+ * @return {ol.Coordinate} The coordinates of the up right corner.
+ */
+ngeo.PrintUtils.prototype.getUpRightCorner = function(mapCenter) {
+  return [mapCenter[0] + this.extentHalfHorizontalDistance_,
+    mapCenter[1] + this.extentHalfVerticalDistance_];
 };
 
 
