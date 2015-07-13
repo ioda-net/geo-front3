@@ -678,8 +678,11 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
       symbolizer.fontColor = goog.color.rgbArrayToHex(fillColorRgba);
     }
 
-    symbolizer.XOffset = textStyle.getOffsetX();
-    symbolizer.YOffset = textStyle.getOffsetY();
+    // Mapfish print allows offset only if labelAlign is defined.
+    if (goog.isDef(symbolizer.labelAlign)) {
+      symbolizer.labelXOffset = textStyle.getOffsetX();
+      symbolizer.labelYOffset = - textStyle.getOffsetY();
+    }
 
     symbolizers.push(symbolizer);
   }
