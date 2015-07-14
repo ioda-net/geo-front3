@@ -282,7 +282,7 @@ ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
   goog.object.remove(customParams, 'FORMAT');
 
   var object = /** @type {MapFishPrintWmsLayer} */ ({
-    baseURL: url,
+    baseURL: url.match(/^https?:/) ? url : 'http:' + url,
     imageFormat: 'FORMAT' in params ? params['FORMAT'] : 'image/png',
     layers: params['LAYERS'].split(','),
     customParams: customParams,
@@ -705,7 +705,7 @@ ngeo.Print.prototype.getWmtsUrl_ = function(source) {
   if (url.indexOf('{Layer}') >= 0) {
     url = url.replace('{Layer}', layer);
   }
-  return url;
+  return url.match(/^https?:/) ? url : 'http:' + url;
 };
 
 
