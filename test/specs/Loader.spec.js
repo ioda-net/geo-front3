@@ -36,7 +36,10 @@ beforeEach(function() {
       ],
       defaultTopicId: 'sometopic',
       translationFallbackCode: 'somelang',
-      defaultResolution: 500.0
+      defaultResolution: 500.0,
+      publicAllowedUrlRegexp: /https?:\/\/public\..*(\.admin\.ch|\.bgdi\.ch)\/.*/,
+      publicUrlRegexp: /^https?:\/\/public\..*(bgdi|geo\.admin)\.ch.*/,
+      adminUrlRegexp: /^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)/
     });
   });
 

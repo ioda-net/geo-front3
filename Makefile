@@ -9,6 +9,9 @@ LAST_APACHE_BASE_PATH := $(shell if [ -f .build-artefacts/last-apache-base-path 
 API_URL ?= //mf-chsdi3.dev.bgdi.ch
 LAST_API_URL := $(shell if [ -f .build-artefacts/last-api-url ]; then cat .build-artefacts/last-api-url 2> /dev/null; else echo '-none-'; fi)
 PUBLIC_URL ?= //public.dev.bgdi.ch
+PUBLIC_ALLOWED_URL_REGEXP ?= https?:\/\/public\..*(\.admin\.ch|\.bgdi\.ch)\/.*
+PUBLIC_URL_REGEXP ?= ^https?:\/\/public\..*(bgdi|geo\.admin)\.ch.*
+ADMIN_URL_REGEXP ?= ^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)
 LESS_PARAMETERS ?= '-ru'
 KEEP_VERSION ?= 'false'
 LAST_VERSION := $(shell if [ -f .build-artefacts/last-version ]; then cat .build-artefacts/last-version 2> /dev/null; else echo '-none-'; fi)
@@ -392,8 +395,8 @@ test/karma-conf-prod.js: test/karma-conf.mako.js
 	python3 /usr/bin/mako-render --var "mode=prod" $< > $@
 
 node_modules: ANGULAR_JS = angular.js angular.min.js
-node_modules: ANGULAR_TRANSLATE_JS = angular-translate.js angular-translate.min.js 
-node_modules: ANGULAR_TRANSLATE_LOADER_JS = angular-translate-loader-static-files.js angular-translate-loader-static-files.min.js 
+node_modules: ANGULAR_TRANSLATE_JS = angular-translate.js angular-translate.min.js
+node_modules: ANGULAR_TRANSLATE_LOADER_JS = angular-translate-loader-static-files.js angular-translate-loader-static-files.min.js
 node_modules: LOCALFORAGE = localforage.js localforage.min.js
 node_modules: package.json
 	npm install
@@ -563,7 +566,7 @@ cleanall: clean
 
 
 .PHONY: cleanappcache
-cleanappcache: 
+cleanappcache:
 	rm -f prd/geoadmin.appcache
 	rm -f prd/index.html
 	rm -f prd/mobile.html
