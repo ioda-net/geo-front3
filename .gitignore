@@ -10,6 +10,7 @@ gulp
 /src/TemplateCacheModule.js
 /prd
 /prod
+/dev
 /.build-artefacts
 /apache/app.conf
 /test/karma-conf.dev.js

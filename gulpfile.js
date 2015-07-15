@@ -58,6 +58,15 @@ var knownCliOptions = {
 };
 var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var prodDestDir = 'prod/' + cliOptions.portal;
+var devDestDir = 'dev/' + cliOptions.portal;
+
+var src = {
+  img: 'src/img/**/*',
+  js: 'src/**/*.js',
+  partials: 'src/components/**/*.html',
+  less: 'src/style/app.less',
+  index: 'src/*.nunjucks.html'
+};
 
 
 gulp.task('default', ['help']);
@@ -151,7 +160,8 @@ gulp.task('clean', function (cb) {
     'test/app-whitespace.js',
     'test/karma-conf.dev.js',
     'test/karma-conf.prod.js',
-    'prod'
+    'prod',
+    'dev'
   ], cb);
 }).help = 'remove generated files.';
 
@@ -189,7 +199,13 @@ gulp.task('dev', function (cb) {
           [
             'index.html',
             'app.css',
-            'deps.js'
+            'deps.js',
+            'copy-js',
+            'copy-partials',
+            'copy-images',
+            'copy-fonts',
+            'copy-locales',
+            'copy-checker'
           ],
           cb);
 }).help = 'generate all files for development';
@@ -214,7 +230,7 @@ gulp.task('index.html', function (cb) {
   indexConfig.prod = config.prod;
 
   config.devices.forEach(function (device) {
-    gulp.src('src/*.nunjucks.html')
+    gulp.src(src.index)
             .pipe(data(function () {
               indexConfig.device = device;
               return indexConfig;
@@ -224,7 +240,7 @@ gulp.task('index.html', function (cb) {
             .pipe(rename(device + '.html'))
             .pipe(gulpif(config.prod,
                     gulp.dest(prodDestDir),
-                    gulp.dest('src')
+                    gulp.dest(devDestDir)
                     ));
   });
 
@@ -240,11 +256,11 @@ gulp.task('app.css', function () {
     lessOptions.plugins = [cleancss];
   }
 
-  return gulp.src('src/style/app.less')
+  return gulp.src(src.less)
           .pipe(less(lessOptions))
           .pipe(gulpif(config.prod,
                   gulp.dest(prodDestDir + '/style'),
-                  gulp.dest('src/style')
+                  gulp.dest(devDestDir + '/style')
                   ));
 });
 
@@ -254,27 +270,49 @@ gulp.task('deps.js', function () {
     'python',
     'node_modules/google-closure-library/closure/bin/build/depswriter.py',
     '--root_with_prefix="src/components components"',
-    '--root_with_prefix="src/js js"',
-    '--output_file=src/deps.js'
+    '--root_with_prefix="src/js js"'
   ]);
 
-  return run(cmd).exec();
+  return run(cmd, {verbosity: 0}).exec()
+          .pipe(rename('deps.js'))
+          .pipe(gulp.dest(devDestDir));
 });
 
 
-gulp.task('watch', function (cb) {
-  watch(['src/*.nunjucks.html', 'config-dev.toml'], function () {
+gulp.task('watch', ['dev'], function () {
+  watch([src.index, 'config/' + cliOptions.portal + '-dev.toml'], function () {
     gulp.start('index.html');
   });
 
-  watch('src/style/app.less', function () {
+  watch(src.less, function () {
     gulp.start('app.css');
   });
 
-  watch(['src/components/**/*.js', 'src/js/**/*.js', 'js/**/*.js'], function () {
+  watch(src.js, function () {
+    gulp.start('copy-js');
     gulp.start('deps.js');
   });
+
+  watch(src.partials, function () {
+    gulp.start('copy-partials');
+  });
+
+  watch(src.img, function () {
+    gulp.start('copy-images');
+  });
 }).help = 'watch for changes in the development files and launch tasks impacted by the update';
+
+
+gulp.task('copy-js', function () {
+  return gulp.src(src.js)
+          .pipe(gulp.dest(devDestDir));
+});
+
+
+gulp.task('copy-partials', function () {
+  return gulp.src(src.partials, {base: './src/'})
+          .pipe(gulp.dest(devDestDir));
+});
 
 
 gulp.task('prod', function (cb) {
@@ -306,26 +344,34 @@ gulp.task('load-prod-conf', function (cb) {
 
 
 gulp.task('copy-images', function () {
-  return gulp.src('src/img/**/*')
-          .pipe(gulp.dest(prodDestDir + '/img'));
+  return gulp.src(src.img)
+          .pipe(gulpif(config.prod,
+                  gulp.dest(prodDestDir + '/img'),
+                  gulp.dest(devDestDir + '/img')));
 });
 
 
 gulp.task('copy-fonts', function () {
   return gulp.src('src/style/font-awesome-3.2.1/font/*')
-          .pipe(gulp.dest(prodDestDir + '/style/font-awesome-3.2.1/font'));
+          .pipe(gulpif(config.prod,
+                  gulp.dest(prodDestDir + '/style/font-awesome-3.2.1/font'),
+                  gulp.dest(devDestDir + '/style/font-awesome-3.2.1/font')));
 });
 
 
 gulp.task('copy-locales', function () {
   return gulp.src('src/locales/*.json')
-          .pipe(gulp.dest(prodDestDir + '/locales'));
+          .pipe(gulpif(config.prod,
+                  gulp.dest(prodDestDir + '/locales'),
+                  gulp.dest(devDestDir + '/locales')));
 });
 
 
 gulp.task('copy-checker', function () {
   return gulp.src('src/checker')
-          .pipe(gulp.dest(prodDestDir));
+          .pipe(gulpif(config.prod,
+                  gulp.dest(prodDestDir),
+                  gulp.dest(devDestDir)));
 });
 
 
