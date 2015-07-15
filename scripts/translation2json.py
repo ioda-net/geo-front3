@@ -56,7 +56,7 @@ def _get_csv_reader_from_gspread(key, key_file, delimiter=',', quotechar='"', **
         )
         gc = gspread.authorize(credentials)
     else:
-        print "DRIVE_USER and DRIVE_PWD are not set."
+        print("DRIVE_USER and DRIVE_PWD are not set.")
         sys.exit(1)
     wks = gc.open_by_key(key).sheet1
     resp = wks.export()
