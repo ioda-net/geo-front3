@@ -77,7 +77,8 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         // avoid loops
         m = (m) ? m[1] : m;
-        if ((p=='desktop' && m=='false') || (p=='mobile' && m=='true')) {
+        console.log(p)
+        if ((p=='index' && m=='false') || (p=='mobile' && m=='true')) {
           return;
         }
 
@@ -96,7 +97,7 @@ itemscope itemtype="http://schema.org/WebApplication"
             (screen.width<=768 || screen.height<=768));
         if (m=='false' || (!onMobile && p=='mobile') ) {
           redirectToDesktop();
-        } else if (m=='true' || (onMobile && p=='desktop') ) {
+        } else if (m=='true' || (onMobile && p=='index') ) {
           redirectToMobile();
         }
       })();
