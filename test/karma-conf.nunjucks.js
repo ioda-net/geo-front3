@@ -4,7 +4,7 @@ module.exports = function(config) {
     config.set({
 	// base path, that will be used to resolve files and exclude
 	{% if prod %}
-	   basePath: '../prd',
+	   basePath: '../prod',
 	{% else %}
 	   basePath: '../src',
 	{% endif %}
@@ -12,7 +12,7 @@ module.exports = function(config) {
 	// list of files / patterns to load in the browser
 	files: [
 	    {% if prod %}
-	        'lib/build.js',
+	        'geojb/lib/build.js',
 	    {% else %}
 	       'lib/jquery-2.0.3.js',
 	       'lib/angular.js',

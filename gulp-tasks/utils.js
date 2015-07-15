@@ -1,5 +1,12 @@
+/**
+ * Special files that contains utility functions.
+ * @type Module glob|Module glob
+ */
+
 var glob = require('glob');
 var fs = require('fs');
+var path = require('path');
+var toml = require('toml');
 
 var htmlMinify = require('html-minifier').minify;
 
@@ -64,8 +71,23 @@ var formatArgvOpts = function (options) {
 };
 
 
+var loadConf = function (taskName, cliOptions) {
+  var prod = false;
+  if (taskName === 'prod') {
+    prod = true;
+  }
+  var type = prod ? 'prod' : 'dev';
+  var filename = path.join('./config', cliOptions.portal + '-' + type + '.toml');
+  var config = toml.parse(fs.readFileSync(filename, 'utf-8'));
+  config.prod = prod;
+
+  return config;
+};
+
+
 module.exports.getPartials = getPartials;
 module.exports.getJsFiles = getJsFiles;
 module.exports.passArgvOpts = passArgvOpts;
 module.exports.formatCmd = formatCmd;
 module.exports.formatArgvOpts = formatArgvOpts;
+module.exports.loadConf = loadConf;
