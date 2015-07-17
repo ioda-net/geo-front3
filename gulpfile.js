@@ -85,6 +85,11 @@ gulp.task('watch', ['dev'], function () {
   watch(src.img, function () {
     gulp.start('copy-images');
   });
+
+  // Relaunch dev task after a clean done by another instance.
+  watch(dest.dev, {events: ['unlinkDir'], base: dest.dev}, function () {
+    gulp.start('dev');
+  });
 }).help = 'watch for changes in the development files and launch tasks impacted by the update';
 
 
