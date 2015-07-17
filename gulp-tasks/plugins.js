@@ -12,7 +12,19 @@ function load(src, dest, config) {
 
     return gulp.src(src.pluginsTemplate)
             .pipe(data(function () {
-              plugins.activatedPlugins = config.activatedPlugins;
+              if (config.test) {
+                // If we are testing, we must enable all the modules except the
+                // one that exists to check the behaviour with unactivated
+                // modules.
+                plugins.activatedPlugins = [];
+                plugins.availablePlugins.forEach(function (plugin) {
+                  if (plugin !== 'notActivated') {
+                    plugins.activatedPlugins.push(plugin);
+                  }
+                });
+              } else {
+                plugins.activatedPlugins = config.activatedPlugins;
+              }
 
               return plugins;
             }))

@@ -19,14 +19,10 @@ function load(src, dest, config) {
       'test/app-whitespace.js'
     ]);
 
-    if (fs.existsSync('test/app-whitespace.js')) {
-      return run('echo "test/app-whitespace.js already exists"').exec();
-    } else {
-      return run(cmd,
-              {
-                verbosity: 0
-              }).exec();
-    }
+    return run(cmd,
+            {
+              verbosity: 0
+            }).exec();
   });
 
 

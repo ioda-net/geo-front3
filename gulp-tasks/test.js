@@ -12,17 +12,21 @@ var testConfig = null;
 function load(src, dest, config) {
   gulp.task('test', function (cb) {
     testConfig = 'test/karma-conf.dev.js';
-    runSequence('launch-test', cb);
+    config.test = true;
+    runSequence('plugins', 'launch-test', cb);
   }).help = 'Launch tests with karma.';
 
 
-  gulp.task('test-prod', function (cb) {
+  gulp.task('test-prod', ['prod'], function (cb) {
     testConfig = 'test/karma-conf.prod.js';
-    runSequence('launch-test', cb);
+    runSequence('plugins', 'launch-test', cb);
   }).help = 'Lanuch test against prod with karma';
 
 
-  gulp.task('launch-test', ['build-karma-conf-from-template', 'app-whitespace.js'], function (cb) {
+  gulp.task('launch-test', [
+    'build-karma-conf-from-template',
+    'app-whitespace.js'
+  ], function (cb) {
     karma.start({
       configFile: testConfig,
       singleRun: true

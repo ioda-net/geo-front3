@@ -15,6 +15,7 @@ var knownCliOptions = {
 };
 var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var config = utils.loadConf(process.argv[2], cliOptions);
+config.test = false;
 
 var src = {
   js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
