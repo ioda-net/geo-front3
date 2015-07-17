@@ -17,7 +17,6 @@ var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var config = utils.loadConf(process.argv[2], cliOptions);
 
 var src = {
-  img: 'src/img/**/*',
   js: 'src/**/*.js',
   partials: 'src/components/**/*.html',
   less: 'src/style/app.less',
@@ -57,7 +56,6 @@ gulp.task('dev', [
     'deps.js',
     'copy-js',
     'copy-partials',
-    'copy-images',
     'copy-fonts',
     'copy-locales',
     'copy-checker'
@@ -82,8 +80,6 @@ gulp.task('watch', ['dev'], function () {
     gulp.start('copy-partials');
   });
 
-  watch(src.img, function () {
-    gulp.start('copy-images');
   });
 
   // Relaunch dev task after a clean done by another instance.
@@ -98,7 +94,6 @@ gulp.task('prod', function (cb) {
           [
             'index.html',
             'app.css',
-            'copy-images',
             'copy-fonts',
             'copy-locales',
             'copy-checker',

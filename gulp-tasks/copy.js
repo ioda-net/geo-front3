@@ -14,14 +14,6 @@ function load(src, dest, config) {
   });
 
 
-  gulp.task('copy-images', function () {
-    return gulp.src(src.img)
-            .pipe(gulpif(config.prod,
-                    gulp.dest(dest.prod + '/img'),
-                    gulp.dest(dest.dev + '/img')));
-  });
-
-
   gulp.task('copy-fonts', function () {
     return gulp.src('src/style/font-awesome-3.2.1/font/*')
             .pipe(gulpif(config.prod,
