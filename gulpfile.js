@@ -19,7 +19,7 @@ var config = utils.loadConf(process.argv[2], cliOptions);
 var src = {
   js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
   plugins: 'src/plugins/*.js',
-  pluginsTemplate: 'src/*.nunjucks.js',
+  pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
   partials: 'src/components/**/*.html',
   less: 'src/style/app.less',
   index: 'src/*.nunjucks.html',
@@ -100,6 +100,7 @@ gulp.task('watch', ['dev'], function () {
 
 gulp.task('prod', function (cb) {
   runSequence(
+          'plugins',
           [
             'index.html',
             'app.css',

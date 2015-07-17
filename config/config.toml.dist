@@ -20,3 +20,5 @@ default_epsg = "EPSG:21781"
 default_epsg_extent = "[420000, 30000, 900000, 350000]"
 external_wms_hostnames =  '["www.geoservice.apps.be.ch"]'
 portal_name = "geojb"
+
+activatedPlugins = ["communes"]
