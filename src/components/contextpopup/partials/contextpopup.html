@@ -28,6 +28,10 @@
               <td>MGRS</td>
               <td>{{coordmgrs}}</td>
           </tr>
+          <tr ng-if="commune">
+              <td>Commune</td>
+              <td>{{commune}}</td>
+          </tr>
           <tr ng-if="altitude">
               <td translate>elevation</td>
               <td>{{altitude | measure:'distance':[' m']:1}}</td>

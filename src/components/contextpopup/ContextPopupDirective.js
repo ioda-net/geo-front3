@@ -2,6 +2,7 @@ goog.provide('ga_contextpopup_directive');
 
 goog.require('ga_networkstatus_service');
 goog.require('ga_permalink');
+goog.require('sigeom_plugins');
 (function() {
 
   var module = angular.module('ga_contextpopup_directive', [
@@ -12,7 +13,7 @@ goog.require('ga_permalink');
 
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
-          gaBrowserSniffer, gaNetworkStatus, gaPermalink) {
+          gaBrowserSniffer, gaNetworkStatus, gaPermalink, sgPlugins) {
         return {
           restrict: 'A',
           replace: true,
@@ -145,6 +146,12 @@ goog.require('ga_permalink');
                 });
 
               });
+
+              if (sgPlugins.communes) {
+                sgPlugins.communes(coord21781).success(function(response) {
+                  scope.commune = response.commune;
+                });
+              }
 
               updatePopupLinks();
 
