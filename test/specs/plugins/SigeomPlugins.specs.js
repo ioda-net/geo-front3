@@ -6,7 +6,7 @@ describe('SigeomPlugins', function () {
   }));
 
   it('plugin not activated should returns undefined', function () {
-    expect(plugins.notActivated()).to.be(undefined);
+    expect(plugins.unknown).to.be(undefined);
   });
 
   describe('communes', function () {

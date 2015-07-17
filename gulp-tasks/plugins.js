@@ -12,19 +12,7 @@ function load(src, dest, config) {
 
     return gulp.src(src.pluginsTemplate)
             .pipe(data(function () {
-              if (config.test) {
-                // If we are testing, we must enable all the modules except the
-                // one that exists to check the behaviour with unactivated
-                // modules.
-                plugins.activatedPlugins = [];
-                plugins.availablePlugins.forEach(function (plugin) {
-                  if (plugin !== 'notActivated') {
-                    plugins.activatedPlugins.push(plugin);
-                  }
-                });
-              } else {
-                plugins.activatedPlugins = config.activatedPlugins;
-              }
+              plugins.activatedPlugins = config.activatedPlugins;
 
               return plugins;
             }))
@@ -35,15 +23,13 @@ function load(src, dest, config) {
 
   function getPlugins() {
     var plugins = {
-      availablePlugins: [],
-      plugins: {}
+      availablePlugins: {}
     };
 
     glob.sync(src.plugins).forEach(function (pluginPath) {
       var pluginName = path.basename(pluginPath, '.js');
       var plugin = fs.readFileSync(pluginPath).toString();
-      plugins.plugins[pluginName] = plugin;
-      plugins.availablePlugins.push(pluginName);
+      plugins.availablePlugins[pluginName] = plugin;
     });
 
     return plugins;

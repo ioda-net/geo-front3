@@ -12,7 +12,6 @@ var testConfig = null;
 function load(src, dest, config) {
   gulp.task('test', function (cb) {
     testConfig = 'test/karma-conf.dev.js';
-    config.test = true;
     runSequence('plugins', 'launch-test', cb);
   }).help = 'Launch tests with karma.';
 

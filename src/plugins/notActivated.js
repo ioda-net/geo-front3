@@ -1,4 +1,0 @@
-function notActivated () {
-  return null;
-}
-
