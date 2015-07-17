@@ -63,7 +63,7 @@ gulp.task('dev', [
 
 
 gulp.task('watch', ['dev'], function () {
-  watch([src.index, src.config], function () {
+  watch([src.index], function () {
     gulp.start('index.html');
   });
 
