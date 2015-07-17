@@ -4,16 +4,18 @@ goog.require('ga_browsersniffer_service');
 goog.require('ga_map_service');
 goog.require('ngeo.Print');
 goog.require('ngeo.PrintUtils');
+goog.require('sigeom_plugins');
 (function() {
 
   var module = angular.module('ga_print_directive', [
     'ngeo',
-    'ga_map_service'
+    'ga_map_service',
+    'sigeom'
   ]);
 
   module.controller('GaPrintDirectiveController', function($scope,
           $window, $timeout, $q, gaLayers,
-          ngeoCreatePrint, ngeoPrintUtils) {
+          ngeoCreatePrint, ngeoPrintUtils, sgPlugins) {
 
     $scope.printError = false;
 
@@ -104,23 +106,37 @@ goog.require('ngeo.PrintUtils');
       var url = $window.location.toString();
       var legend = getLengend(map);
 
-      var spec = print.createSpec(map, $scope.scale, $scope.dpi,
-        $scope.layout.name, {
-          legend: legend,
-          printLegend: Number($scope.options.legend),
-          name: $scope.options.title,
-          qrimage: $scope.options.qrcodeUrl + encodeURIComponent(url),
-          url: url,
-          scale: $scope.scale,
-          bottomLeftCornerCoords: coordsToPrint
-      });
+      if (sgPlugins.communes) {
+        sgPlugins.communes(mapCenter).success(doPrint);
+      } else {
+        doPrint();
+      }
 
-      getGrid(spec);
+      function doPrint(data) {
+        // If the commune plugin is not activated, data is undefined.
+        // If the commune plugin is actiaved, data.commune may be undefined (no
+        // commune at given point. In this case, mapfish print expect an empty
+        // string or will crash.
+        var commune = (data && data.commune) ? data.commune : '';
+        var spec = print.createSpec(map, $scope.scale, $scope.dpi,
+          $scope.layout.name, {
+            legend: legend,
+            printLegend: Number($scope.options.legend),
+            name: $scope.options.title,
+            qrimage: $scope.options.qrcodeUrl + encodeURIComponent(url),
+            url: url,
+            scale: $scope.scale,
+            bottomLeftCornerCoords: coordsToPrint,
+            commune: commune
+        });
 
-      canceler = $q.defer();
-      print.createReport(spec, {timeout: canceler.promise}).then(
-              handleCreateReportSuccess,
-              handleCreateReportError);
+        getGrid(spec);
+
+        canceler = $q.defer();
+        print.createReport(spec, {timeout: canceler.promise}).then(
+                handleCreateReportSuccess,
+                handleCreateReportError);
+      }
     };
 
     var getLengend = function(map) {
