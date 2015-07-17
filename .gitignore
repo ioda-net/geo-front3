@@ -2,6 +2,7 @@
 gulp
 /node_modules
 /src/deps.js
+/src/js/SigeomPlugins.js
 /src/style/app.css
 /src/style/print.css
 /src/index.html

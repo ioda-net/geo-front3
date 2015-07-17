@@ -9,8 +9,8 @@ function load(src, dest, config) {
 
   gulp.task('clean', function (cb) {
     del([
-      'src/deps.js',
       'src/style/app.css',
+      'src/js/SigeomPlugins.js',
       'test/app-whitespace.js',
       'test/karma-conf.dev.js',
       'test/karma-conf.prod.js',

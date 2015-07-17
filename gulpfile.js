@@ -17,7 +17,9 @@ var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var config = utils.loadConf(process.argv[2], cliOptions);
 
 var src = {
-  js: 'src/**/*.js',
+  js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
+  plugins: 'src/plugins/*.js',
+  pluginsTemplate: 'src/*.nunjucks.js',
   partials: 'src/components/**/*.html',
   less: 'src/style/app.less',
   index: 'src/*.nunjucks.html',
@@ -26,7 +28,8 @@ var src = {
 
 var dest = {
   prod: 'prod/' + cliOptions.portal,
-  dev: 'dev/' + cliOptions.portal
+  dev: 'dev/' + cliOptions.portal,
+  pluginsFile: 'src/js'
 };
 
 
@@ -37,6 +40,7 @@ require('./gulp-tasks/clean')(src, dest, config);
 require('./gulp-tasks/closure')(src, dest, config);
 require('./gulp-tasks/copy')(src, dest, config);
 require('./gulp-tasks/misc')(src, dest, config);
+require('./gulp-tasks/plugins')(src, dest, config);
 require('./gulp-tasks/site')(src, dest, config);
 require('./gulp-tasks/test')(src, dest, config);
 
@@ -50,7 +54,9 @@ gulp.task('help', function () {
 }).help = 'shows this help message.';
 
 
-gulp.task('dev', [
+gulp.task('dev', function () {
+  runSequence('plugins',
+  [
     'index.html',
     'app.css',
     'deps.js',
@@ -59,7 +65,8 @@ gulp.task('dev', [
     'copy-fonts',
     'copy-locales',
     'copy-checker'
-]).help = 'generate all files for development';
+  ]);
+}).help = 'generate all files for development';
 
 
 gulp.task('watch', ['dev'], function () {
@@ -80,6 +87,8 @@ gulp.task('watch', ['dev'], function () {
     gulp.start('copy-partials');
   });
 
+  watch([src.plugins, src.pluginsTemplate], function () {
+    runSequence('plugins', 'deps.js');
   });
 
   // Relaunch dev task after a clean done by another instance.
