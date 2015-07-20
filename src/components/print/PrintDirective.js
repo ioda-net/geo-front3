@@ -107,7 +107,10 @@ goog.require('sigeom_plugins');
       var legend = getLengend(map);
 
       if (sgPlugins.communes) {
-        sgPlugins.communes(mapCenter).success(doPrint);
+        sgPlugins.communes(mapCenter)
+                .success(doPrint)
+                // If we cannot get the commune name, launch the print anyway
+                .error(doPrint);
       } else {
         doPrint();
       }
