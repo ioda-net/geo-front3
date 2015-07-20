@@ -59,13 +59,15 @@ gulp.task('dev', function () {
   [
     'index.html',
     'app.css',
-    'deps.js',
     'copy-js',
     'copy-partials',
     'copy-fonts',
     'copy-locales',
     'copy-checker'
-  ]);
+  ]
+  // Failsafe method fix buggy generated deps
+  ,'deps.js'
+  );
 }).help = 'generate all files for development';
 
 
