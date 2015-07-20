@@ -45,7 +45,7 @@ goog.provide('ga_draw_controller');
              left: 60
           },
           height: 145,
-          elevationModel: 'COMB'
+          elevationModel: gaGlobalOptions.defaultElevationModel
         };
 
         // Defines directive options

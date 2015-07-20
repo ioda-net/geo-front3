@@ -22,7 +22,7 @@ goog.require('ga_urlutils_service');
                 left: 60
               },
               height: 188,
-              elevationModel: 'COMB'
+              elevationModel: gaGlobalOptions.defaultElevationModel
           },
           styleFunction: (function() {
             var styles = {};

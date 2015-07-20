@@ -13,7 +13,7 @@ goog.require('sigeom_plugins');
 
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
-          gaBrowserSniffer, gaNetworkStatus, gaPermalink, sgPlugins) {
+          gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions, sgPlugins) {
         return {
           restrict: 'A',
           replace: true,
@@ -129,7 +129,7 @@ goog.require('sigeom_plugins');
                   params: {
                     easting: coord21781[0],
                     northing: coord21781[1],
-                    elevation_model: 'COMB'
+                    elevation_model: gaGlobalOptions.defaultElevationModel
                   }
                 }).success(function(response) {
                   scope.altitude = parseFloat(response.height);
