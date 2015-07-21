@@ -148,6 +148,7 @@ goog.require('sigeom_plugins');
               });
 
               if (sgPlugins.communes) {
+                scope.commune = undefined;
                 sgPlugins.communes(coord21781).success(function(response) {
                   scope.commune = response.commune;
                 });
