@@ -29,8 +29,10 @@
       <br>
       <table>
         <tr ng-repeat="(key, value) in feature.properties">
-          <td class="cell-left" ng-if="key !== 'label'">{{key}}:</td>
-          <td ng-if="key !== 'label'">{{value}}</td>
+          <td class="cell-left" ng-if="key !== 'label' && !key.startsWith('genre')">{{key}} :</td>
+          <td class="cell-left" ng-if="key.startsWith('genre') && key === options.featureGenre">genre :</td>
+          <td ng-if="key !== 'label' && !key.startsWith('genre')">{{value}}</td>
+          <td ng-if="key.startsWith('genre') && key === options.featureGenre">{{value}}</td>
         </tr>
       </table>
     </div>

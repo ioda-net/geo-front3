@@ -35,6 +35,8 @@ goog.require('ga_print_service');
           scope.titleHelp = $translate.instant('help_label');
           scope.titleReduce = $translate.instant('reduce_label');
           scope.titleClose = $translate.instant('close');
+          // Use the correct translation of "genre" from feature
+          scope.options.featureGenre = 'genre_' + $translate.use();
 
           // Per default hide the print function
           if (!angular.isDefined(scope.options.showPrint) ||
