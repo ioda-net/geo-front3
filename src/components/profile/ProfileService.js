@@ -167,7 +167,6 @@ goog.require('ga_urlutils_service');
             if (data.length == 0) {
               data = [{alts: {defaultElevationModel: 0}, dist: 0}];
             }
-            console.log(data);
             callback(data, status);
           }).error(function(data, status) {
               // If request is canceled, statuscode is 0 and we don't announce
