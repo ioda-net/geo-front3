@@ -161,19 +161,20 @@ goog.require('ga_urlutils_service');
             params.headers = {'Content-Type':
                 'application/x-www-form-urlencoded'};
           }
-
+          var defaultElevationModel = gaGlobalOptions.defaultElevationModel;
           $http(params).success(function(data, status) {
             // When all the geometry is outside switzerland
             if (data.length == 0) {
-              data = [{alts: {gaGlobalOptions.defaultElevationModel: 0}, dist: 0}];
+              data = [{alts: {defaultElevationModel: 0}, dist: 0}];
             }
+            console.log(data);
             callback(data, status);
           }).error(function(data, status) {
               // If request is canceled, statuscode is 0 and we don't announce
               // it
               if (status !== 0) {
                 // Display an empty profile
-                callback([{alts: {gaGlobalOptions.defaultElevationModel: 0}, dist: 0}], status);
+                callback([{alts: {defaultElevationModel: 0}, dist: 0}], status);
               }
             });
         };
