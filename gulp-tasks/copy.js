@@ -1,5 +1,7 @@
 var gulp = require('gulp');
+var extReplace = require('gulp-ext-replace');
 var gulpif = require('gulp-if');
+var uglify = require('gulp-uglify');
 
 function load(src, dest, config) {
   gulp.task('copy-js', function () {
@@ -40,7 +42,9 @@ function load(src, dest, config) {
 
   gulp.task('copy-IE', function () {
     return gulp.src('src/lib/IE/*.js')
-            .pipe(gulp.dest(dest.prod + '/lib'));
+            .pipe(uglify())
+            .pipe(extReplace('.min.js', '.js'))
+            .pipe(gulp.dest(dest.prod + '/lib/IE'));
   });
 }
 
