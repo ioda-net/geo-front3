@@ -56,7 +56,7 @@ describe('ga_contextpopup_directive', function() {
     var $timeout;
 
     var expectedHeightUrl = '//api.geo.admin.ch/height' +
-        '?easting=661473&elevation_model=COMB' +
+        '?easting=661473' +
         '&northing=188192';
     var expectedReframeUrl = '//api.example.com/reframe/' +
         'lv03tolv95?easting=661473&northing=188192';
