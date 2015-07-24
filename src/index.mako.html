@@ -7,7 +7,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
 >
   <head>
-    <!--[if !HTML5]>
+    <!--![if !HTML5]>
     <meta http-equiv="X-UA-Compatible" content="IE=9,IE=10,IE=edge,chrome=1"/>
     <![endif]-->
 % if device == 'desktop':
@@ -106,19 +106,19 @@ itemscope itemtype="http://schema.org/WebApplication"
     <link rel="shortcut icon" type="image/x-icon" href="${versionslashed}img/favicon.ico"/>
   </head>
 
-  <body class="{{topicId}}" 
+  <body class="{{topicId}}"
         ng-class="{
           'search-focused': globals.searchFocused,
-          'touch': globals.touch, 
-          'webkit': globals.webkit, 
-          'no-webkit': !globals.webkit, 
+          'touch': globals.touch,
+          'webkit': globals.webkit,
+          'no-webkit': !globals.webkit,
           'offline': globals.offline,
           'online': !globals.offline,
           'embed': globals.embed,
           'ga-draw-active': globals.isDrawActive
         }">
     <!-- The below conditional is ignored by >= IE10 and all other browsers -->
-    <!--[if IE]>
+    <!--![if IE]>
       <script>
        (function(){
        var msgDocumentMode = "";
@@ -154,7 +154,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         <div ga-search ga-search-map="map" ga-search-options="options" ga-search-focused="globals.searchFocused"></div>
   % if device == 'desktop':
         <span ga-help="24,31,25" ga-help-options="{showOnHover:true}"></span>
-  % endif      
+  % endif
       </div>
   % if device == 'desktop':
       <div id="toptools" class="hidden-xs">
@@ -210,15 +210,15 @@ itemscope itemtype="http://schema.org/WebApplication"
   % endif
         <div id="zoomButtons"></div>
   % if device != 'embed':
-        <div ga-time-selector-bt ga-time-selector-bt-map="map"></div> 
+        <div ga-time-selector-bt ga-time-selector-bt-map="map"></div>
   % endif
         <div ga-rotate ga-rotate-map="map"></div>
   % if device == 'mobile':
         <div ga-offline-bt></div>
   % endif
       </div>
-      <div ga-swipe 
-           ga-swipe-map="map" 
+      <div ga-swipe
+           ga-swipe-map="map"
            ga-swipe-active="globals.isSwipeActive"
            style="display:none;">
       </div>
@@ -271,8 +271,8 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 
     <div ng-controller="GaTooltipController">
-      <div ga-tooltip 
-           ga-tooltip-map="map" 
+      <div ga-tooltip
+           ga-tooltip-map="map"
            ga-tooltip-options="options"
            ga-tooltip-active="!globals.isDrawActive"></div>
     </div>
@@ -319,7 +319,7 @@ itemscope itemtype="http://schema.org/WebApplication"
             </div>
           </div>
         </div>  <!-- .panel -->
- 
+
         <!-- Draw -->
         <div class="panel">
           <a id="drawHeading" class="panel-heading accordion-toggle collapsed"
@@ -331,17 +331,17 @@ itemscope itemtype="http://schema.org/WebApplication"
           </a>
           <div id="draw" class="panel-collapse collapse">
             <div class="panel-body" ng-controller="GaDrawController">
-              <div ga-draw 
-                   ga-draw-map="map" 
+              <div ga-draw
+                   ga-draw-map="map"
                    ga-draw-options="options"
                    ga-draw-active="globals.isDrawActive">
               </div>
             </div>
           </div>
         </div> <!-- .panel -->
-        
+
         <!-- Tools -->
-        <div class="panel"> 
+        <div class="panel">
           <a id="toolsHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#tools">
             <i class="visible-collapsed icon-caret-right spacer"></i>
@@ -408,14 +408,14 @@ itemscope itemtype="http://schema.org/WebApplication"
             <i class="visible-collapsed icon-caret-right"></i>
             <i class="hidden-collapsed icon-caret-down"></i>
             <span>{{topicId | translate}}</span>
-  
+
   % if device == 'desktop':
             <span ga-help="32,37,39" ga-help-options="{showOnHover:true}"></span>
   % endif
 
           </a>
           <div id="catalog" class="collapse" ng-controller="GaCatalogtreeController">
-  
+
   % if device == 'mobile':
             <label class="topic-container">
               <span translate>change_topic</span>
@@ -574,9 +574,9 @@ itemscope itemtype="http://schema.org/WebApplication"
                 <div class="ga-no-result" translate>no_feature_results</div>
               </div>
               <div ng-show="options.nbFeatures > 0"
-                   ga-featuretree 
+                   ga-featuretree
                    ga-featuretree-map="map"
-                   ga-featuretree-options="options" 
+                   ga-featuretree-options="options"
                    ga-featuretree-active="globals.isFeatureTreeActive">
               </div>
             </div>
@@ -588,7 +588,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   % if device == 'mobile':
     <div ng-if="globals.homescreen" class="popover homescreen"
          ng-class="{
-           'visible': globals.homescreen, 
+           'visible': globals.homescreen,
            'bottom': globals.tablet,
            'top': !globals.tablet,
            'tr': (globals.ios >= 8)
@@ -610,7 +610,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <script src="${versionslashed}lib/build.js"></script>
     <!-- For <= IE9, we load it explicitely as XDomain does not support
          dynamic/lazy loading of javascript -->
-    <!--[if IE]>
+    <!--![if IE]>
     <script src="${versionslashed}lib/bootstrap-datetimepicker.min.js"></script>
     <script src="${versionslashed}lib/d3-3.3.1.min.js"></script>
     <script src="${versionslashed}lib/jQuery.XDomainRequest.js"></script>
@@ -695,10 +695,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           defaultTopicId: '${default_topic_id}',
           translationFallbackCode: '${translation_fallback_code}',
           defaultExtent: JSON.parse(${default_extent}),
-          defaultResolution: ${default_resolution},
-          resolutions: JSON.parse(${resolutions}),
-          defaultEpsg: '${default_epsg}',
-          defaultEpsgExtent: JSON.parse(${default_epsg_extend}),
+          defaultResolution: ${default_resolution}
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {
@@ -725,7 +722,6 @@ itemscope itemtype="http://schema.org/WebApplication"
         });
         module.config(function(gaTopicProvider, gaGlobalOptions) {
           gaTopicProvider.topicsUrl = gaGlobalOptions.cachedApiUrl + '/rest/services';
-          gaTopicProvider.thumbnailUrlTemplate = gaGlobalOptions.resourceUrl + 'img/{Topic}.jpg';
         });
 
         module.config(function(gaExportKmlProvider, gaGlobalOptions) {
@@ -749,7 +745,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           gaProfileProvider.profileUrl =
               gaGlobalOptions.apiUrl + '/rest/services/profile.json';
         });
-        
+
         module.config(function(gaQueryProvider, gaGlobalOptions) {
           gaQueryProvider.dpUrl = gaGlobalOptions.resourceUrl +
               'lib/bootstrap-datetimepicker.min.js';
@@ -774,7 +770,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         $(window).bind("orientationchange", function(){
           $('#header').hide();
           setTimeout(function(){
-            $('#header').show(); 
+            $('#header').show();
             // iOS 7 minimal-ui meta tag bug
             window.scrollTo(0, 0);
           }, 0);
