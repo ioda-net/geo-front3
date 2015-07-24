@@ -47,8 +47,6 @@ describe('ga_layer_metadata_popup_service', function() {
   });
 
   it('creates a legend popup with the right content', function() {
-    var expectedUrlLegend = 'http://legendservice.com/sometopic/somelayer?lang=somelang';
-    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some raw html</div>');
     gaLayerMetadataPopup.toggle('somelayer');
     $rootScope.$digest();
 
@@ -56,7 +54,7 @@ describe('ga_layer_metadata_popup_service', function() {
     expect(popupLegend.length).to.be(1);
     expect(popupLegend.parents().length).to.be(2);
     expect(popupLegend.css('display')).to.be('block');
-    var popupContent = '<span class="ng-binding">somelayer</span>';
+    var popupContent = '<span class="ng-binding"></span>';
     expect(popupLegend.find('.ga-popup-content').html().indexOf(popupContent) > -1).to.be(true);
 
     gaLayerMetadataPopup.toggle('somelayer');
@@ -87,7 +85,6 @@ describe('ga_layer_metadata_popup_service', function() {
     $translate.use('someotherlang');
 
     $rootScope.$digest();
-    $httpBackend.flush();
 
     popupLegend = $('.ga-tooltip-metadata');
     expect(popupLegend.length).to.be(2);
