@@ -52,6 +52,9 @@ describe('ga_backgroundselector_directive', function() {
 
     $compile(element)($rootScope);
     $rootScope.$digest();
+
+    $rootScope.$broadcast('gaTopicChange');
+    $rootScope.$digest();
   });
 
   describe('initialization', function() {
