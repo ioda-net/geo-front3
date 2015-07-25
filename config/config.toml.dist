@@ -25,7 +25,7 @@ public_allowed_url_regexp = "https?:\\/\\/pserve\\.geojb.*"
 public_url_regexp = "https?:\\/\\/pserve\\.geojb.*"
 admin_url_regexp = "^(ftp|http|https):\\/\\/(.*geojb)"
 
-fallback_elevation_model = 'DTM25'
-default_elevation_model = 'COMB'
+fallback_elevation_model = 'MNT50'
+default_elevation_model = 'MNT50'
 
 activatedPlugins = ["communes"]
