@@ -251,7 +251,7 @@ goog.require('sigeom_plugins');
     $scope.$watch('layout', function() {
       refreshComp();
     });
-    $scope.$watch('options.active', function(newVal) {
+    $scope.$watch('active', function(newVal) {
       if (newVal === true) {
         activate();
       } else {
@@ -264,6 +264,11 @@ goog.require('sigeom_plugins');
           function() {
             return {
               restrict: 'A',
+              scope: {
+                map: '=gaPrintMap',
+                options: '=gaPrintOptions',
+                active: '=gaPrintActive'
+              },
               templateUrl: 'components/print/partials/print.html',
               controller: 'GaPrintDirectiveController',
               link: function(scope, elt, attrs, controller) {
