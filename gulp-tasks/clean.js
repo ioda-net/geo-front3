@@ -14,15 +14,17 @@ function load(src, dest, config) {
       'test/app-whitespace.js',
       'test/karma-conf.dev.js',
       'test/karma-conf.prod.js',
-      'prod',
-      'dev'
+      'prod/' + config.portal_name,
+      'dev/' + config.portal_name
     ], cb);
   }).help = 'remove generated files.';
 
 
   gulp.task('cleanall', ['clean'], function (cb) {
     del([
-      'node_modules'
+      'node_modules',
+      'prod',
+      'dev'
     ], cb);
   }).help = 'clean and remove node modules.';
 }
