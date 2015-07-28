@@ -18,10 +18,10 @@ goog.require('sigeom_plugins');
           ngeoCreatePrint, ngeoPrintUtils, sgPlugins) {
 
     $scope.printError = false;
+    $scope.printConfigLoaded = false;
 
     var canceler;
     var print = ngeoCreatePrint($scope.options.printPath);
-    var printConfigLoaded = false;
     var deregister = [];
 
     // Get print config
@@ -49,7 +49,7 @@ goog.require('sigeom_plugins');
       $scope.options.legend = false;
       $scope.options.graticule = false;
 
-      printConfigLoaded = true;
+      $scope.printConfigLoaded = true;
     };
 
     var activate = function() {
@@ -232,7 +232,7 @@ goog.require('sigeom_plugins');
     // Listeners
     $scope.$on('gaTopicChange', function(event, topic) {
       canceler = $q.defer();
-      if (!printConfigLoaded) {
+      if (!$scope.printConfigLoaded) {
         print.getCapabilities({timeout: canceler.promise})
                 .success(updatePrintConfig)
                 .error(handlePrintError);
