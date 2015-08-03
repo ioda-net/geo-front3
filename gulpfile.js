@@ -22,6 +22,7 @@ var src = {
   pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
   partials: 'src/components/**/*.html',
   less: 'src/style/app.less',
+  watchLess: 'src/**/*.less',
   index: 'src/*.nunjucks.html',
   config: 'config/' + cliOptions.portal + '-dev.toml'
 };
@@ -91,6 +92,10 @@ gulp.task('watch', ['dev'], function () {
 
   watch([src.plugins, src.pluginsTemplate], function () {
     runSequence('plugins', 'deps.js');
+  });
+
+  watch(src.watchLess, function () {
+    gulp.start('app.css');
   });
 
   // Relaunch dev task after a clean done by another instance.
