@@ -268,11 +268,11 @@ itemscope itemtype="http://schema.org/WebApplication"
            ga-time-selector-options="options">
       </div>
     </div>
-    <div ng-controller="GaTooltipController">
-      <div ga-tooltip
-           ga-tooltip-map="map"
-           ga-tooltip-options="options"
-           ga-tooltip-active="!globals.isDrawActive"></div>
+    <div ng-controller="GaFeaturesController">
+      <div ga-features
+           ga-features-map="map"
+           ga-features-options="options"
+           ga-features-active="!globals.isDrawActive"></div>
     </div>
 {% if device != 'embed' %}
     <div  id="pulldown" ng-cloak translate-cloak ng-show="!globals.offline"

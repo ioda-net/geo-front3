@@ -20,25 +20,6 @@
 
 
 <div class="ga-popup-content">
-  <div class="htmlpopup-container feature" ng-if="options.type === 'features'" ng-repeat="feature in options.results track by feature.id">
-    <div class="htmlpopup-header">
-      <span>{{feature.properties.label}}</span>
-    </div>
-    <div class="htmlpopup-content">
-      <span>Information</span>
-      <br>
-      <table>
-        <tr ng-repeat="(key, value) in feature.properties">
-          <td class="cell-left" ng-if="key !== 'label' && !key.startsWith('genre')">{{key}} :</td>
-          <td class="cell-left" ng-if="key.startsWith('genre') && key === options.featureGenre">genre :</td>
-          <td ng-if="key !== 'label' && !key.startsWith('genre')">{{value}}</td>
-          <td ng-if="key.startsWith('genre') && key === options.featureGenre">{{value}}</td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-
   <div class="ng-binding ng-scope" ng-if="options.type === 'infobox'">
     <div class="legend-container">
       <div class="legend-header">

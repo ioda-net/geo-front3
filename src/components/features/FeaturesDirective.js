@@ -1,4 +1,4 @@
-goog.provide('ga_tooltip_directive');
+goog.provide('ga_features_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_debounce_service');
@@ -7,7 +7,7 @@ goog.require('ga_popup_service');
 goog.require('ga_styles_service');
 (function() {
 
-  var module = angular.module('ga_tooltip_directive', [
+  var module = angular.module('ga_features_directive', [
     'ga_debounce_service',
     'ga_popup_service',
     'ga_map_service',
@@ -15,7 +15,7 @@ goog.require('ga_styles_service');
     'pascalprecht.translate'
   ]);
 
-  module.directive('gaTooltip',
+  module.directive('gaFeatures',
       function($timeout, $http, $q, $translate, $sce, gaPopup, gaLayers,
           gaBrowserSniffer, gaDefinePropertiesForLayer, gaMapClick, gaDebounce,
           gaPreviewFeatures, gaStyleFactory, gaMapUtils) {
@@ -26,13 +26,15 @@ goog.require('ga_styles_service');
                            '</div>';
         return {
           restrict: 'A',
+          templateUrl: 'components/features/partials/features.html',
           scope: {
-            map: '=gaTooltipMap',
-            options: '=gaTooltipOptions',
-            isActive: '=gaTooltipActive'
+            map: '=gaFeaturesMap',
+            options: '=gaFeaturesOptions',
+            isActive: '=gaFeaturesActive'
           },
           link: function($scope, element, attrs) {
-            var featuresToDisplay = [],
+            var featuresToDisplay = {},
+                propertiesNames = {},
                 onCloseCB = angular.noop,
                 map = $scope.map,
                 popup,
@@ -121,17 +123,12 @@ goog.require('ga_styles_service');
               // Create new cancel object
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
-              featuresToDisplay.splice(0, featuresToDisplay.length);
-              if (popup) {
-                popup.close();
+              clearObject(featuresToDisplay);
+              clearObject(propertiesNames);
+              if ($scope.popupToggle) {
                 $timeout(function() {
-                  // We destroy the popup only if it's still closed
-                  if (popup && popup.scope &&
-                      popup.scope.toggle === false) {
-                    popup.destroy();
-                    popup = undefined;
-                  }
-                },0);
+                  $scope.popupToggle = false;
+                });
               }
 
               // Clear the preview features
@@ -140,6 +137,14 @@ goog.require('ga_styles_service');
               // Remove the remove layer listener if exist
               if (listenerKey) {
                 ol.Observable.unByKey(listenerKey);
+              }
+            }
+
+            function clearObject(obj) {
+              for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                  delete obj[key];
+                }
               }
             }
 
@@ -286,6 +291,7 @@ goog.require('ga_styles_service');
                     params: params
                   }).success(function(features) {
                     showFeatures(features.results);
+                    angular.extend(propertiesNames, features.propertiesNames);
                   });
                 }
               }
@@ -334,34 +340,21 @@ goog.require('ga_styles_service');
             // Show the popup with all features informations
             function showPopup(feature) {
               // Show popup on first result
-              if (featuresToDisplay.length === 0) {
-                if (!popup) {
-                  popup = gaPopup.create({
-                    className: 'ga-tooltip',
-                    onCloseCallback: function() {
-                      if (onCloseCB) {
-                        onCloseCB();
-                      }
-                      onCloseCB = angular.noop;
-                      gaPreviewFeatures.clear(map);
-                    },
+              if (Object.keys(featuresToDisplay).length === 0) {
+                if (!$scope.popupToggle) {
+                  angular.extend($scope.options, {
                     title: 'object_information',
                     content: popupContent,
-                    results: featuresToDisplay,
-                    type: 'features',
-                    showPrint: true
+                    features: featuresToDisplay,
+                    propertiesNames: propertiesNames
                   });
+                  $scope.popupToggle = true;
                 }
               }
-              featuresToDisplay.push(feature);
-              popup.open();
-              //always reposition element when newly opened
-              if (!gaBrowserSniffer.mobile) {
-                popup.element.css({
-                  left: ((map.getSize()[0] / 2) -
-                      (parseFloat(popup.element.css('max-width')) / 2))
-                });
+              if (!(feature.layerBodId in featuresToDisplay)) {
+                featuresToDisplay[feature.layerBodId] = [];
               }
+              featuresToDisplay[feature.layerBodId].push(feature);
             }
 
             function yearFromString(timestamp) {

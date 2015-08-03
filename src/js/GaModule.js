@@ -23,7 +23,7 @@ goog.require('ga_feedback');
 goog.require('ga_geolocation');
 goog.require('ga_rotate');
 goog.require('ga_layermanager');
-goog.require('ga_tooltip');
+goog.require('ga_features');
 goog.require('ga_swipe');
 goog.require('ga_featuretree');
 goog.require('ga_measure');
@@ -53,7 +53,7 @@ goog.require('ga_contextpopup_controller');
 goog.require('ga_search_controller');
 goog.require('ga_seo_controller');
 goog.require('ga_timeselector_controller');
-goog.require('ga_tooltip_controller');
+goog.require('ga_features_controller');
 goog.require('ga_featuretree_controller');
 goog.require('ga_measure_controller');
 goog.require('ga_draw_controller');
@@ -82,7 +82,7 @@ goog.require('ga_query_controller');
     'ga_translation',
     'ga_feedback',
     'ga_layermanager',
-    'ga_tooltip',
+    'ga_features',
     'ga_swipe',
     'ga_featuretree',
     'ga_measure',
@@ -114,7 +114,7 @@ goog.require('ga_query_controller');
     'ga_search_controller',
     'ga_seo_controller',
     'ga_timeselector_controller',
-    'ga_tooltip_controller',
+    'ga_features_controller',
     'ga_featuretree_controller',
     'ga_measure_controller',
     'ga_draw_controller',
