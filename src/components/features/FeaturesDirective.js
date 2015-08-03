@@ -349,6 +349,7 @@ goog.require('ga_styles_service');
                     propertiesNames: propertiesNames
                   });
                   $scope.popupToggle = true;
+                  $scope.options.currentTab = feature.layerBodId;
                 }
               }
               if (!(feature.layerBodId in featuresToDisplay)) {

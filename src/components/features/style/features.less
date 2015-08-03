@@ -21,7 +21,15 @@
     margin-top: 4px;
     border-bottom-color: #c7c7c7;
   }
-  
+
+  .nav-tabs a {
+    text-decoration: none;
+
+    &.ga-active {
+      background-color: red;
+    }
+  }
+
 
   /* !important is used to override (and so deactivate) draggable styles
   applied */
@@ -29,7 +37,7 @@
     top: @small-header-height !important;
     max-height: 300px;
   }
-  
+
   @media (max-width: @screen-phone) {
     top: 50% !important;
     left: 2% !important;

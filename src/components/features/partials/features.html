@@ -2,19 +2,27 @@
      ga-popup="popupToggle"
      ga-popup-options="options.popupOptions">
   <div class="htmlpopup-content">
-    <div ng-repeat="(layerBodId, v) in options.features"
-         ng-click="options.currentTab = layerBodId">
-      {{layerBodId}}
-      <table ng-show="options.currentTab === layerBodId">
-        <tr>
-          <td ng-repeat="propertyName in options.propertiesNames[layerBodId]"
-              ng-if="['gid', 'the_geom'].indexOf(propertyName) === -1">{{propertyName}}</td>
-        </tr>
-        <tr ng-repeat="feature in options.features[layerBodId]">
-          <td class="cell-left" ng-repeat="propertyName in options.propertiesNames[layerBodId]"
-              ng-if="['gid', 'the_geom'].indexOf(propertyName) === -1">{{feature.properties[propertyName]}}</td>
-        </tr>
-      </table>
-    </div>
+    <ul class="nav-tabs nav">
+      <li ng-repeat="(layerBodId, v) in options.features">
+        <a href=""
+           ng-class="{'ga-active': options.currentTab === layerBodId}"
+           ng-click="options.currentTab = layerBodId"
+           translate>
+          {{layerBodId}}
+        </a>
+      </li>
+    </ul>
+
+    <table ng-repeat="(layerBodId, v) in options.features"
+        ng-show="options.currentTab === layerBodId">
+      <tr>
+        <td ng-repeat="propertyName in options.propertiesNames[layerBodId]"
+            ng-if="['gid', 'the_geom'].indexOf(propertyName) === -1">{{propertyName}}</td>
+      </tr>
+      <tr ng-repeat="feature in options.features[layerBodId]">
+        <td class="cell-left" ng-repeat="propertyName in options.propertiesNames[layerBodId]"
+            ng-if="['gid', 'the_geom'].indexOf(propertyName) === -1">{{feature.properties[propertyName]}}</td>
+      </tr>
+    </table>
   </div>
 </div>
