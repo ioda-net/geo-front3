@@ -18,6 +18,8 @@ var config = utils.loadConf(process.argv[2], cliOptions);
 
 var src = {
   js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
+  css: ['src/**/*.css'],
+  font: ['src/**/*.eot', 'src/**/*.otf', 'src/**/*.svg', 'src/**/*.ttf', 'src/**/*.woff'],
   plugins: 'src/plugins/*.js',
   pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
   partials: 'src/components/**/*.html',
@@ -61,9 +63,9 @@ gulp.task('dev', function () {
     'index.html',
     'app.css',
     'copy-js',
+    'copy-css',
     'copy-partials',
     'copy-fonts',
-    'copy-locales',
     'copy-checker'
   ]
   // Failsafe method fix buggy generated deps
@@ -112,7 +114,6 @@ gulp.task('prod', function (cb) {
             'index.html',
             'app.css',
             'copy-fonts',
-            'copy-locales',
             'copy-checker',
             'copy-IE',
             'appcache',
