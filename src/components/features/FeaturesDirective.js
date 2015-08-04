@@ -34,46 +34,17 @@ goog.require('ga_styles_service');
           },
           link: function($scope, element, attrs) {
             var featuresToDisplay = {},
+                featuresProperties = {},
                 propertiesNames = {},
-                onCloseCB = angular.noop,
                 map = $scope.map,
                 popup,
                 canceler,
                 currentTopic,
-                vector,
-                vectorSource,
                 parser,
                 year,
                 listenerKey;
 
             parser = new ol.format.GeoJSON();
-
-            $window.addEventListener('resize', featuresContainerSize);
-
-            function featuresContainerSize() {
-              // max-width on features container to always view buttons
-              var popupContent = $('.ga-features-popup').parent();
-              var popup = popupContent.parent();
-              popupContent.css('max-width', $window.innerWidth);
-
-              // max-height on features container to scroll vertically
-              // We must take into account the size of the title bar which may
-              // be inserted in the DOM after this function is called.
-              popup.on('DOMSubtreeModified', correctHeight);
-              function correctHeight() {
-                var popupTitle = popup.find('.popover-title');
-                var heightTitle = parseInt(
-                        popupTitle.outerHeight(), 10);
-                // On some browsers (eg Firefox), the DOM will be updated
-                // multiple times and the CSS may not have been applied yet.
-                if (popupTitle.length > 0 && heightTitle !== 0) {
-                  popup.off('DOMSubtreeModified', correctHeight);
-                  var heightPop = parseInt(popup.css('height'), 10);
-                  var newHeight = heightPop - heightTitle;
-                  popupContent.css('max-height', newHeight);
-                }
-              }
-            }
 
             $scope.$on('gaTopicChange', function(event, topic) {
               currentTopic = topic.id;
@@ -93,7 +64,6 @@ goog.require('ga_styles_service');
               // popup is correctly closed.
               $timeout(function() {
                 showFeatures(data.features);
-                onCloseCB = data.onCloseCB;
               }, 0);
 
             });
@@ -151,6 +121,7 @@ goog.require('ga_styles_service');
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
               clearObject(featuresToDisplay);
+              clearObject(featuresProperties);
               clearObject(propertiesNames);
               if ($scope.popupToggle) {
                 $timeout(function() {
@@ -372,18 +343,70 @@ goog.require('ga_styles_service');
                   angular.extend($scope.options, {
                     title: 'object_information',
                     content: popupContent,
+                    featuresProperties: featuresProperties,
                     features: featuresToDisplay,
-                    propertiesNames: propertiesNames
+                    gridOptions: {
+                      data: propertiesNames
+                    }
                   });
                   $scope.popupToggle = true;
                   $scope.options.currentTab = feature.layerBodId;
-                  featuresContainerSize();
+                  setTableSize();
                 }
               }
               if (!(feature.layerBodId in featuresToDisplay)) {
                 featuresToDisplay[feature.layerBodId] = [];
+                featuresProperties[feature.layerBodId] = [];
               }
               featuresToDisplay[feature.layerBodId].push(feature);
+              featuresProperties[feature.layerBodId].push(feature.properties);
+            }
+
+            function setTableSize() {
+              function correctWith(popup) {
+                // max-width on features container to always view buttons
+                var table = $('.ga-features-popup .grid');
+                if (table.length > 0) {
+                  var popupContent = popup.find('.ga-popup-content');
+                  var newWidth = $window.innerWidth -
+                          parseInt(popupContent.css('padding-left'), 10) -
+                          parseInt(popupContent.css('padding-right'), 10);
+                  table.css('width', newWidth);
+                }
+              }
+
+              function correctHeight(popup) {
+                // max-height on features container to scroll vertically
+                // We must take into account the size of the title bar which may
+                // be inserted in the DOM after this function is called.
+                var table = $('.ga-features-popup .grid');
+                var popupTitle = popup.find('.popover-title');
+                var heightTitle = parseInt(
+                        popupTitle.outerHeight(), 10);
+                // On some browsers (eg Firefox), the DOM will be updated
+                // multiple times and the CSS may not have been applied yet.
+                if (popupTitle.length > 0 && heightTitle !== 0 && table.length > 0) {
+                  var popupContent = popup.find('.ga-popup-content');
+                  var newHeight = parseInt(popup.css('height'), 10) -
+                          heightTitle -
+                          parseInt(popupContent.css('padding-top'), 10) -
+                          parseInt(popupContent.css('padding-bottom'), 10);
+                  table.css('height', newHeight);
+                }
+              }
+              var popup = $('.ga-features-popup').parent().parent();
+              function correctTableSize(windowEvent) {
+                correctWith(popup);
+                correctHeight(popup);
+                if (!windowEvent) {
+                  popup.off('DOMSubtreeModified', correctTableSize);
+                }
+              }
+
+              $window.addEventListener('resize', function () {
+                correctTableSize(true);
+              });
+              popup.on('DOMSubtreeModified', correctTableSize);
             }
 
             function yearFromString(timestamp) {

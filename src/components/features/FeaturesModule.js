@@ -4,6 +4,7 @@ goog.require('ga_features_directive');
 (function() {
 
   angular.module('ga_features', [
-    'ga_features_directive'
+    'ga_features_directive',
+    'ui.grid'
   ]);
 })();
