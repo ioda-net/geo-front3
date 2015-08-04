@@ -12,7 +12,9 @@ function load(src, dest, config) {
 
   gulp.task('copy-css', function () {
     return gulp.src(src.css)
-            .pipe(gulp.dest(dest.dev));
+            .pipe(gulpif(config.prod,
+              gulp.dest(dest.prod),
+              gulp.dest(dest.dev)));
   });
 
 

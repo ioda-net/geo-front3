@@ -18,6 +18,8 @@ function load(src, dest, config) {
       'src/lib/moment-with-customlocales.js',
       'src/lib/typeahead-0.9.3.js',
       'src/lib/angular.js',
+      'src/lib/csv.js',
+      'src/lib/ui-grid.js',
       'src/lib/proj4js-compressed.js',
       'src/lib/EPSG21781.js',
       'src/lib/EPSG2056.js',

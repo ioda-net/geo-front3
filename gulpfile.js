@@ -114,6 +114,7 @@ gulp.task('prod', function (cb) {
             'index.html',
             'app.css',
             'copy-fonts',
+            'copy-css',
             'copy-checker',
             'copy-IE',
             'appcache',
