@@ -34,8 +34,7 @@ goog.require('ga_styles_service');
           },
           link: function($scope, element, attrs) {
             var featuresToDisplay = {},
-                featuresProperties = {},
-                propertiesNames = {},
+                gridsOptions = {},
                 map = $scope.map,
                 popup,
                 canceler,
@@ -43,6 +42,13 @@ goog.require('ga_styles_service');
                 parser,
                 year,
                 listenerKey;
+            var globalGridOptions = {
+              enableGridMenu: true,
+              enableSelectAll: true,
+              exporterCsvLinkElement:
+                      angular.element(
+                        document.querySelectorAll('.custom-csv-link-location'))
+            };
 
             parser = new ol.format.GeoJSON();
 
@@ -121,8 +127,7 @@ goog.require('ga_styles_service');
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
               clearObject(featuresToDisplay);
-              clearObject(featuresProperties);
-              clearObject(propertiesNames);
+              clearObject(gridsOptions);
               if ($scope.popupToggle) {
                 $timeout(function() {
                   $scope.popupToggle = false;
@@ -289,7 +294,6 @@ goog.require('ga_styles_service');
                     params: params
                   }).success(function(features) {
                     showFeatures(features.results);
-                    angular.extend(propertiesNames, features.propertiesNames);
                   });
                 }
               }
@@ -343,11 +347,8 @@ goog.require('ga_styles_service');
                   angular.extend($scope.options, {
                     title: 'object_information',
                     content: popupContent,
-                    featuresProperties: featuresProperties,
                     features: featuresToDisplay,
-                    gridOptions: {
-                      data: propertiesNames
-                    }
+                    gridsOptions: gridsOptions
                   });
                   $scope.popupToggle = true;
                   $scope.options.currentTab = feature.layerBodId;
@@ -356,10 +357,17 @@ goog.require('ga_styles_service');
               }
               if (!(feature.layerBodId in featuresToDisplay)) {
                 featuresToDisplay[feature.layerBodId] = [];
-                featuresProperties[feature.layerBodId] = [];
+                var exporterCsvFilename =
+                    feature.layerBodId.replace(/,/g, '_') + '.csv';
+                var layerGridOptions = {
+                  data: [],
+                  exporterCsvFilename: exporterCsvFilename
+                };
+                gridsOptions[feature.layerBodId] =
+                    angular.extend({}, globalGridOptions, layerGridOptions);
               }
               featuresToDisplay[feature.layerBodId].push(feature);
-              featuresProperties[feature.layerBodId].push(feature.properties);
+              gridsOptions[feature.layerBodId].data.push(feature.properties);
             }
 
             function setTableSize() {

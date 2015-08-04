@@ -14,10 +14,13 @@
       </ul>
 
       <div class="grid"
-           ng-repeat="(layerBodId, properties) in options.featuresProperties"
+           ng-repeat="(layerBodId, properties) in options.gridsOptions"
            ng-if="options.currentTab === layerBodId"
-           ui-grid="{ data: properties }"
-           ui-grid-exporter></div>
+           ui-grid="options.gridsOptions[layerBodId]"
+           ui-grid-exporter
+           ui-grid-selection
+           ui-grid-move-columns
+           ui-grid-resize-columns></div>
     </div>
   </div>
 </div>
