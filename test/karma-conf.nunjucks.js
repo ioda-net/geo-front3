@@ -14,7 +14,7 @@ module.exports = function(config) {
 	    {% if prod %}
 	        'geojb/lib/build.js',
 	    {% else %}
-	       'lib/jquery-2.0.3.js',
+	       'lib/jquery-2.1.4.js',
 	       'lib/angular.js',
 	       'lib/angular-translate.js',
 	       'lib/angular-translate-loader-static-files.js',
