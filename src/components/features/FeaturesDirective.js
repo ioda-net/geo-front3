@@ -16,7 +16,7 @@ goog.require('ga_styles_service');
   ]);
 
   module.directive('gaFeatures',
-      function($timeout, $http, $q, $translate, $sce, gaPopup, gaLayers,
+      function($timeout, $http, $q, $translate, $sce, $window, gaPopup, gaLayers,
           gaBrowserSniffer, gaDefinePropertiesForLayer, gaMapClick, gaDebounce,
           gaPreviewFeatures, gaStyleFactory, gaMapUtils) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
@@ -47,6 +47,33 @@ goog.require('ga_styles_service');
                 listenerKey;
 
             parser = new ol.format.GeoJSON();
+
+            $window.addEventListener('resize', featuresContainerSize);
+
+            function featuresContainerSize() {
+              // max-width on features container to always view buttons
+              var popupContent = $('.ga-features-popup').parent();
+              var popup = popupContent.parent();
+              popupContent.css('max-width', $window.innerWidth);
+
+              // max-height on features container to scroll vertically
+              // We must take into account the size of the title bar which may
+              // be inserted in the DOM after this function is called.
+              popup.on('DOMSubtreeModified', correctHeight);
+              function correctHeight() {
+                var popupTitle = popup.find('.popover-title');
+                var heightTitle = parseInt(
+                        popupTitle.outerHeight(), 10);
+                // On some browsers (eg Firefox), the DOM will be updated
+                // multiple times and the CSS may not have been applied yet.
+                if (popupTitle.length > 0 && heightTitle !== 0) {
+                  popup.off('DOMSubtreeModified', correctHeight);
+                  var heightPop = parseInt(popup.css('height'), 10);
+                  var newHeight = heightPop - heightTitle;
+                  popupContent.css('max-height', newHeight);
+                }
+              }
+            }
 
             $scope.$on('gaTopicChange', function(event, topic) {
               currentTopic = topic.id;
@@ -350,6 +377,7 @@ goog.require('ga_styles_service');
                   });
                   $scope.popupToggle = true;
                   $scope.options.currentTab = feature.layerBodId;
+                  featuresContainerSize();
                 }
               }
               if (!(feature.layerBodId in featuresToDisplay)) {

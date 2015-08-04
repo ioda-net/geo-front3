@@ -2,8 +2,6 @@
 @tooltip-height: 600;
 
 .ga-features-popup {
-  max-width: unit(@tooltip-width, px);
-  max-height: unit(@tooltip-height, px);
 
   .popover-content {
     padding: 0px;
@@ -28,22 +26,5 @@
     &.ga-active {
       background-color: red;
     }
-  }
-
-
-  /* !important is used to override (and so deactivate) draggable styles
-  applied */
-  @media (max-width: @screen-tablet) {
-    top: @small-header-height !important;
-    max-height: 300px;
-  }
-
-  @media (max-width: @screen-phone) {
-    top: 50% !important;
-    left: 2% !important;
-    right: 2%;
-    bottom: 2%;
-    max-height: none;
-    width: auto;
   }
 }
