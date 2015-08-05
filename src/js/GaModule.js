@@ -25,12 +25,10 @@ goog.require('ga_rotate');
 goog.require('ga_layermanager');
 goog.require('ga_features');
 goog.require('ga_swipe');
-goog.require('ga_featuretree');
 goog.require('ga_measure');
 goog.require('ga_profile');
 goog.require('ga_seo');
 goog.require('ga_draw');
-goog.require('ga_query');
 goog.require('ga_modal_directive');
 goog.require('ga_draggable_directive');
 goog.require('ga_placeholder_directive');
@@ -54,10 +52,9 @@ goog.require('ga_search_controller');
 goog.require('ga_seo_controller');
 goog.require('ga_timeselector_controller');
 goog.require('ga_features_controller');
-goog.require('ga_featuretree_controller');
+goog.require('ga_selectbyrectanglefeatures_controller');
 goog.require('ga_measure_controller');
 goog.require('ga_draw_controller');
-goog.require('ga_query_controller');
 (function() {
  
 
@@ -84,7 +81,6 @@ goog.require('ga_query_controller');
     'ga_layermanager',
     'ga_features',
     'ga_swipe',
-    'ga_featuretree',
     'ga_measure',
     'ga_profile',
     'ga_fullscreen',
@@ -92,7 +88,6 @@ goog.require('ga_query_controller');
     'ga_styles_from_literals_service',
     'ga_seo',
     'ga_draw',
-    'ga_query',
     'ga_modal_directive',
     'ga_draggable_directive',
     'ga_placeholder_directive',
@@ -115,10 +110,9 @@ goog.require('ga_query_controller');
     'ga_seo_controller',
     'ga_timeselector_controller',
     'ga_features_controller',
-    'ga_featuretree_controller',
+    'ga_selectbyrectanglefeatures_controller',
     'ga_measure_controller',
-    'ga_draw_controller',
-    'ga_query_controller'
+    'ga_draw_controller'
   ]);
 
 })();
