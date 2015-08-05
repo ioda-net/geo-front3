@@ -238,11 +238,11 @@ goog.require('ga_styles_service');
             }
 
             // Find features for all type of layers
-            function findFeatures(coordinate, size, mapExtent) {
+            function findFeatures(geometry, size, mapExtent) {
               var identifyUrl = $scope.options.identifyUrlTemplate
                   .replace('{Topic}', currentTopic),
                   layersToQuery = getLayersToQuery(),
-                  pixel = map.getPixelFromCoordinate(coordinate);
+                  pixel = map.getPixelFromCoordinate(geometry);
               initTooltip();
               for (var i = 0, ii = layersToQuery.length; i < ii; i++) {
                 var layerToQuery = layersToQuery[i];
@@ -277,16 +277,14 @@ goog.require('ga_styles_service');
                     }
                   }
                 } else { // queryable bod layers
-                  var params = {
-                    geometryType: 'esriGeometryPoint',
-                    geometryFormat: 'geojson',
-                    geometry: coordinate[0] + ',' + coordinate[1],
+                  var params = angular.extend({}, $scope.options.params, {
+                    geometry: geometry.join(','),
                     // FIXME: make sure we are passing the right dpi here.
                     imageDisplay: size[0] + ',' + size[1] + ',96',
                     mapExtent: mapExtent.join(','),
                     tolerance: $scope.options.tolerance,
                     layers: 'all:' + layerToQuery.bodId
-                  };
+                  });
 
                   // Only timeEnabled layers use the timeInstant parameter
                   if (layerToQuery.timeEnabled) {
@@ -348,7 +346,6 @@ goog.require('ga_styles_service');
               if (Object.keys(featuresToDisplay).length === 0) {
                 if (!$scope.popupToggle) {
                   angular.extend($scope.options, {
-                    title: 'object_information',
                     content: popupContent,
                     features: featuresToDisplay,
                     gridsOptions: gridsOptions

@@ -10,6 +10,10 @@ goog.provide('ga_features_controller');
           tolerance: gaBrowserSniffer.touchDevice ? 15 : 5,
           identifyUrlTemplate: gaGlobalOptions.apiUrl + '/rest/services/{Portal}/MapServer/identify'.replace('{Portal}', gaGlobalOptions.portalName),
           htmlUrlTemplate: gaGlobalOptions.cachedApiUrl + '/rest/services/{Topic}/MapServer/{Layer}/{Feature}/htmlPopup',
+          params: {
+            geometryType: 'esriGeometryPoint',
+            geometryFormat: 'geojson'
+          },
           popupOptions: {
             title: 'object_information',
             x: 0,
