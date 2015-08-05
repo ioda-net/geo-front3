@@ -69,7 +69,6 @@ goog.require('ga_styles_service');
 
             $scope.$on('gaTriggerTooltipRequest', function(event, data) {
               var size = map.getSize();
-              var mapExtent = map.getView().calculateExtent(size);
               initTooltip();
 
               // We use $timeout to execute the showFeature when the
@@ -329,9 +328,7 @@ goog.require('ga_styles_service');
                     showPopup(value.get('htmlpopup'));
                   } else {
                     //draw feature, but only if it should be drawn
-                    if (gaLayers.getLayer(value.layerBodId) &&
-                        gaLayers.getLayerProperty(value.layerBodId,
-                                                  'highlightable')) {
+                    if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
                       var features = parser.readFeatures(value);
                       for (var i = 0, ii = features.length; i < ii; ++i) {
                         features[i].set('layerId', value.layerBodId);
