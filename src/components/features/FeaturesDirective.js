@@ -45,6 +45,12 @@ goog.require('ga_styles_service');
             var globalGridOptions = {
               enableGridMenu: true,
               enableSelectAll: true,
+              exporterMenuPdf: false,
+              exporterPdfPageSize: 'A4',
+              exporterPdfOrientation: 'landscape',
+              exporterPdfFooter: function (currentPage, pageCount) {
+                return {text: currentPage.toString() + ' / ' + pageCount.toString()};
+              },
               exporterCsvLinkElement:
                       angular.element(
                         document.querySelectorAll('.custom-csv-link-location'))
@@ -361,10 +367,15 @@ goog.require('ga_styles_service');
                     feature.layerBodId.replace(/,/g, '_') + '.csv';
                 var layerGridOptions = {
                   data: [],
-                  exporterCsvFilename: exporterCsvFilename
+                  exporterCsvFilename: exporterCsvFilename,
+                  onRegisterApi: function(gridApi){
+                    $scope.options.gridApi = gridApi;
+                  }
                 };
                 gridsOptions[feature.layerBodId] =
                     angular.extend({}, globalGridOptions, layerGridOptions);
+                gridsOptions[feature.layerBodId].exporterPdfHeader =
+                        {text: feature.layerBodId};
               }
               featuresToDisplay[feature.layerBodId].push(feature);
               gridsOptions[feature.layerBodId].data.push(feature.properties);

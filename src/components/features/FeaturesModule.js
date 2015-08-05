@@ -10,6 +10,7 @@ goog.require('ga_features_directive');
     'ui.grid.selection',
     'ui.grid.exporter',
     'ui.grid.moveColumns',
-    'ui.grid.resizeColumns'
+    'ui.grid.resizeColumns',
+    'angularLoad'
   ]);
 })();

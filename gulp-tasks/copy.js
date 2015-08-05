@@ -10,6 +10,13 @@ function load(src, dest, config) {
   });
 
 
+  gulp.task('copy-pdfmake-prod', function () {
+    return gulp.src(src.pdfmakeProd)
+            .pipe(uglify())
+            .pipe(gulp.dest(dest.prod + '/lib'));
+  });
+
+
   gulp.task('copy-css', function () {
     return gulp.src(src.css)
             .pipe(gulpif(config.prod,

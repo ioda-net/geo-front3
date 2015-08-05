@@ -26,7 +26,8 @@ var src = {
   less: 'src/style/app.less',
   watchLess: 'src/**/*.less',
   index: 'src/*.nunjucks.html',
-  config: 'config/' + cliOptions.portal + '-dev.toml'
+  config: 'config/' + cliOptions.portal + '-dev.toml',
+  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js']
 };
 
 var dest = {
@@ -117,6 +118,7 @@ gulp.task('prod', function (cb) {
             'copy-css',
             'copy-checker',
             'copy-IE',
+            'copy-pdfmake-prod',
             'appcache',
             'build.js',
             'app-whitespace.js'
