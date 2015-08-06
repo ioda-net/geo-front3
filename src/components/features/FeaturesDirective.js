@@ -99,6 +99,7 @@ goog.require('ga_styles_service');
                   var mapExtent = map.getView().calculateExtent(size);
                   findFeatures(geometry, size, mapExtent);
                 });
+                $scope.showBox();
               });
             }
 
@@ -217,11 +218,6 @@ goog.require('ga_styles_service');
               if (!$scope.isActive) {
                 return;
               }
-              // If we handle select by rectangle, we don't do anything with a
-              // click
-              if ($scope.options.selectByRectangle) {
-                return;
-              }
               var size = map.getSize();
               var mapExtent = map.getView().calculateExtent(size);
               var coordinate = (evt.originalEvent) ?
@@ -242,13 +238,9 @@ goog.require('ga_styles_service');
             });
 
             $scope.$watch('isActive', function(active) {
-              if (!active && !$scope.options.selectByRectangle) {
+              if (!active) {
                 // Remove the highlighted feature when we deactivate the tooltip
                 initTooltip();
-              } else if (!active && $scope.options.selectByRectangle) {
-                $scope.hideBox();
-              } else if (active && $scope.options.selectByRectangle) {
-                $scope.showBox();
               }
             });
 
@@ -416,6 +408,9 @@ goog.require('ga_styles_service');
                     features: featuresToDisplay,
                     gridsOptions: gridsOptions
                   });
+                  angular.extend($scope.options.popupOptions, {
+                    close: close
+                  });
                   $scope.popupToggle = true;
                   $scope.options.currentTab = feature.layerBodId;
                   setTableSize();
@@ -449,6 +444,11 @@ goog.require('ga_styles_service');
               }
               featuresToDisplay[feature.layerBodId].push(feature);
               gridsOptions[feature.layerBodId].data.push(feature.properties);
+            }
+
+            function close() {
+              gaPreviewFeatures.clear(map);
+              $scope.hideBox();
             }
 
             function setTableSize() {
