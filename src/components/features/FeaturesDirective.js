@@ -62,7 +62,14 @@ goog.require('ga_styles_service');
               },
               exporterCsvLinkElement:
                       angular.element(
-                        document.querySelectorAll('.custom-csv-link-location'))
+                        document.querySelectorAll('.custom-csv-link-location')),
+              rowTemplate: '<div ng-mouseover="grid.appScope.highlight(rowRenderIndex)" ' +
+                      'ng-mouseleave="grid.appScope.clearHighlight()">' +
+                      '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.uid" ' +
+                      'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
+                      'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
+                      'ui-grid-cell="">' +
+                      '</div></div>'
             };
 
             // Init the map stuff
@@ -423,6 +430,16 @@ goog.require('ga_styles_service');
                   exporterCsvFilename: exporterCsvFilename,
                   onRegisterApi: function(gridApi){
                     $scope.options.gridApi = gridApi;
+                  },
+                  appScopeProvider: {
+                    highlight: function(rowIndex) {
+                      var geometry = parser.readFeature(
+                              featuresToDisplay[feature.layerBodId][rowIndex]);
+                      gaPreviewFeatures.highlight(map, geometry);
+                    },
+                    clearHighlight: function() {
+                      gaPreviewFeatures.clearHighlight(map);
+                    }
                   }
                 };
                 gridsOptions[feature.layerBodId] =
