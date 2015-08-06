@@ -52,7 +52,6 @@ goog.require('ga_search_controller');
 goog.require('ga_seo_controller');
 goog.require('ga_timeselector_controller');
 goog.require('ga_features_controller');
-goog.require('ga_selectbyrectanglefeatures_controller');
 goog.require('ga_measure_controller');
 goog.require('ga_draw_controller');
 (function() {
@@ -110,7 +109,6 @@ goog.require('ga_draw_controller');
     'ga_seo_controller',
     'ga_timeselector_controller',
     'ga_features_controller',
-    'ga_selectbyrectanglefeatures_controller',
     'ga_measure_controller',
     'ga_draw_controller'
   ]);

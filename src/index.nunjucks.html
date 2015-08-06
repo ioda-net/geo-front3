@@ -276,18 +276,6 @@ itemscope itemtype="http://schema.org/WebApplication"
            ga-features-options="options"
            ga-features-active="!globals.isDrawActive"></div>
     </div>
-    <!-- SelectByRectangleFeatures -->
-    <div ng-controller="GaSelectByRectangleFeaturesController">
-    <div class="panel-body"
-         ga-query
-         ga-query-map="map"
-         ga-query-options="options.query"
-         ga-query-active="globals.isFeatureTreeActive"></div>
-    <div ga-features
-         ga-features-map="map"
-         ga-features-options="options"
-         ga-features-active="!globals.isDrawActive"></div>
-    </div><!-- end Feature Tree -->
 {% if device != 'embed' %}
     <div  id="pulldown" ng-cloak translate-cloak ng-show="!globals.offline"
           ng-class="{
