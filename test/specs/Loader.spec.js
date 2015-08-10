@@ -87,11 +87,6 @@ beforeEach(function() {
     gaProfileProvider.profileUrl =
         gaGlobalOptions.apiUrl + '/rest/services/profile.json';
   });
-  
-  module(function(gaQueryProvider, gaGlobalOptions) {
-    gaQueryProvider.dpUrl = gaGlobalOptions.resourceUrl +
-        'lib/bootstrap-datetimepicker.min.js';
-  });
 
   module(function($sceDelegateProvider, gaGlobalOptions) {
     var whitelist = $sceDelegateProvider.resourceUrlWhitelist();
