@@ -18,9 +18,9 @@ goog.require('ga_styles_service');
   ]);
 
   module.directive('gaFeatures',
-      function($timeout, $http, $q, $window, gaLayers, gaBrowserSniffer,
-          gaMapClick, gaDebounce, gaPreviewFeatures, gaStyleFactory,
-          gaDragBox) {
+      function($timeout, $http, $q, gaLayers, gaBrowserSniffer,
+          gaMapClick, gaDebounce, gaPreviewFeatures,
+          gaDragBox, gaFeaturesTable) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -373,7 +373,7 @@ goog.require('ga_styles_service');
                   });
                   scope.popupToggle = true;
                   scope.options.currentTab = feature.layerBodId;
-                  setTableSize();
+                  gaFeaturesTable.setSize();
                 }
               }
               if (!(feature.layerBodId in featuresToDisplay)) {
@@ -409,53 +409,6 @@ goog.require('ga_styles_service');
             function close() {
               gaPreviewFeatures.clear(map);
               dragBox.hide();
-            }
-
-            function setTableSize() {
-              function correctWith(popup) {
-                // max-width on features container to always view buttons
-                var table = $('.ga-features-popup .grid');
-                if (table.length > 0) {
-                  var popupContent = popup.find('.ga-popup-content');
-                  var newWidth = $window.innerWidth -
-                          parseInt(popupContent.css('padding-left'), 10) -
-                          parseInt(popupContent.css('padding-right'), 10);
-                  table.css('width', newWidth);
-                }
-              }
-
-              function correctHeight(popup) {
-                // max-height on features container to scroll vertically
-                // We must take into account the size of the title bar which may
-                // be inserted in the DOM after this function is called.
-                var table = $('.ga-features-popup .grid');
-                var popupTitle = popup.find('.popover-title');
-                var heightTitle = parseInt(
-                        popupTitle.outerHeight(), 10);
-                // On some browsers (eg Firefox), the DOM will be updated
-                // multiple times and the CSS may not have been applied yet.
-                if (popupTitle.length > 0 && heightTitle !== 0 && table.length > 0) {
-                  var popupContent = popup.find('.ga-popup-content');
-                  var newHeight = parseInt(popup.css('height'), 10) -
-                          heightTitle -
-                          parseInt(popupContent.css('padding-top'), 10) -
-                          parseInt(popupContent.css('padding-bottom'), 10);
-                  table.css('height', newHeight);
-                }
-              }
-              var popup = $('.ga-features-popup').parent().parent();
-              function correctTableSize(windowEvent) {
-                correctWith(popup);
-                correctHeight(popup);
-                if (!windowEvent) {
-                  popup.off('DOMSubtreeModified', correctTableSize);
-                }
-              }
-
-              $window.addEventListener('resize', function () {
-                correctTableSize(true);
-              });
-              popup.on('DOMSubtreeModified', correctTableSize);
             }
 
             function yearFromString(timestamp) {
