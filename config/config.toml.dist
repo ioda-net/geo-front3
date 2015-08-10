@@ -6,10 +6,12 @@
 # index is for desktop
 devices = ["index", "embed", "mobile"]
 
-api_url = "//pserve.geoadmin.local"
-public_url = "//pserve.geoadmin.local/files"
+api_url = "//api.disney.interne"
+public_url = "//api.disney.interne/files"
 apache_base_path = "/"
-default_topic_id = "geojb"
+# This is needed as default on the portal
+# Operator need to change it here if a change occur on mapinfra
+default_topic_id = "01_cadastre"
 translation_fallback_code = "fr"
 # The languages array is used in a loop to build appcache
 languages = ["fr", "de", "en"]
@@ -21,11 +23,11 @@ default_epsg_extent = "[420000, 30000, 900000, 350000]"
 external_wms_hostnames =  '["www.geoservice.apps.be.ch"]'
 portal_name = "geojb"
 
-public_allowed_url_regexp = "https?:\\/\\/pserve\\.geojb.*"
-public_url_regexp = "https?:\\/\\/pserve\\.geojb.*"
-admin_url_regexp = "^(ftp|http|https):\\/\\/(.*geojb)"
+public_allowed_url_regexp = "https?:\\/\\/api\\.disney.*"
+public_url_regexp = "https?:\\/\\/api\\.disney.*"
+admin_url_regexp = "^(ftp|http|https):\\/\\/(.*disney)"
 
-fallback_elevation_model = 'MNT50'
 default_elevation_model = 'MNT50'
 
 activatedPlugins = ["communes"]
+
