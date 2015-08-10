@@ -9,6 +9,9 @@ devices = ["index", "embed", "mobile"]
 api_url = "//api.disney.interne"
 public_url = "//api.disney.interne/files"
 apache_base_path = "/"
+# This is needed as default on the portal
+# Operator need to change it here if a change occur on mapinfra
+default_topic_id = "01_cadastre"
 translation_fallback_code = "fr"
 # The languages array is used in a loop to build appcache
 languages = ["fr", "de", "en"]
