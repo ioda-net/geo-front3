@@ -2,6 +2,7 @@ goog.provide('ga_features_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_debounce_service');
+goog.require('ga_features_service');
 goog.require('ga_map_service');
 goog.require('ga_popup_service');
 goog.require('ga_styles_service');
@@ -9,6 +10,7 @@ goog.require('ga_styles_service');
 
   var module = angular.module('ga_features_directive', [
     'ga_debounce_service',
+    'ga_features_service',
     'ga_popup_service',
     'ga_map_service',
     'ga_styles_service',
@@ -17,20 +19,13 @@ goog.require('ga_styles_service');
 
   module.directive('gaFeatures',
       function($timeout, $http, $q, $window, gaLayers, gaBrowserSniffer,
-          gaMapClick, gaDebounce, gaPreviewFeatures, gaStyleFactory) {
+          gaMapClick, gaDebounce, gaPreviewFeatures, gaStyleFactory,
+          gaDragBox) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
                               'ng-show="!$last"></div>' +
                            '</div>';
-        var dragBox, boxOverlay;
-        var dragBoxStyle = gaStyleFactory.getStyle('selectrectangle');
-        var boxFeature = new ol.Feature();
-        var boxOverlay = new ol.FeatureOverlay({
-          style: dragBoxStyle
-        });
-        boxOverlay.addFeature(boxFeature);
-
 
         return {
           restrict: 'A',
@@ -50,6 +45,14 @@ goog.require('ga_styles_service');
                 parser,
                 year,
                 listenerKey;
+            var dragBox = gaDragBox(map, function(geometry) {
+              scope.isActive = true;
+              scope.$apply(function() {
+                var size = map.getSize();
+                var mapExtent = map.getView().calculateExtent(size);
+                findFeatures(geometry, size, mapExtent);
+              });
+            });
             var globalGridOptions = {
               enableGridMenu: true,
               enableSelectAll: true,
@@ -69,48 +72,6 @@ goog.require('ga_styles_service');
                       'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
                       'ui-grid-cell="">' +
                       '</div></div>'
-            };
-
-            // Init the map stuff
-            if (!dragBox) {
-              dragBox = new ol.interaction.DragBox({
-                condition: function(evt) {
-                  //MacEnvironments don't get here because the event is not
-                  //recognized as mouseEvent on Mac by the google closure.
-                  //We have to use the apple key on those devices
-                  return evt.originalEvent.ctrlKey ||
-                      (gaBrowserSniffer.mac && evt.originalEvent.metaKey);
-                },
-                style: dragBoxStyle
-              });
-              map.addInteraction(dragBox);
-              dragBox.on('boxstart', function(evt) {
-                scope.resetGeometry();
-              });
-              dragBox.on('boxend', function(evt) {
-                boxFeature.setGeometry(evt.target.getGeometry());
-                var geometry = boxFeature.getGeometry().getExtent();
-                scope.useBbox = true;
-
-                scope.isActive = true;
-                scope.$apply(function() {
-                  var size = map.getSize();
-                  var mapExtent = map.getView().calculateExtent(size);
-                  findFeatures(geometry, size, mapExtent);
-                });
-                scope.showBox();
-              });
-            }
-
-            // Activate/Deactivate
-            scope.resetGeometry = function() {
-              boxFeature.setGeometry(null);
-            };
-            scope.showBox = function() {
-              boxOverlay.setMap(scope.map);
-            };
-            scope.hideBox = function() {
-              boxOverlay.setMap(null);
             };
 
             parser = new ol.format.GeoJSON();
@@ -447,7 +408,7 @@ goog.require('ga_styles_service');
 
             function close() {
               gaPreviewFeatures.clear(map);
-              scope.hideBox();
+              dragBox.hide();
             }
 
             function setTableSize() {
