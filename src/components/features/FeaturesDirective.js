@@ -20,7 +20,7 @@ goog.require('ga_styles_service');
   module.directive('gaFeatures',
       function($timeout, $http, $q, gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures,
-          gaDragBox, gaFeaturesTable) {
+          gaDragBox, gaFeaturesTable, gaFeaturesUtils) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -120,7 +120,7 @@ goog.require('ga_styles_service');
                   },
                   undefined,
                   function(layer) {
-                    return isQueryableBodLayer(layer);
+                    return gaFeaturesUtils.isQueryableBodLayer(layer);
                   });
               }
               if (!hasQueryableLayer) {
@@ -149,8 +149,8 @@ goog.require('ga_styles_service');
               // Create new cancel object
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
-              clearObject(featuresToDisplay);
-              clearObject(gridsOptions);
+              gaFeaturesUtils.clearObject(featuresToDisplay);
+              gaFeaturesUtils.clearObject(gridsOptions);
               if (scope.popupToggle) {
                 $timeout(function() {
                   scope.popupToggle = false;
@@ -163,14 +163,6 @@ goog.require('ga_styles_service');
               // Remove the remove layer listener if exist
               if (listenerKey) {
                 ol.Observable.unByKey(listenerKey);
-              }
-            }
-
-            function clearObject(obj) {
-              for (var key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                  delete obj[key];
-                }
               }
             }
 
@@ -204,36 +196,6 @@ goog.require('ga_styles_service');
               }
             });
 
-            // Test if the layer is a vector layer
-            function isVectorLayer(olLayer) {
-              return (olLayer instanceof ol.layer.Vector ||
-                  (olLayer instanceof ol.layer.Image &&
-                  olLayer.getSource() instanceof ol.source.ImageVector));
-            }
-
-            // Test if the layer is a queryable bod layer
-            function isQueryableBodLayer(olLayer) {
-              var bodId = olLayer.bodId;
-              if (bodId) {
-                bodId = gaLayers.getLayerProperty(bodId, 'parentLayerId') ||
-                    bodId;
-              }
-              return (bodId &&
-                  gaLayers.getLayerProperty(bodId, 'queryable'));
-            };
-
-            // Get all the queryable layers
-            function getLayersToQuery() {
-              var layersToQuery = [];
-              map.getLayers().forEach(function(l) {
-                if (l.visible && !l.preview &&
-                    (isQueryableBodLayer(l) || isVectorLayer(l))) {
-                  layersToQuery.push(l);
-                }
-              });
-              return layersToQuery;
-            }
-
             // Find the first feature from a vector layer
             function findVectorFeature(pixel, vectorLayer) {
               var featureFound;
@@ -259,12 +221,12 @@ goog.require('ga_styles_service');
             function findFeatures(geometry, size, mapExtent) {
               var identifyUrl = scope.options.identifyUrlTemplate
                   .replace('{Topic}', currentTopic),
-                  layersToQuery = getLayersToQuery(),
+                  layersToQuery = gaFeaturesUtils.getLayersToQuery(map),
                   pixel = map.getPixelFromCoordinate(geometry);
               initTooltip();
               for (var i = 0, ii = layersToQuery.length; i < ii; i++) {
                 var layerToQuery = layersToQuery[i];
-                if (isVectorLayer(layerToQuery)) {
+                if (gaFeaturesUtils.isVectorLayer(layerToQuery)) {
                   var feature = findVectorFeature(pixel, layerToQuery);
                   if (feature) {
                     var htmlpopup =
@@ -307,7 +269,7 @@ goog.require('ga_styles_service');
                   // Only timeEnabled layers use the timeInstant parameter
                   if (layerToQuery.timeEnabled) {
                     params.timeInstant = year ||
-                        yearFromString(layerToQuery.time);
+                        gaFeaturesUtils.yearFromString(layerToQuery.time);
                   }
 
                   $http.get(identifyUrl, {
@@ -409,15 +371,6 @@ goog.require('ga_styles_service');
             function close() {
               gaPreviewFeatures.clear(map);
               dragBox.hide();
-            }
-
-            function yearFromString(timestamp) {
-              if (timestamp && timestamp.length) {
-                timestamp = parseInt(timestamp.substr(0, 4));
-                if (timestamp <= new Date().getFullYear()) {
-                  return timestamp;
-                }
-              }
             }
           }
         };

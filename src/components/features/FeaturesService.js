@@ -1,7 +1,9 @@
 goog.provide('ga_features_service');
 
+goog.require('ga_map_service');
+
 (function() {
-  var module = angular.module('ga_features_service', []);
+  var module = angular.module('ga_features_service', ['ga_map_service']);
 
   module.provider('gaDragBox', function() {
     this.$get = function(gaStyleFactory, gaBrowserSniffer) {
@@ -113,5 +115,62 @@ goog.provide('ga_features_service');
     }
 
     return {setSize: setSize};
+  });
+
+  module.factory('gaFeaturesUtils', function(gaLayers) {
+    return {
+      isVectorLayer: isVectorLayer,
+      isQueryableBodLayer: isQueryableBodLayer,
+      getLayersToQuery: getLayersToQuery,
+      yearFromString: yearFromString,
+      clearObject: clearObject
+    };
+
+    // Test if the layer is a vector layer
+    function isVectorLayer(olLayer) {
+      return (olLayer instanceof ol.layer.Vector ||
+          (olLayer instanceof ol.layer.Image &&
+          olLayer.getSource() instanceof ol.source.ImageVector));
+    }
+
+    // Test if the layer is a queryable bod layer
+    function isQueryableBodLayer(olLayer) {
+      var bodId = olLayer.bodId;
+      if (bodId) {
+        bodId = gaLayers.getLayerProperty(bodId, 'parentLayerId') ||
+            bodId;
+      }
+      return (bodId &&
+          gaLayers.getLayerProperty(bodId, 'queryable'));
+    };
+
+    // Get all the queryable layers
+    function getLayersToQuery(map) {
+      var layersToQuery = [];
+      map.getLayers().forEach(function(l) {
+        if (l.visible && !l.preview &&
+            (isQueryableBodLayer(l) || isVectorLayer(l))) {
+          layersToQuery.push(l);
+        }
+      });
+      return layersToQuery;
+    }
+
+    function yearFromString(timestamp) {
+      if (timestamp && timestamp.length) {
+        timestamp = parseInt(timestamp.substr(0, 4));
+        if (timestamp <= new Date().getFullYear()) {
+          return timestamp;
+        }
+      }
+    }
+
+    function clearObject(obj) {
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          delete obj[key];
+        }
+      }
+    }
   });
 })();
