@@ -16,9 +16,8 @@ goog.require('ga_styles_service');
   ]);
 
   module.directive('gaFeatures',
-      function($timeout, $http, $q, $translate, $sce, $window, gaPopup, gaLayers,
-          gaBrowserSniffer, gaDefinePropertiesForLayer, gaMapClick, gaDebounce,
-          gaPreviewFeatures, gaStyleFactory, gaMapUtils, gaGlobalOptions) {
+      function($timeout, $http, $q, $window, gaLayers, gaBrowserSniffer,
+          gaMapClick, gaDebounce, gaPreviewFeatures, gaStyleFactory) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -41,10 +40,10 @@ goog.require('ga_styles_service');
             options: '=gaFeaturesOptions',
             isActive: '=gaFeaturesActive'
           },
-          link: function($scope, element, attrs) {
+          link: function(scope, element, attrs) {
             var featuresToDisplay = {},
                 gridsOptions = {},
-                map = $scope.map,
+                map = scope.map,
                 popup,
                 canceler,
                 currentTopic,
@@ -86,46 +85,46 @@ goog.require('ga_styles_service');
               });
               map.addInteraction(dragBox);
               dragBox.on('boxstart', function(evt) {
-                $scope.resetGeometry();
+                scope.resetGeometry();
               });
               dragBox.on('boxend', function(evt) {
                 boxFeature.setGeometry(evt.target.getGeometry());
                 var geometry = boxFeature.getGeometry().getExtent();
-                $scope.useBbox = true;
+                scope.useBbox = true;
 
-                $scope.isActive = true;
-                $scope.$apply(function() {
+                scope.isActive = true;
+                scope.$apply(function() {
                   var size = map.getSize();
                   var mapExtent = map.getView().calculateExtent(size);
                   findFeatures(geometry, size, mapExtent);
                 });
-                $scope.showBox();
+                scope.showBox();
               });
             }
 
             // Activate/Deactivate
-            $scope.resetGeometry = function() {
+            scope.resetGeometry = function() {
               boxFeature.setGeometry(null);
             };
-            $scope.showBox = function() {
-              boxOverlay.setMap($scope.map);
+            scope.showBox = function() {
+              boxOverlay.setMap(scope.map);
             };
-            $scope.hideBox = function() {
+            scope.hideBox = function() {
               boxOverlay.setMap(null);
             };
 
             parser = new ol.format.GeoJSON();
 
-            $scope.$on('gaTopicChange', function(event, topic) {
+            scope.$on('gaTopicChange', function(event, topic) {
               currentTopic = topic.id;
               initTooltip();
             });
 
-            $scope.$on('gaTimeSelectorChange', function(event, currentyear) {
+            scope.$on('gaTimeSelectorChange', function(event, currentyear) {
               year = currentyear;
             });
 
-            $scope.$on('gaTriggerTooltipRequest', function(event, data) {
+            scope.$on('gaTriggerTooltipRequest', function(event, data) {
               var size = map.getSize();
               initTooltip();
 
@@ -137,11 +136,11 @@ goog.require('ga_styles_service');
 
             });
 
-            $scope.$on('gaTriggerTooltipInit', function(event) {
+            scope.$on('gaTriggerTooltipInit', function(event) {
               initTooltip();
             });
 
-            $scope.$on('gaTriggerTooltipInitOrUnreduce', function(event) {
+            scope.$on('gaTriggerTooltipInitOrUnreduce', function(event) {
               if (popup && popup.scope.options.isReduced) {
                 popup.close();
               } else {
@@ -174,7 +173,7 @@ goog.require('ga_styles_service');
 
             if (!gaBrowserSniffer.mobile) {
               map.on('pointermove', function(evt) {
-                if (!$scope.isActive) {
+                if (!scope.isActive) {
                   return;
                 }
                 updateCursorStyleDebounced(evt);
@@ -191,9 +190,9 @@ goog.require('ga_styles_service');
               // htmls = [] would break the reference in the popup
               clearObject(featuresToDisplay);
               clearObject(gridsOptions);
-              if ($scope.popupToggle) {
+              if (scope.popupToggle) {
                 $timeout(function() {
-                  $scope.popupToggle = false;
+                  scope.popupToggle = false;
                 });
               }
 
@@ -215,7 +214,7 @@ goog.require('ga_styles_service');
             }
 
             gaMapClick.listen(map, function(evt) {
-              if (!$scope.isActive) {
+              if (!scope.isActive) {
                 return;
               }
               var size = map.getSize();
@@ -232,12 +231,12 @@ goog.require('ga_styles_service');
               // here, but we instead could also let $evalSync trigger a
               // digest cycle for us.
 
-              $scope.$apply(function() {
+              scope.$apply(function() {
                 findFeatures(coordinate, size, mapExtent);
               });
             });
 
-            $scope.$watch('isActive', function(active) {
+            scope.$watch('isActive', function(active) {
               if (!active) {
                 // Remove the highlighted feature when we deactivate the tooltip
                 initTooltip();
@@ -297,7 +296,7 @@ goog.require('ga_styles_service');
 
             // Find features for all type of layers
             function findFeatures(geometry, size, mapExtent) {
-              var identifyUrl = $scope.options.identifyUrlTemplate
+              var identifyUrl = scope.options.identifyUrlTemplate
                   .replace('{Topic}', currentTopic),
                   layersToQuery = getLayersToQuery(),
                   pixel = map.getPixelFromCoordinate(geometry);
@@ -335,12 +334,12 @@ goog.require('ga_styles_service');
                     }
                   }
                 } else { // queryable bod layers
-                  var params = angular.extend({}, $scope.options.params, {
+                  var params = angular.extend({}, scope.options.params, {
                     geometry: geometry.join(','),
                     // FIXME: make sure we are passing the right dpi here.
                     imageDisplay: size[0] + ',' + size[1] + ',96',
                     mapExtent: mapExtent.join(','),
-                    tolerance: $scope.options.tolerance,
+                    tolerance: scope.options.tolerance,
                     layers: 'all:' + layerToQuery.bodId
                   });
 
@@ -366,7 +365,7 @@ goog.require('ga_styles_service');
 
                 // Remove the tooltip, if a layer is removed, we don't care
                 // which layer. It worked like that in RE2.
-                listenerKey = $scope.map.getLayers().on('remove',
+                listenerKey = scope.map.getLayers().on('remove',
                   function(event) {
                     if (!event.element.preview) {
                       initTooltip();
@@ -402,17 +401,17 @@ goog.require('ga_styles_service');
             function showPopup(feature) {
               // Show popup on first result
               if (Object.keys(featuresToDisplay).length === 0) {
-                if (!$scope.popupToggle) {
-                  angular.extend($scope.options, {
+                if (!scope.popupToggle) {
+                  angular.extend(scope.options, {
                     content: popupContent,
                     features: featuresToDisplay,
                     gridsOptions: gridsOptions
                   });
-                  angular.extend($scope.options.popupOptions, {
+                  angular.extend(scope.options.popupOptions, {
                     close: close
                   });
-                  $scope.popupToggle = true;
-                  $scope.options.currentTab = feature.layerBodId;
+                  scope.popupToggle = true;
+                  scope.options.currentTab = feature.layerBodId;
                   setTableSize();
                 }
               }
@@ -424,7 +423,7 @@ goog.require('ga_styles_service');
                   data: [],
                   exporterCsvFilename: exporterCsvFilename,
                   onRegisterApi: function(gridApi){
-                    $scope.options.gridApi = gridApi;
+                    scope.options.gridApi = gridApi;
                   },
                   appScopeProvider: {
                     highlight: function(rowIndex) {
@@ -448,7 +447,7 @@ goog.require('ga_styles_service');
 
             function close() {
               gaPreviewFeatures.clear(map);
-              $scope.hideBox();
+              scope.hideBox();
             }
 
             function setTableSize() {
