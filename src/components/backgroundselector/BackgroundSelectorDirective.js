@@ -13,7 +13,7 @@ goog.require('ga_topic_service');
 
   module.directive('gaBackgroundSelector',
     function($document, gaPermalink, gaLayers, gaLayerFilters,
-        gaBrowserSniffer) {
+        gaBrowserSniffer, $q, gaTopic, gaGlobalOptions) {
       return {
         restrict: 'A',
         templateUrl:
@@ -25,7 +25,6 @@ goog.require('ga_topic_service');
           scope.isBackgroundSelectorClosed = true;
           var mobile = gaBrowserSniffer.mobile;
           scope.desktop = !gaBrowserSniffer.embed && !mobile;
-          scope.backgroundLayers = [];
 
           if (mobile) {
             elt.addClass('ga-bg-mobile');
@@ -36,8 +35,17 @@ goog.require('ga_topic_service');
           var map = scope.map;
           var isOfflineToOnline = false;
 
-          var defaultBgOrder = [];
+          var defaultBgOrder = [
+              {id: 'ch.swisstopo.swissimage', label: 'bg_luftbild'},
+              {id: 'ch.swisstopo.pixelkarte-farbe', label: 'bg_pixel_color'},
+              {id: 'ch.swisstopo.pixelkarte-grau', label: 'bg_pixel_grey'},
+              {id: 'voidLayer', label: 'void_layer'}];
 
+          // to be moved in defaultBgOrder once 3d is live
+          if (gaGlobalOptions.dev3d) {
+            defaultBgOrder.splice(3, 0,
+                {id: 'ch.swisstopo.terrain.3d', label: 'terrain_layer'});
+          }
           scope.backgroundLayers = defaultBgOrder.slice(0);
 
           function setCurrentLayer(layerid) {
@@ -60,12 +68,20 @@ goog.require('ga_topic_service');
               }
               gaPermalink.updateParams({bgLayer: layerid});
             }
-          }
-
-          var updateBgLayer = function(onGaTopicChange) {
+          };
+          var isValidBgLayer = function(bgLayerId) {
+            var isValid = false;
+            angular.forEach(scope.backgroundLayers, function(bgLayer) {
+              if (bgLayer.id == bgLayerId) {
+                isValid = true;
+              }
+            });
+            return isValid;
+          };
+          var updateBgLayer = function(topic) {
             // Determine the current background layer. Strategy:
             //
-            // On gaLayersChange event we receive then
+            // On application load (then on topic change) event
             // we look at the permalink. If there's a bgLayer parameter
             // in the permalink we use that as the initial background
             // layer.
@@ -73,16 +89,16 @@ goog.require('ga_topic_service');
             // Specific use case when we go offline to online, in this use
             // case we want to keep the current bg layer.
             var bgLayer;
-            if (!onGaTopicChange) {
+            if (!topic) {
               bgLayer = gaPermalink.getParams().bgLayer;
-            }
-            if ((!bgLayer && !scope.currentLayer) || onGaTopicChange) {
-              var bgLayers = gaLayers.getBackgroundLayers();
-              if (bgLayers.length > 0) {
-                bgLayer = bgLayers[0].id;
-              } else {
-                bgLayer = 'voidLayer';
+              if (!isValidBgLayer(bgLayer)) {
+                bgLayer = undefined;
               }
+            }
+            if ((!bgLayer && !scope.currentLayer) || topic) {
+              var bgLayers = gaTopic.get().backgroundLayers;
+              bgLayer = (bgLayers.length) ?
+                  bgLayers[0] : defaultBgOrder[0].id;
               scope.backgroundLayers = defaultBgOrder.slice(0);
             }
             if (bgLayer && !isOfflineToOnline) {
@@ -91,34 +107,6 @@ goog.require('ga_topic_service');
             isOfflineToOnline = false;
 
           };
-
-          var dereg = scope.$on('gaLayersChange', function(event, newLayers) {
-            updateBgLayer();
-            dereg();
-          });
-
-          scope.$on('gaTopicChange', function(event, newTopic) {
-            // If the layers config is loaded
-            if (gaLayers.getBackgroundLayers()) {
-              defaultBgOrder = [];
-              gaLayers.getBackgroundLayers().forEach(function(bgLayer) {
-                defaultBgOrder.push({
-                  id: bgLayer.id,
-                  label: bgLayer.label
-                });
-              });
-              defaultBgOrder.push({
-                id: 'voidLayer',
-                label: 'void_layer'
-              });
-              updateBgLayer(true);
-            }
-          });
-
-          scope.$on('gaPermalinkChange', function(event) {
-            scope.isBackgroundSelectorClosed = true;
-          });
-
           scope.$watch('currentLayer', function(newVal, oldVal) {
             if (oldVal !== newVal) {
               setCurrentLayer(newVal);
@@ -171,6 +159,21 @@ goog.require('ga_topic_service');
                 'ga-bg-layer-' + index : '');
             }
           };
+
+          // Initialize the component when topics and layers config are
+          // loaded
+          $q.all([gaTopic.loadConfig(), gaLayers.loadConfig()]).
+              then(function() {
+            updateBgLayer();
+
+            scope.$on('gaTopicChange', function(event, newTopic) {
+              updateBgLayer(newTopic);
+            });
+
+            scope.$on('gaPermalinkChange', function(event) {
+              scope.isBackgroundSelectorClosed = true;
+            });
+          });
         }
       };
     }

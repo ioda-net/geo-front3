@@ -11,16 +11,14 @@ goog.require('ga_permalink');
    * Topics manager
    */
   module.provider('gaTopic', function() {
-    this.$get = function($rootScope, $http, $q, $timeout, gaPermalink,
-        gaGlobalOptions) {
+    this.$get = function($rootScope, $http, gaPermalink, gaGlobalOptions) {
       var topic; // The current topic
       var topics = []; // The list of topics available
 
       // Load the topics config
-      var loadTopics = function(topicsUrl, thumbnailUrlTemplate) {
-        var deferred = $q.defer();
-        $http.get(topicsUrl).success(function(data) {
-          topics = data.topics;
+      var loadTopicsConfig = function(url, thumbnailUrlTemplate) {
+        return $http.get(url).then(function(response) {
+          topics = response.data.topics;
           angular.forEach(topics, function(value) {
             value.tooltip = 'topic_' + value.id + '_tooltip';
             value.thumbnail = thumbnailUrlTemplate.
@@ -28,11 +26,11 @@ goog.require('ga_permalink');
             value.langs = angular.isString(value.langs) ?
                 value.langs.split(',') : value.langs;
           });
-          deferred.resolve(topics);
-        }).error(function() {
-          deferred.reject();
+          topic = getTopicById(gaPermalink.getParams().topic, true);
+          if (topic) {
+            broadcast();
+          }
         });
-        return deferred.promise;
       };
 
       var getTopicById = function(id, useFallbackTopic) {
@@ -63,17 +61,15 @@ goog.require('ga_permalink');
       var Topic = function(topicsUrl, thumbnailUrlTemplate) {
 
         // We load the topics configuration
-        loadTopics(topicsUrl, thumbnailUrlTemplate).then(function(fetchedTopics) {
-          topics = fetchedTopics;
-          topic = getTopicById(gaPermalink.getParams().topic, true);
-          if (topic) {
-            // We must wait for all the directive to be completely initialized
-            // before broadcasting. Otherwise, we may broadcast while nothing
-            // is initialized to recieve the message.
-            $timeout(broadcast);
-          }
-        });
+        var topicsP = loadTopicsConfig(topicsUrl, thumbnailUrlTemplate);
 
+        // Returns a promise that is resolved when topics are loaded
+        this.loadConfig = function() {
+          return topicsP;
+        };
+
+        // Returns the topics loaded. Should be used only after the
+        // load config promise is resolved.
         this.getTopics = function() {
           return topics;
         };

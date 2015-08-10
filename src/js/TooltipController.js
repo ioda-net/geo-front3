@@ -8,8 +8,11 @@ goog.provide('ga_tooltip_controller');
 
         $scope.options = {
           tolerance: gaBrowserSniffer.touchDevice ? 15 : 5,
-          identifyUrlTemplate: gaGlobalOptions.apiUrl + '/rest/services/{Portal}/MapServer/identify'.replace('{Portal}', gaGlobalOptions.portalName),
-          htmlUrlTemplate: gaGlobalOptions.cachedApiUrl + '/rest/services/{Topic}/MapServer/{Layer}/{Feature}/htmlPopup'
+          identifyUrlTemplate: gaGlobalOptions.apiUrl +
+                  '/rest/services/{Portal}/MapServer/identify'
+                    .replace('{Portal}', gaGlobalOptions.portalName),
+          htmlUrlTemplate: gaGlobalOptions.cachedApiUrl +
+                  '/rest/services/{Topic}/MapServer/{Layer}/{Feature}/htmlPopup'
         };
       });
 })();

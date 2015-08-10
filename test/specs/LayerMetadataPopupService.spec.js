@@ -6,17 +6,7 @@ describe('ga_layer_metadata_popup_service', function() {
 
   beforeEach(function() {
     module(function($provide) {
-      $provide.value('gaTopic', {
-        get: function() {
-          return {
-            id: "sometopic",
-            langs: {
-              label: "somelang",
-              value: "somelang"
-            }
-          };
-        }
-      });
+      $provide.value('gaTopic', {});
       $provide.value('gaLang', new (function() {
         var lang = 'somelang';
         this.get = function() {
@@ -47,6 +37,8 @@ describe('ga_layer_metadata_popup_service', function() {
   });
 
   it('creates a legend popup with the right content', function() {
+    var expectedUrlLegend = 'http://legendservice.com/all/somelayer?lang=somelang';
+    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some raw html</div>');
     gaLayerMetadataPopup.toggle('somelayer');
     $rootScope.$digest();
 
@@ -73,6 +65,8 @@ describe('ga_layer_metadata_popup_service', function() {
     expect(popupLegend.length).to.be(1);
     expect(popupLegend.css('display')).to.be('block');
 
+    expectedUrlLegend = 'http://legendservice.com/all/somenewlayer?lang=somelang';
+    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some new raw html</div>');
     gaLayerMetadataPopup.toggle('somenewlayer');
     $rootScope.$digest();
 
@@ -80,10 +74,14 @@ describe('ga_layer_metadata_popup_service', function() {
     expect(popupLegend.length).to.be(2);
 
     // 2 popups so far, on translation end -> 2 new requests
-    var expectedUrlLayersConfig = 'http://example.com/sometopic?lang=someotherlang';
+    var expectedUrlLayersConfig = 'http://example.com/all?lang=someotherlang';
     $httpBackend.whenGET(expectedUrlLayersConfig).respond({});
     $translate.use('someotherlang');
 
+    expectedUrlLegend = 'http://legendservice.com/all/somelayer?lang=someotherlang';
+    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some translated raw html</div>');
+    expectedUrlLegend = 'http://legendservice.com/all/somenewlayer?lang=someotherlang';
+    $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some translated new raw html</div>');
     $rootScope.$digest();
 
     popupLegend = $('.ga-tooltip-metadata');

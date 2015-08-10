@@ -139,6 +139,10 @@ itemscope itemtype="http://schema.org/WebApplication"
         IE9Fix.call(this);
       </script>
     <![endif]-->
+
+    <!-- to be removed once 3d is live -->
+    <div class="corner-ribbon top-left sticky red shadow" ng-if="globals.dev3d">3D - ALPHA</div>
+
     <div ng-controller="GaSeoController">
       <div ga-seo ga-seo-options="options" ga-seo-map="map"></div>
     </div>
@@ -683,10 +687,11 @@ itemscope itemtype="http://schema.org/WebApplication"
         var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
 
         module.constant('gaGlobalOptions', {
+          //dev3d to be removed once 3d goes live
+          dev3d : !!window.location.search.match(/(dev3d=true)/),
           mapUrl : location.origin + '${apache_base_path}',
           apiUrl : location.protocol + '${api_url}',
           publicUrl : location.protocol + '${public_url}',
-          publicAllowedUrlRegexp: new RegExp('${public_allowed_url_regexp}'),
           publicUrlRegexp: new RegExp('${public_url_regexp}'),
           adminUrlRegexp: new RegExp('${admin_url_regexp}'),
           cachedApiUrl: location.protocol + '${api_url}' + cacheAdd,
@@ -698,7 +703,11 @@ itemscope itemtype="http://schema.org/WebApplication"
           defaultTopicId: '${default_topic_id}',
           translationFallbackCode: '${translation_fallback_code}',
           defaultExtent: JSON.parse(${default_extent}),
-          defaultResolution: ${default_resolution}
+          defaultResolution: ${default_resolution},
+          resolutions: JSON.parse(${resolutions}),
+          defaultEpsg: '${default_epsg}',
+          defaultEpsgExtent: JSON.parse(${default_epsg_extend}),
+          defaultElevationModel: '${default_elevation_model}'
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {
@@ -721,7 +730,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               gaGlobalOptions.cachedApiUrl + '/rest/services/all/MapServer/layersConfig?lang={Lang}';
 
           gaLayersProvider.legendUrlTemplate =
-              gaGlobalOptions.apiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
+              gaGlobalOptions.apiUrl + '/rest/services/all/MapServer/{Layer}/legend?lang={Lang}';
         });
         module.config(function(gaTopicProvider, gaGlobalOptions) {
           gaTopicProvider.topicsUrl = gaGlobalOptions.cachedApiUrl + '/rest/services';

@@ -28,7 +28,11 @@ goog.provide('ga_urlutils_service');
         // Test if the URL comes from a third party site
         this.isThirdPartyValid = function(url) {
           return !this.isAdminValid(url) ||
-                  gaGlobalOptions.publicUrlRegexp.test(url);
+                  this.isPublicValid(url);
+        };
+
+        this.isPublicValid = function(url) {
+          return gaGlobalOptions.publicUrlRegexp.test(url);
         };
 
         this.transformIfAgnostic = function(url) {

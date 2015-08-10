@@ -1,18 +1,16 @@
 goog.provide('ga_featuretree_controller');
 
-goog.require('ga_popup_service');
 goog.require('ga_print_service');
 (function() {
-  
-  var module = angular.module('ga_featuretree_controller',[
-    'ga_popup_service',
+
+  var module = angular.module('ga_featuretree_controller', [
     'ga_print_service'
   ]);
 
   module.controller('GaFeaturetreeController', function($http, $scope,
-      $timeout, $translate, $window, gaGlobalOptions, gaPopup, gaPrintService) {
-    
-    // List of layers using an extendHtmlPoup for the print instead of htmlPopup   
+      $timeout, $translate, $window, gaGlobalOptions, gaPrintService) {
+
+    // List of layers using an extendHtmlPoup for the print instead of htmlPopup
     var extended = {
       'ch.bazl.luftfahrthindernis' : true
     };
@@ -24,7 +22,7 @@ goog.require('ga_print_service');
       nbFeatures: 0,
       max: 200
     };
-    
+
     $scope.getItemText = function() {
       return '(' + (($scope.options.hasMoreResults) ? '+' : '') +
           $scope.options.nbFeatures + ')';
@@ -42,15 +40,15 @@ goog.require('ga_print_service');
           hasMoreResults = (hasMoreResults || layer.hasMoreResults);
           nbFeatures += layer.features.length;
         }
-        
+
       });
       $scope.options.nbFeatures = nbFeatures;
       $scope.options.featuresShown = show;
       $scope.options.hasMoreResults = hasMoreResults;
       $scope.$broadcast('gaNewFeatureTree', featuresByLayer);
     });
-    
- 
+
+
 
     // Print popup stuff
     var featureTree, winPrint, useNewTab;
@@ -78,13 +76,31 @@ goog.require('ga_print_service');
       }
       if (useNewTab) {
         // Code needed to open in a new tab on Chrome
-        winPrint =  window.open('','printout');
+        winPrint = window.open('', 'printout');
       }
 
       var printLayers = [];
       printLayers['failure'] = {
         head: null,
         body: ''
+      };
+
+      var printElementLoaded = function(html, bodId) {
+        if (/(<html|<head|<body)/i.test(html)) { // extendedHtmlPopup
+          var head = /<head[^>]*>((.|[\n\r])*)<\/head>/.exec(html)[1];
+          var body = /<body[^>]*>((.|[\n\r])*)<\/body>/.exec(html)[1];
+          printLayers[bodId].head = head;
+          printLayers[bodId].body += body;
+        } else { // htmlPopup
+          printLayers[bodId].body += html;
+        }
+        printElementsLoaded++;
+        $scope.printProgressPercentage = Math.round(printElementsLoaded /
+            printElementsTotal * 100);
+        if (printElementsTotal == printElementsLoaded &&
+            $scope.printInProgress) {
+          printFinished(printLayers);
+        }
       };
 
       for (var bodId in featureTree) {
@@ -94,9 +110,21 @@ goog.require('ga_print_service');
         };
         var layer = featureTree[bodId];
         var layerUrl = $scope.options.msUrl + '/' + bodId;
-        layer.features.forEach(function(feature) {
-          featuresToPrint.push(feature);
-        });
+        for (var i in layer.features) {
+          $http.get(layerUrl + '/' + layer.features[i].id + '/' +
+              (extended[bodId] ? 'extendedHtmlPopup' : 'htmlPopup'), {
+            params: {
+              lang: lang
+            }
+          }).success(function(data, status, headers, config) {
+            printElementLoaded(data, bodId);
+          }).error(function(data, status, headers, config) {
+            printElementLoaded('<div>' +
+                'There was a problem loading this feature. Layer: ' + bodId +
+                ', feature: ' + layer.features[i].id +
+                ', status: ' + status + '<div>', 'failure');
+          });
+        }
       }
       var popup = gaPopup.create({
         className: 'ga-tooltip',
@@ -109,7 +137,7 @@ goog.require('ga_print_service');
         popup.destroy();
       });
     };
-    
+
     var printFinished = function(printLayers) {
       $scope.printInProgress = false;
       $scope.printProgressPercentage = 0;
@@ -122,15 +150,15 @@ goog.require('ga_print_service');
         body += printLayers[bodId].body;
       }
       gaPrintService.htmlPrintout(body, head || undefined,
-          (useNewTab) ? function(){} : undefined);
+          (useNewTab) ? function() {} : undefined);
     };
-    
+
     var ftPopup = $('#featuretree-popup');
     $scope.$on('gaUpdateFeatureTree', function(evt, tree) {
       featureTree = tree;
 
       // Open popup when it's reduced
-      if ($scope.globals.isFeatureTreeActive  &&
+      if ($scope.globals.isFeatureTreeActive &&
          ftPopup.hasClass('ga-popup-reduced')) {
         $scope.globals.isFeatureTreeActive = false;
       }
@@ -139,7 +167,8 @@ goog.require('ga_print_service');
     });
 
     $scope.$on('gaGetMoreFeatureTree', function(evt, layer) {
-      $scope.$broadcast('gaQueryMore', layer.bodId, layer.offset + $scope.options.max);
+      $scope.$broadcast('gaQueryMore', layer.bodId, layer.offset +
+          $scope.options.max);
       evt.stopPropagation();
     });
 

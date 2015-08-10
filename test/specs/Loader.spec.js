@@ -5,7 +5,7 @@ beforeEach(function() {
   module(function($provide) {
     var location = {
       host: 'map.admin.ch',
-      hostname: 'map.geo.admin.ch', 
+      hostname: 'map.geo.admin.ch',
       href: 'http://map.geo.admin.ch/?lang=en&topic=ech&bgLayer=ch.swisstopo.pixelkarte-farbe&X=207277.79&Y=690852.63&zoom=1',
       origin: 'http://map.geo.admin.ch',
       pathname: '/',
@@ -22,9 +22,9 @@ beforeEach(function() {
     $provide.constant('gaGlobalOptions', {
       version: '123456',
       defaultExtent: [420000, 30000, 900000, 350000],
-      defaultElevationModel: 'COMB',
       resolutions: [650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
           2.5, 2.0, 1.0, 0.5, 0.25, 0.1],
+      defaultElevationModel: 'COMB',
       mapUrl : location.origin + apacheBasePath,
       apiUrl : location.protocol + apiUrl,
       publicUrl: location.protocol + publicUrl,
@@ -37,8 +37,7 @@ beforeEach(function() {
       defaultTopicId: 'sometopic',
       translationFallbackCode: 'somelang',
       defaultResolution: 500.0,
-      publicAllowedUrlRegexp: /https?:\/\/public\..*(\.admin\.ch|\.bgdi\.ch)\/.*/,
-      publicUrlRegexp: /^https?:\/\/public\..*(bgdi|geo\.admin)\.ch.*/,
+      publicUrlRegexp: /^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*/,
       adminUrlRegexp: /^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)/
     });
   });
@@ -59,7 +58,7 @@ beforeEach(function() {
     gaLayersProvider.layersConfigUrlTemplate =
         'http://example.com/all?lang={Lang}';
     gaLayersProvider.legendUrlTemplate =
-        'http://legendservice.com/{Topic}/{Layer}?lang={Lang}';
+        'http://legendservice.com/all/{Layer}?lang={Lang}';
   });
 
   module(function(gaTopicProvider, gaGlobalOptions) {
@@ -87,7 +86,7 @@ beforeEach(function() {
     gaProfileProvider.profileUrl =
         gaGlobalOptions.apiUrl + '/rest/services/profile.json';
   });
-  
+
   module(function(gaQueryProvider, gaGlobalOptions) {
     gaQueryProvider.dpUrl = gaGlobalOptions.resourceUrl +
         'lib/bootstrap-datetimepicker.min.js';

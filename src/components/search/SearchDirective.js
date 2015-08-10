@@ -5,6 +5,8 @@ goog.require('ga_marker_overlay_service');
 goog.require('ga_permalink');
 goog.require('ga_search_service');
 goog.require('ga_search_type_directives');
+goog.require('ga_topic_service');
+goog.require('ga_translation_service');
 (function() {
 
   var module = angular.module('ga_search_directive', [
@@ -14,7 +16,8 @@ goog.require('ga_search_type_directives');
     'ga_search_service',
     'ga_search_type_directives',
     'ga_urlutils_service',
-    'pascalprecht.translate'
+    'ga_translation_service',
+    'ga_topic_service'
   ]);
 
   var ResultStats = function() {
@@ -64,9 +67,10 @@ goog.require('ga_search_type_directives');
   var keepSearchParam = false;
 
   module.controller('GaSearchDirectiveController',
-    function($scope, $rootScope, $translate, $sce, $timeout, gaPermalink,
+    function($scope, $rootScope, $sce, $timeout, gaPermalink,
              gaUrlUtils, gaSearchGetCoordinate, gaMapUtils, gaMarkerOverlay,
-             gaKml, gaPreviewLayers) {
+             gaKml, gaPreviewLayers, gaLang, gaTopic, gaLayers,
+             gaGlobalOptions) {
       var blockQuery = false;
       var restat = new ResultStats();
       $scope.restat = restat;
@@ -149,45 +153,36 @@ goog.require('ga_search_type_directives');
             // Standard query then
             var url = gaUrlUtils.append($scope.options.searchUrl,
                                         'searchText=' + encodeURIComponent(q));
-            url = gaUrlUtils.append(url, 'lang=' + $translate.use());
-            url = $scope.options.applyTopicToUrl(url,
-                $scope.childoptions.currentTopic);
+            url = gaUrlUtils.append(url, 'lang=' + gaLang.get());
+            url = url.replace('{Topic}', gaGlobalOptions.portalName);
 
             $scope.childoptions.baseUrl = url;
             $scope.childoptions.query = q;
           }
         } else {
           blockQuery = false;
+          $scope.childoptions.query = '';
         }
       };
 
-      $scope.trigger = function() {
-        startQuery($scope.query);
-      };
-
-      $scope.$watch('query', function(newval, oldval) {
-        $scope.trigger();
+      // We begin to watch the query only when topics are loaded
+      gaTopic.loadConfig().then(function() {
+        $scope.topicLoaded = true;
+        if ($scope.query) {
+          startQuery($scope.query);
+        }
+        $scope.$watch('query', function(newVal, oldVal) {
+          if (newVal != oldVal) {
+            startQuery(newVal);
+          }
+        });
       });
-
-      $scope.$on('gaTopicChange', function(evt, data) {
-        $scope.childoptions.currentTopic = data.id;
-      });
-
-      $scope.updateHref = function() {
-        $scope.encodedPermalinkHref = encodeURIComponent(gaPermalink.getHref());
-      };
-
-      $rootScope.$on('$translateChangeEnd', function() {
-        $scope.lang = $translate.use();
-      });
-
-      $scope.layers = $scope.map.getLayers().getArray();
 
       //Init swisssearch parameter handling
       var searchParam = gaPermalink.getParams().swisssearch;
       if (angular.isDefined(searchParam) &&
           searchParam.length > 0) {
-        var unregister = $scope.$on('gaLayersChange', function() {
+        gaLayers.loadConfig().then(function() {
           // At this point layers are not added to the map yet
           $scope.map.getLayers().once('add', function() {
             $timeout(function() {
@@ -206,7 +201,6 @@ goog.require('ga_search_type_directives');
               });
             });
           });
-          unregister();
         });
       }
 

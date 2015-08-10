@@ -1,6 +1,13 @@
 describe('ga_map_service', function() {
   var map;
 
+  var addLayerGroupToMap = function(bodId) {
+    var layer = new ol.layer.Group();
+    layer.displayInLayerManager = true;
+    map.addLayer(layer);
+    return layer;
+  };
+
   var addLayerToMap = function(bodId) {
     var layer = new ol.layer.Tile();
     layer.bodId = bodId;
@@ -183,27 +190,22 @@ describe('ga_map_service', function() {
         expect(layer.invertedOpacity).to.be("1");
       });
     });
-
-    describe('getBackgroundLayers', function() {
-      it('returns correct background layers information', function() {
-        var backgroundLayers = layers.getBackgroundLayers();
-        expect(backgroundLayers.length).to.be(1);
-        expect(backgroundLayers[0].id).to.be('bar');
-      });
-    });
-
   });
 
   describe('gaLayersPermalinkManager', function() {
     var manager, permalink, gaTopic, params, layersOpacityPermalink,
-        layersVisPermalink, layersTimePermalink, layersPermalink,
+        layersVisPermalink, layersTimePermalink, layersPermalink, def,
         topic, topicLoaded = {
           id: 'sometopic',
           backgroundLayers: ['bar'],
-          selectedLayers: ['foo', 'bar']
+          selectedLayers: []
         }, topicLoaded2 = {
           id: 'sometopic2',
           backgroundLayers: ['bar2'],
+          selectedLayers: ['foo', 'bar']
+        }, topicLoaded3 = {
+          id: 'sometopic3',
+          backgroundLayers: ['bar3'],
           selectedLayers: ['foo2', 'bar2']
         };
 
@@ -212,6 +214,9 @@ describe('ga_map_service', function() {
 
       module(function($provide) {
         $provide.value('gaLayers', {
+          loadConfig: function() {
+            return def.promise; 
+          },
           getLayer: function(id) {
             return {};
           },
@@ -225,14 +230,12 @@ describe('ga_map_service', function() {
             layer.bodId = bodId;
             layer.displayInLayerManager = true;
             return layer;
-          },
-          getSelectedLayers: function() {
-            if (gaTopic.get()) {
-              return gaTopic.get().selectedLayers;
-            }
           }
         });
         $provide.value('gaTopic', {
+          loadConfig: function() {
+            return def.promise; 
+          },
           get: function() {
             return topic;
           }
@@ -275,10 +278,11 @@ describe('ga_map_service', function() {
         });
       });
 
-      inject(function($injector) {
-        manager = $injector.get('gaLayersPermalinkManager');
-        permalink = $injector.get('gaPermalink');
-        gaTopic = $injector.get('gaTopic');
+      inject(function(_gaLayersPermalinkManager_, _gaPermalink_, _gaTopic_, $q) {
+        def = $q.defer();
+        manager = _gaLayersPermalinkManager_;
+        permalink = _gaPermalink_;
+        gaTopic = _gaTopic_;
       });
 
       manager(map);
@@ -290,7 +294,8 @@ describe('ga_map_service', function() {
         var fooLayer, barLayer, kmlLayer, wmsLayer;
 
         expect(permalink.getParams().layers).to.be(undefined);
-
+        topic = topicLoaded;
+        def.resolve();
         fooLayer = addLayerToMap('foo');
         $rootScope.$digest();
         expect(permalink.getParams().layers).to.eql('foo');
@@ -326,6 +331,7 @@ describe('ga_map_service', function() {
       it('changes permalink', inject(function($rootScope, gaDefinePropertiesForLayer) {
         var kmlLayer;
         expect(permalink.getParams().layers).to.be(undefined);
+        def.resolve(); 
         // Local KML layer (add by dnd) is not added to permalink
         kmlLayer = addLocalKmlLayerToMap();
         gaDefinePropertiesForLayer(kmlLayer);
@@ -341,6 +347,7 @@ describe('ga_map_service', function() {
       it('changes permalink', inject(function($rootScope, gaDefinePropertiesForLayer) {
         var kmlLayer;
         expect(permalink.getParams().layers).to.be(undefined);
+        def.resolve(); 
         kmlLayer = addKmlLayerToMap();
         gaDefinePropertiesForLayer(kmlLayer);
         $rootScope.$digest();
@@ -355,6 +362,7 @@ describe('ga_map_service', function() {
       it('changes permalink', inject(function($rootScope, gaDefinePropertiesForLayer) {
         var wmsLayer;
         expect(permalink.getParams().layers).to.be(undefined);
+        def.resolve(); 
         wmsLayer = addExternalWmsLayerToMap();
         gaDefinePropertiesForLayer(wmsLayer);
         $rootScope.$digest();
@@ -368,6 +376,7 @@ describe('ga_map_service', function() {
     describe('change layer opacity', function() {
       it('changes permalink',
           inject(function($rootScope, gaDefinePropertiesForLayer) {
+        def.resolve(); 
         var fooLayer, barLayer;
 
         fooLayer = addLayerToMap('foo');
@@ -401,6 +410,7 @@ describe('ga_map_service', function() {
     describe('change layer visibility', function() {
       it('changes permalink',
           inject(function($rootScope, gaDefinePropertiesForLayer) {
+        def.resolve();
         var fooLayer, barLayer;
 
         fooLayer = addLayerToMap('foo');
@@ -429,97 +439,51 @@ describe('ga_map_service', function() {
         $rootScope.$digest();
         expect(permalink.getParams().layers_visibility).to.be(undefined);
       }));
-
-      // For next test
-      topic = topicLoaded;
     });
 
     describe('add preselected layers of a topic', function() {
 
-      describe('if topic is loaded beforelayers', function() {
+      it('adds layers if no layers parameter', inject(function($rootScope) {
+        // For next test
+        topic = topicLoaded2;
 
-        it('adds layers if no layers parameter', inject(function($rootScope) {
-          expect(permalink.getParams().layers).to.be(undefined);
-          $rootScope.$broadcast('gaTopicChange', gaTopic.get());
-          $rootScope.$broadcast('gaLayersChange', {});
-          expect(map.getLayers().getLength()).to.be(2);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('bar,foo');
+        expect(permalink.getParams().layers).to.be(undefined);
+        def.resolve();
+        $rootScope.$digest();
+        expect(map.getLayers().getLength()).to.be(2);
+        expect(permalink.getParams().layers).to.be('bar,foo');
 
-          // On next topic change the selected layers are added
-          topic = topicLoaded2;
-          $rootScope.$broadcast('gaTopicChange', {});
-          expect(map.getLayers().getLength()).to.be(4);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('bar,foo,bar2,foo2');
+        // On next topic change the selected layers are added
+        topic = topicLoaded3;
+        $rootScope.$broadcast('gaTopicChange', {});
+        expect(map.getLayers().getLength()).to.be(4);
+        $rootScope.$digest();
+        expect(permalink.getParams().layers).to.be('bar,foo,bar2,foo2');
 
-          // For next test 
-          permalink.deleteParam('layers');
-          topic = topicLoaded;
-          layersPermalink = 'ged';
-        }));
+        // For next test 
+        permalink.deleteParam('layers');
+        topic = topicLoaded;
+        layersPermalink = 'ged';
+      }));
 
-        it('doesn t add layers if the layers parameter is defined', inject(function($rootScope) {
-          expect(permalink.getParams().layers).to.be('ged');
-          $rootScope.$broadcast('gaTopicChange', gaTopic.get());
-          $rootScope.$broadcast('gaLayersChange', {});
-          expect(map.getLayers().getLength()).to.be(1);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('ged');
+      it('doesn t add layers if the layers parameter is defined', inject(function($rootScope) {
+        expect(permalink.getParams().layers).to.be('ged');
+        def.resolve();
+        $rootScope.$digest();
+        expect(map.getLayers().getLength()).to.be(1);
+        expect(permalink.getParams().layers).to.be('ged');
 
-          // On next topic change the selected layers are added
-          topic = topicLoaded2;
-          $rootScope.$broadcast('gaTopicChange', {});
-          expect(map.getLayers().getLength()).to.be(3);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('ged,bar2,foo2');
+        // On next topic change the selected layers are added
+        topic = topicLoaded2;
+        $rootScope.$broadcast('gaTopicChange', {});
+        expect(map.getLayers().getLength()).to.be(3);
+        $rootScope.$digest();
+        expect(permalink.getParams().layers).to.be('ged,bar,foo');
 
-          // For next test
-          topic = undefined;
-          layersPermalink = undefined;
-        }));
-      });
-
-      describe('if topic is loaded after layers', function() {
-
-        it('adds layers if no layers parameter', inject(function($rootScope) {
-          expect(permalink.getParams().layers).to.be(undefined);
-          $rootScope.$broadcast('gaLayersChange', {});
-          topic = topicLoaded;
-          $rootScope.$broadcast('gaTopicChange', gaTopic.get());
-          expect(map.getLayers().getLength()).to.be(2);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('bar,foo');
-
-          // On next topic change the selected layers are added
-          topic = topicLoaded2;
-          $rootScope.$broadcast('gaTopicChange', {});
-          expect(map.getLayers().getLength()).to.be(4);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('bar,foo,bar2,foo2');
-
-          // For next test
-          topic = undefined;
-          layersPermalink = 'ged';
-        }));
-
-        it('doesn t add layers if the layers parameter is defined', inject(function($rootScope) {
-          expect(permalink.getParams().layers).to.be('ged');
-          $rootScope.$broadcast('gaLayersChange', {});
-          topic = topicLoaded;
-          $rootScope.$broadcast('gaTopicChange', gaTopic.get());
-          expect(map.getLayers().getLength()).to.be(1);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('ged');
-
-          // On next topic change the selected layers are added
-          topic = topicLoaded2;
-          $rootScope.$broadcast('gaTopicChange', {});
-          expect(map.getLayers().getLength()).to.be(3);
-          $rootScope.$digest();
-          expect(permalink.getParams().layers).to.be('ged,bar2,foo2');
-        }));
-      });
+        // For next test
+        topic = undefined;
+        layersPermalink = undefined;
+      }));
     });
   });
   
@@ -663,6 +627,10 @@ describe('ga_map_service', function() {
     });
 
     it('tests isKmlLayer', inject(function(gaDefinePropertiesForLayer) {
+      expect(gaMapUtils.isKmlLayer(undefined)).to.eql(false);
+      expect(gaMapUtils.isKmlLayer(null)).to.eql(false);
+      expect(gaMapUtils.isKmlLayer('')).to.eql(false);
+
       // with a layer id
       expect(gaMapUtils.isKmlLayer('ch.bod.layer')).to.eql(false);
       expect(gaMapUtils.isKmlLayer('WMS||aa||aa||aa')).to.eql(false);
@@ -672,6 +640,9 @@ describe('ga_map_service', function() {
 
       // with an ol.layer
       var layer = addLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isKmlLayer(layer)).to.eql(false);
+      layer = addLayerGroupToMap();
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isKmlLayer(layer)).to.eql(false);
       layer = addExternalWmsLayerToMap();
@@ -689,9 +660,15 @@ describe('ga_map_service', function() {
     }));
     
     it('tests isLocalKmlLayer', inject(function(gaDefinePropertiesForLayer) {
+      expect(gaMapUtils.isLocalKmlLayer(undefined)).to.eql(false);
+      expect(gaMapUtils.isLocalKmlLayer(null)).to.eql(false);
+      expect(gaMapUtils.isLocalKmlLayer('')).to.eql(false);
 
       // with an ol.layer
       var layer = addLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isLocalKmlLayer(layer)).to.eql(false);
+      layer = addLayerGroupToMap();
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isLocalKmlLayer(layer)).to.eql(false);
       layer = addExternalWmsLayerToMap();
@@ -710,9 +687,29 @@ describe('ga_map_service', function() {
     }));
 
     it('tests isStoredKmlLayer', inject(function(gaDefinePropertiesForLayer) {
+      expect(gaMapUtils.isStoredKmlLayer(undefined)).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer(null)).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('')).to.eql(false);
+
+      // with a layer id
+      expect(gaMapUtils.isStoredKmlLayer('ch.bod.layer')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('WMS||aa||aa||aa')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('KML||test/local/foo.kml')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('KML||http://test:com/foo.kml')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('KML||https://test:com/foo.kml')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('ch.bod.layer')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('KML||http://public.bgdi.ch/ggggg.kml')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('KML||http://public.admin.ch/gggg.kml')).to.eql(false);
+      expect(gaMapUtils.isStoredKmlLayer('KML||http://public.dev.bgdi.ch/ggggg.kml')).to.eql(true);
+      expect(gaMapUtils.isStoredKmlLayer('KML||http://public.geo.admin.ch/gggg.kml')).to.eql(true)
+      expect(gaMapUtils.isStoredKmlLayer('KML||https://public.dev.bgdi.ch/ggggg.kml')).to.eql(true);
+      expect(gaMapUtils.isStoredKmlLayer('KML||https://public.geo.admin.ch/gggg.kml')).to.eql(true);
 
       // with an ol.layer
       var layer = addLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isStoredKmlLayer(layer)).to.eql(false);
+      layer = addLayerGroupToMap();
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isStoredKmlLayer(layer)).to.eql(false);
       layer = addExternalWmsLayerToMap();
@@ -730,6 +727,10 @@ describe('ga_map_service', function() {
     }));
 
     it('tests isExternalWmsLayer', inject(function(gaDefinePropertiesForLayer) {
+      expect(gaMapUtils.isExternalWmsLayer(undefined)).to.eql(false);
+      expect(gaMapUtils.isExternalWmsLayer(null)).to.eql(false);
+      expect(gaMapUtils.isExternalWmsLayer('')).to.eql(false);
+
       // with a layer id
       expect(gaMapUtils.isExternalWmsLayer('ch.bod.layer')).to.eql(false);
       expect(gaMapUtils.isExternalWmsLayer('WMS||aa')).to.eql(false);
@@ -742,6 +743,9 @@ describe('ga_map_service', function() {
       var layer = addLayerToMap();
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isExternalWmsLayer(layer)).to.eql(false);
+      layer = addLayerGroupToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isStoredKmlLayer(layer)).to.eql(false);
       layer = addExternalWmsLayerToMap();
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isExternalWmsLayer(layer)).to.eql(true);

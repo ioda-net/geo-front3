@@ -1,7 +1,6 @@
 describe('ga_backgroundselector_directive', function() {
 
-  var element, map, layer1, layer2, $rootScope, $compile;
-
+  var element, map, layer1, layer2, $rootScope, $compile, def, globalOptions;
   beforeEach(function() {
 
     map = new ol.Map({});
@@ -10,39 +9,45 @@ describe('ga_backgroundselector_directive', function() {
 
     module(function($provide) {
       $provide.value('gaLayers', {
+        loadConfig: function() {
+          return def.promise; 
+        },
         getLayer: function(id) {
           return {}; 
         },
         getOlLayerById: function(id) {
           return id == 'foo' ? layer1 : layer2;
-        },
-        getBackgroundLayers: function () {
-          return [
-            {id: 'ch.swisstopo.swissimage', label: 'bg_luftbild'},
-            {id: 'ch.swisstopo.pixelkarte-farbe', label: 'bg_pixel_color'},
-            {id: 'ch.swisstopo.pixelkarte-grau', label: 'bg_pixel_grey'}
-          ];
         }
       });
       $provide.value('gaTopic', {
+        loadConfig: function() {
+          return def.promise;
+        },
         get: function() {
           return {
             id: 'sometopic',
             langs: [{
               value: 'somelang',
               label: 'somelang'
+            }],
+            backgroundLayers: [{
+              id: 'foo', label: 'Foo'
+            }, {
+              id: 'bar', label: 'Bar'
             }]
           };
         }
       });
     });
 
-    inject(function($injector) {
-      $compile = $injector.get('$compile');
-      $rootScope = $injector.get('$rootScope');
-      $rootScope.map = map;
+    inject(function(_$rootScope_, _$compile_, $q, gaGlobalOptions) {
+      $compile = _$compile_;
+      $rootScope = _$rootScope_;
+      def = $q.defer();
+      globalOptions = gaGlobalOptions;
     });
 
+    $rootScope.map = map;
     element = angular.element(
       '<div>' +
           '<div ga-background-selector ' +
@@ -51,6 +56,7 @@ describe('ga_backgroundselector_directive', function() {
       '</div>');
 
     $compile(element)($rootScope);
+    def.resolve();
     $rootScope.$digest();
 
     $rootScope.$broadcast('gaTopicChange');
@@ -63,10 +69,14 @@ describe('ga_backgroundselector_directive', function() {
       var div = divToggle[0];
       expect(div).not.to.be(undefined);
     });
-
-    it('creates 4 layer bgselectors div', function() {
+    it('creates the correct number of layer bgselectors div', function() {
       var divsBg = element.find('.ga-bg-layer');
-      expect(divsBg.length).to.equal(4);
+      if (globalOptions.dev3d) {
+        expect(divsBg.length).to.equal(5);
+      } else {
+        // to be removed once 3d goes live
+        expect(divsBg.length).to.equal(4);
+      }
     });
   });
 

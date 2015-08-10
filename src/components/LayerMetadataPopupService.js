@@ -43,12 +43,12 @@ goog.require('ga_popup');
           });
           popups[bodid] = popup;
 
-          updateContent(true);
-
-          $rootScope.$on('$translateChangeEnd', function() {
-            updateContent(false);
+          // Open popup only on success
+          updateContent().then(function() {
+            popup.open();
           });
 
+          $rootScope.$on('$translateChangeEnd', updateContent);
         };
 
         this.toggle = function(bodid) {
