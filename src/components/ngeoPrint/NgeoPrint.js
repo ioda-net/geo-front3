@@ -261,9 +261,9 @@ ngeo.Print.prototype.encodeImageWmsLayer_ = function(arr, layer) {
   goog.asserts.assertInstanceof(source, ol.source.ImageWMS);
 
   var url = source.getUrl();
-  var params = source.getParams();
-  if (goog.isDefAndNotNull(url)) {
-    this.encodeWmsLayer_(arr, layer.getOpacity(), url, params);
+  if (goog.isDef(url)) {
+    this.encodeWmsLayer_(
+        arr, layer.getOpacity(), url, source.getParams());
   }
 };
 
@@ -301,7 +301,7 @@ ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
  */
 ngeo.Print.getAbsoluteUrl_ = function(url) {
   var a = document.createElement('a');
-  a.href = decodeURI(url);
+  a.href = encodeURI(url);
   return decodeURI(a.href);
 };
 
@@ -366,6 +366,7 @@ ngeo.Print.prototype.encodeTileWmtsLayer_ = function(arr, layer) {
     layer: source.getLayer(),
     matrices: matrices,
     matrixSet: source.getMatrixSet(),
+    opacity: layer.getOpacity(),
     requestEncoding: /** @type {string} */ (source.getRequestEncoding()),
     style: source.getStyle(),
     type: 'WMTS',
@@ -387,9 +388,8 @@ ngeo.Print.prototype.encodeTileWmsLayer_ = function(arr, layer) {
   goog.asserts.assertInstanceof(layer, ol.layer.Tile);
   goog.asserts.assertInstanceof(source, ol.source.TileWMS);
 
-  var url = source.getUrls()[0];
-  var params = source.getParams();
-  this.encodeWmsLayer_(arr, layer.getOpacity(), url, params);
+  this.encodeWmsLayer_(
+      arr, layer.getOpacity(), source.getUrls()[0], source.getParams());
 };
 
 
@@ -471,6 +471,7 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
     });
     var object = /** @type {MapFishPrintVectorLayer} */ ({
       geoJson: geojsonFeatureCollection,
+      opacity: layer.getOpacity(),
       style: mapfishStyleObject,
       type: 'geojson'
     });
@@ -660,7 +661,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
 
     var labelRotation = textStyle.getRotation();
     if (goog.isDef(labelRotation)) {
-      // Mapfish print expects a string, not a number to rotate text
+      // Mapfish Print expects a string, not a number to rotate text
       symbolizer.labelRotation = (labelRotation * 180 / Math.PI).toString();
     }
 
@@ -691,10 +692,12 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
       symbolizer.fontColor = goog.color.rgbArrayToHex(fillColorRgba);
     }
 
-    // Mapfish print allows offset only if labelAlign is defined.
+    // Mapfish Print allows offset only if labelAlign is defined.
     if (goog.isDef(symbolizer.labelAlign)) {
       symbolizer.labelXOffset = textStyle.getOffsetX();
-      symbolizer.labelYOffset = - textStyle.getOffsetY();
+      // Mapfish uses the opposite direction of OpenLayers for y axis, so the
+      // minus sign is required for the y offset to be identical.
+      symbolizer.labelYOffset = -textStyle.getOffsetY();
     }
 
     symbolizers.push(symbolizer);
@@ -703,7 +706,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
 
 
 /**
- * Return the WMTS URL to use in the print spec.
+ * Return the WMTS URL to use in the print spec.
  * @param {ol.source.WMTS} source The WMTS source.
  * @return {string} URL.
  * @private
@@ -756,7 +759,7 @@ ngeo.Print.prototype.getStatus = function(ref, opt_httpConfig) {
 
 
 /**
- * Get the URL of a report.
+ * Get the URL of a report.
  * @param {string} ref Print report reference.
  * @return {string} The report URL for this ref.
  */
