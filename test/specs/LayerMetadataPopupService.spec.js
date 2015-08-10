@@ -41,12 +41,13 @@ describe('ga_layer_metadata_popup_service', function() {
     $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some raw html</div>');
     gaLayerMetadataPopup.toggle('somelayer');
     $rootScope.$digest();
+    $httpBackend.flush();
 
     var popupLegend = $('.ga-tooltip-metadata');
     expect(popupLegend.length).to.be(1);
     expect(popupLegend.parents().length).to.be(2);
     expect(popupLegend.css('display')).to.be('block');
-    var popupContent = '<span class="ng-binding"></span>';
+    var popupContent = '<div>Some raw html</div>';
     expect(popupLegend.find('.ga-popup-content').html().indexOf(popupContent) > -1).to.be(true);
 
     gaLayerMetadataPopup.toggle('somelayer');
@@ -69,6 +70,7 @@ describe('ga_layer_metadata_popup_service', function() {
     $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some new raw html</div>');
     gaLayerMetadataPopup.toggle('somenewlayer');
     $rootScope.$digest();
+    $httpBackend.flush();
 
     popupLegend = $('.ga-tooltip-metadata');
     expect(popupLegend.length).to.be(2);
@@ -83,6 +85,7 @@ describe('ga_layer_metadata_popup_service', function() {
     expectedUrlLegend = 'http://legendservice.com/all/somenewlayer?lang=someotherlang';
     $httpBackend.whenGET(expectedUrlLegend).respond('<div>Some translated new raw html</div>');
     $rootScope.$digest();
+    $httpBackend.flush();
 
     popupLegend = $('.ga-tooltip-metadata');
     expect(popupLegend.length).to.be(2);

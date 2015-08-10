@@ -18,15 +18,17 @@ goog.require('ga_popup');
         var popups = {};
 
         var create = function(bodid) {
-          var layer = {};
-          var popup;
+          var result = {html: ''},
+              popup;
 
           // Called to update the content
-          var updateContent = function(init) {
-            angular.extend(layer, gaLayers.getLayer(bodid));
-            if (init) {
-              popup.open();
-            }
+          var updateContent = function() {
+            return gaLayers.getMetaDataOfLayer(bodid).success(function(data) {
+              result.html = $sce.trustAsHtml(data);
+            }).error(function() {
+              //FIXME: better error handling
+              alert('Could not retrieve information for ' + bodid);
+            });
           };
 
           //We assume popup does not exist yet
@@ -34,12 +36,11 @@ goog.require('ga_popup');
             title: $translate.instant('metadata_window_title'),
             destroyOnClose: false,
             content: popupContent,
-            layer: layer,
+            result: result,
             className: 'ga-tooltip-metadata',
             x: 400,
             y: 200,
-            showPrint: true,
-            type: 'infobox'
+            showPrint: true
           });
           popups[bodid] = popup;
 
