@@ -203,18 +203,23 @@ goog.require('ga_map_service');
 
     function getLayerOptions(feature, featuresToDisplay, map, onRegisterApi) {
       onRegisterApi = onRegisterApi || function() {};
-      var exporterCsvFilename = feature.layerBodId.replace(/,/g, '_') + '.csv';
+      var exporterCsvFilename = feature.layerId.replace(/,/g, '_') + '.csv';
       var layerGridOptions = {
         data: [],
         exporterCsvFilename: exporterCsvFilename,
         exporterPdfHeader: {
-          text: feature.layerBodId
+          text: feature.layerId
         },
         onRegisterApi: onRegisterApi,
         appScopeProvider: {
           highlight: function(rowIndex) {
-            var geometry = parser.readFeature(
-                    featuresToDisplay[feature.layerBodId][rowIndex]);
+            var geometry;
+            var currentFeature = featuresToDisplay[feature.layerId][rowIndex];
+            if (currentFeature instanceof ol.Feature) {
+              geometry = currentFeature;
+            } else {
+              geometry = parser.readFeature(currentFeature);
+            }
             gaPreviewFeatures.highlight(map, geometry);
           },
           clearHighlight: function() {

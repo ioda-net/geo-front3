@@ -3,20 +3,20 @@
   <div class="ga-features-popup">
     <div class="htmlpopup-content">
       <ul class="nav-tabs nav">
-        <li ng-repeat="(layerBodId, v) in options.features">
+        <li ng-repeat="(layerId, v) in options.features">
           <a href=""
-             ng-class="{'ga-active': options.currentTab === layerBodId}"
-             ng-click="options.currentTab = layerBodId"
+             ng-class="{'ga-active': options.currentTab === layerId}"
+             ng-click="options.currentTab = layerId"
              translate>
-            {{layerBodId}}
+            {{layerId}}
           </a>
         </li>
       </ul>
 
       <div class="grid"
-           ng-repeat="(layerBodId, properties) in options.gridsOptions"
-           ng-if="options.currentTab === layerBodId"
-           ui-grid="options.gridsOptions[layerBodId]"
+           ng-repeat="(layerId, properties) in options.gridsOptions"
+           ng-if="options.currentTab === layerId"
+           ui-grid="options.gridsOptions[layerId]"
            ui-grid-exporter
            ui-grid-selection
            ui-grid-move-columns

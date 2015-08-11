@@ -280,24 +280,31 @@ goog.require('ga_styles_service');
               }
             }
 
-            function displayFeature(feature) {
-              if (feature instanceof ol.Feature) {
-                var feature = new ol.Feature(feature.getGeometry());
-                var layerId = feature.get('layerId');
+            function displayFeature(value) {
+              if (value instanceof ol.Feature) {
+                var feature = new ol.Feature(value.getGeometry());
+                var layerId = value.get('layerId');
+                feature.layerId = layerId;
+                feature.properties = {
+                  name: value.get('name'),
+                  description: value.get('description'),
+                  type: value.get('type')
+                };
                 feature.set('layerId', layerId);
                 gaPreviewFeatures.add(map, feature);
-                showPopup(feature.get('htmlpopup'));
+                showPopup(feature);
               } else {
                 //draw feature, but only if it should be drawn
-                if (gaLayers.getLayer(feature.layerBodId) && feature.geometry) {
-                  var features = parser.readFeatures(feature);
+                if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
+                  value.layerId = value.layerBodId;
+                  var features = parser.readFeatures(value);
                   for (var i = 0, ii = features.length; i < ii; ++i) {
-                    features[i].set('layerId', feature.layerBodId);
+                    features[i].set('layerId', value.layerBodId);
                     gaPreviewFeatures.add(map, features[i]);
                   }
                 }
 
-                showPopup(feature);
+                showPopup(value);
               }
             }
 
@@ -309,11 +316,11 @@ goog.require('ga_styles_service');
                   initPopup(feature);
                 }
               }
-              if (!(feature.layerBodId in featuresToDisplay)) {
+              if (!(feature.layerId in featuresToDisplay)) {
                 initFeaturesForLayer(feature);
               }
-              featuresToDisplay[feature.layerBodId].push(feature);
-              gridsOptions[feature.layerBodId].data.push(feature.properties);
+              featuresToDisplay[feature.layerId].push(feature);
+              gridsOptions[feature.layerId].data.push(feature.properties);
             }
 
             function initPopup(feature) {
@@ -326,13 +333,13 @@ goog.require('ga_styles_service');
                 close: close
               });
               scope.popupToggle = true;
-              scope.options.currentTab = feature.layerBodId;
+              scope.options.currentTab = feature.layerId;
               gaFeaturesTable.setSize();
             }
 
             function initFeaturesForLayer(feature) {
-              featuresToDisplay[feature.layerBodId] = [];
-              gridsOptions[feature.layerBodId] = gaFeaturesGrid
+              featuresToDisplay[feature.layerId] = [];
+              gridsOptions[feature.layerId] = gaFeaturesGrid
                       .getLayerOptions(feature, featuresToDisplay, map,
                         function(gridApi){
                           scope.options.gridApi = gridApi;
