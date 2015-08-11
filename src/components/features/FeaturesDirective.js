@@ -174,17 +174,36 @@ goog.require('ga_styles_service');
             });
 
             // Find the first feature from a vector layer
-            function findVectorFeatures(pixel, vectorLayer) {
+            function findVectorFeatures(coordinates, vectorLayer, geometry) {
+              var pixel = map.getPixelFromCoordinate(coordinates);
               var features = [];
 
-              map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-                if (layer && vectorLayer === layer) {
-                  if (gaFeaturesUtils.hasNameOrDescription(feature)) {
-                    feature.set('layerId', layer.id);
-                    features.push(feature);
+              if (geometry instanceof ol.geom.Geometry) {
+                map.getLayers().getArray().forEach(function(layer){
+                  if (gaFeaturesUtils.isVectorLayer(layer)) {
+                    layer.getSource()
+                      .getFeatures()
+                      .forEach(function(feature) {
+                        var featureGeometryExtent = feature.getGeometry().getExtent();
+                        var geometryExtent = geometry.getExtent();
+
+                        if (ol.extent.intersects(geometryExtent, featureGeometryExtent)) {
+                          feature.set('layerId', layer.id);
+                          features.push(feature);
+                        }
+                      });
                   }
-                }
-              });
+                });
+              } else {
+                map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+                  if (layer && vectorLayer === layer) {
+                    if (gaFeaturesUtils.hasNameOrDescription(feature)) {
+                      feature.set('layerId', layer.id);
+                      features.push(feature);
+                    }
+                  }
+                });
+              }
               return features;
             }
 
@@ -192,19 +211,24 @@ goog.require('ga_styles_service');
             function findFeatures(geometry, size, mapExtent) {
               var identifyUrl = scope.options.identifyUrlTemplate
                   .replace('{Topic}', currentTopic),
-                  layersToQuery = gaFeaturesUtils.getLayersToQuery(map),
-                  pixel = map.getPixelFromCoordinate(geometry);
+                  layersToQuery = gaFeaturesUtils.getLayersToQuery(map);
+              var coordinates;
+              if (geometry instanceof ol.geom.Geometry) {
+                coordinates = geometry.getExtent();
+              } else {
+                coordinates = geometry;
+              }
               initTooltip();
               for (var i = 0; i < layersToQuery.length; i++) {
                 var layerToQuery = layersToQuery[i];
                 if (gaFeaturesUtils.isVectorLayer(layerToQuery)) {
-                  var features = findVectorFeatures(pixel, layerToQuery);
+                  var features = findVectorFeatures(coordinates, layerToQuery, geometry);
                   if (features) {
                     showFeatures(features);
                   }
                 } else { // queryable bod layers
                   var params = angular.extend({}, scope.options.params, {
-                    geometry: geometry.join(','),
+                    geometry: coordinates.join(','),
                     // FIXME: make sure we are passing the right dpi here.
                     imageDisplay: size[0] + ',' + size[1] + ',96',
                     mapExtent: mapExtent.join(','),

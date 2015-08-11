@@ -43,7 +43,7 @@ goog.require('ga_map_service');
 
         dragBox.on('boxend', function(evt) {
           boxFeature.setGeometry(evt.target.getGeometry());
-          var geometry = boxFeature.getGeometry().getExtent();
+          var geometry = boxFeature.getGeometry();
 
           onDragBoxEnd(geometry);
           showBox(map);
