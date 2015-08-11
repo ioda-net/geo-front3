@@ -229,7 +229,7 @@ prd/lib/: src/lib/d3-3.3.1.min.js \
 	mkdir -p $@
 	cp $^ $@
 
-prd/lib/build.js: src/lib/jquery-2.0.3.min.js \
+prd/lib/build.js: src/lib/jquery-2.1.4.min.js \
 		    src/lib/bootstrap-3.3.1.min.js \
 		    src/lib/moment-with-customlocales.min.js \
 		    src/lib/typeahead-0.9.3.min.js src/lib/angular.min.js \

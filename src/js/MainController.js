@@ -177,7 +177,6 @@ goog.require('ga_storage_service');
     $scope.$watch('globals.isDrawActive', function(active) {
       if (active) {
         $scope.globals.feedbackPopupShown = false;
-        $scope.globals.isFeatureTreeActive = false;
         $scope.globals.isSwipeActive = false;
       }
     });

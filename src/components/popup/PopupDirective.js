@@ -131,6 +131,7 @@ goog.require('ga_print_service');
           );
 
           var header = element.find('.popover-title');
+          header.toggleClass('ga-draggable-zone', scope.options.draggable);
           scope.$watch('isReduced', function(newVal, oldVal) {
             if (newVal != oldVal) {
               element.toggleClass('ga-popup-reduced', scope.isReduced);

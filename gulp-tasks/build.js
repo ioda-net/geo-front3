@@ -13,17 +13,20 @@ var utils = require('./utils');
 function load(src, dest, config) {
   gulp.task('build.js', ['closure-compiler'], function () {
     return gulp.src([
-      'src/lib/jquery-2.0.3.js',
+      'src/lib/jquery-2.1.4.js',
       'src/lib/bootstrap-3.3.1.js',
       'src/lib/moment-with-customlocales.js',
       'src/lib/typeahead-0.9.3.js',
       'src/lib/angular.js',
+      'src/lib/csv.js',
+      'src/lib/ui-grid.js',
       'src/lib/proj4js-compressed.js',
       'src/lib/EPSG21781.js',
       'src/lib/EPSG2056.js',
       'src/lib/EPSG32631.js',
       'src/lib/EPSG32632.js',
       'src/lib/ol.js',
+      'src/lib/angular-load.js',
       'src/lib/angular-translate.js',
       'src/lib/angular-translate-loader-static-files.js',
       'src/lib/fastclick.min.js',

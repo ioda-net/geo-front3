@@ -1,0 +1,26 @@
+<div ga-popup="popupToggle"
+     ga-popup-options="options.popupOptions">
+  <div class="ga-features-popup">
+    <div class="htmlpopup-content">
+      <ul class="nav-tabs nav">
+        <li ng-repeat="(layerId, v) in options.features">
+          <a href=""
+             ng-class="{'ga-active': options.currentTab === layerId}"
+             ng-click="options.currentTab = layerId"
+             translate>
+            {{layerId}}
+          </a>
+        </li>
+      </ul>
+
+      <div class="grid"
+           ng-repeat="(layerId, properties) in options.gridsOptions"
+           ng-if="options.currentTab === layerId"
+           ui-grid="options.gridsOptions[layerId]"
+           ui-grid-exporter
+           ui-grid-selection
+           ui-grid-move-columns
+           ui-grid-resize-columns></div>
+    </div>
+  </div>
+</div>

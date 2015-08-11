@@ -18,12 +18,16 @@ var config = utils.loadConf(process.argv[2], cliOptions);
 
 var src = {
   js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
+  css: ['src/**/*.css'],
+  font: ['src/**/*.eot', 'src/**/*.otf', 'src/**/*.svg', 'src/**/*.ttf', 'src/**/*.woff'],
   plugins: 'src/plugins/*.js',
   pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
   partials: 'src/components/**/*.html',
   less: 'src/style/app.less',
+  watchLess: 'src/**/*.less',
   index: 'src/*.nunjucks.html',
-  config: 'config/' + cliOptions.portal + '-dev.toml'
+  config: 'config/' + cliOptions.portal + '-dev.toml',
+  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js']
 };
 
 var dest = {
@@ -60,9 +64,9 @@ gulp.task('dev', function () {
     'index.html',
     'app.css',
     'copy-js',
+    'copy-css',
     'copy-partials',
     'copy-fonts',
-    'copy-locales',
     'copy-checker'
   ]
   // Failsafe method fix buggy generated deps
@@ -93,6 +97,10 @@ gulp.task('watch', ['dev'], function () {
     runSequence('plugins', 'deps.js');
   });
 
+  watch(src.watchLess, function () {
+    gulp.start('app.css');
+  });
+
   // Relaunch dev task after a clean done by another instance.
   watch(dest.dev, {events: ['unlinkDir'], base: dest.dev}, function () {
     gulp.start('dev');
@@ -107,9 +115,10 @@ gulp.task('prod', function (cb) {
             'index.html',
             'app.css',
             'copy-fonts',
-            'copy-locales',
+            'copy-css',
             'copy-checker',
             'copy-IE',
+            'copy-pdfmake-prod',
             'appcache',
             'build.js',
             'app-whitespace.js'

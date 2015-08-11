@@ -11,8 +11,6 @@ goog.require('ga_contextpopup_controller');
 goog.require('ga_draggable_directive');
 goog.require('ga_draw');
 goog.require('ga_draw_controller');
-goog.require('ga_featuretree');
-goog.require('ga_featuretree_controller');
 goog.require('ga_feedback');
 goog.require('ga_feedback_controller');
 goog.require('ga_fullscreen');
@@ -35,8 +33,6 @@ goog.require('ga_popup');
 goog.require('ga_print_controller');
 goog.require('ga_print_directive');
 goog.require('ga_profile');
-goog.require('ga_query');
-goog.require('ga_query_controller');
 goog.require('ga_rotate');
 goog.require('ga_scaleline');
 goog.require('ga_search');
@@ -50,12 +46,13 @@ goog.require('ga_swipe');
 goog.require('ga_timeselector');
 goog.require('ga_timeselector_controller');
 goog.require('ga_timestamp_control');
-goog.require('ga_tooltip');
-goog.require('ga_tooltip_controller');
 goog.require('ga_topic');
 goog.require('ga_translation');
 goog.require('ga_translation_controller');
 goog.require('ga_waitcursor_service');
+goog.require('ga_features');
+goog.require('ga_features_controller');
+goog.require('ga_draw_controller');
 (function() {
 
 
@@ -80,9 +77,8 @@ goog.require('ga_waitcursor_service');
     'ga_translation',
     'ga_feedback',
     'ga_layermanager',
-    'ga_tooltip',
+    'ga_features',
     'ga_swipe',
-    'ga_featuretree',
     'ga_measure',
     'ga_profile',
     'ga_fullscreen',
@@ -90,7 +86,6 @@ goog.require('ga_waitcursor_service');
     'ga_styles_from_literals_service',
     'ga_seo',
     'ga_draw',
-    'ga_query',
     'ga_modal_directive',
     'ga_draggable_directive',
     'ga_placeholder_directive',
@@ -112,10 +107,8 @@ goog.require('ga_waitcursor_service');
     'ga_search_controller',
     'ga_seo_controller',
     'ga_timeselector_controller',
-    'ga_tooltip_controller',
-    'ga_featuretree_controller',
     'ga_draw_controller',
-    'ga_query_controller'
+    'ga_features_controller'
   ]);
 
 })();

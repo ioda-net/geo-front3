@@ -10,6 +10,21 @@ function load(src, dest, config) {
   });
 
 
+  gulp.task('copy-pdfmake-prod', function () {
+    return gulp.src(src.pdfmakeProd)
+            .pipe(uglify())
+            .pipe(gulp.dest(dest.prod + '/lib'));
+  });
+
+
+  gulp.task('copy-css', function () {
+    return gulp.src(src.css)
+            .pipe(gulpif(config.prod,
+              gulp.dest(dest.prod),
+              gulp.dest(dest.dev)));
+  });
+
+
   gulp.task('copy-partials', function () {
     return gulp.src(src.partials, {base: './src/'})
             .pipe(gulp.dest(dest.dev));
@@ -17,18 +32,10 @@ function load(src, dest, config) {
 
 
   gulp.task('copy-fonts', function () {
-    return gulp.src('src/style/font-awesome-3.2.1/font/*')
+    return gulp.src(src.font)
             .pipe(gulpif(config.prod,
-                    gulp.dest(dest.prod + '/style/font-awesome-3.2.1/font'),
-                    gulp.dest(dest.dev + '/style/font-awesome-3.2.1/font')));
-  });
-
-
-  gulp.task('copy-locales', function () {
-    return gulp.src('src/locales/*.json')
-            .pipe(gulpif(config.prod,
-                    gulp.dest(dest.prod + '/locales'),
-                    gulp.dest(dest.dev + '/locales')));
+                    gulp.dest(dest.prod),
+                    gulp.dest(dest.dev)));
   });
 
 
