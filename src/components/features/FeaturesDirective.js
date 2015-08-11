@@ -103,7 +103,7 @@ goog.require('ga_styles_service');
                   });
               }
               map.getTarget().style.cursor = (hasQueryableLayer ||
-                      gaFeaturesUtils.hasImportedQueryableLayer(map, evt.pixel)) ?
+                  gaFeaturesUtils.hasImportedQueryableLayer(map, evt.pixel)) ?
                   'pointer' : '';
             };
             var updateCursorStyleDebounced = gaDebounce.debounce(
@@ -175,49 +175,53 @@ goog.require('ga_styles_service');
 
             // Find the first feature from a vector layer
             function findVectorFeatures(coordinates, vectorLayer, geometry) {
-              var pixel = map.getPixelFromCoordinate(coordinates);
-              var features = [];
-
               if (geometry instanceof ol.geom.Geometry) {
-                map.getLayers().getArray().forEach(function(layer){
-                  if (gaFeaturesUtils.isVectorLayer(layer)) {
-                    layer.getSource()
-                      .getFeatures()
-                      .forEach(function(feature) {
-                        var featureGeometryExtent = feature.getGeometry().getExtent();
-                        var geometryExtent = geometry.getExtent();
-
-                        if (ol.extent.intersects(geometryExtent, featureGeometryExtent)) {
-                          feature.set('layerId', layer.id);
-                          features.push(feature);
-                        }
-                      });
-                  }
-                });
+                return findVectorFeaturesInDragBox(geometry);
               } else {
-                map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-                  if (layer && vectorLayer === layer) {
-                    if (gaFeaturesUtils.hasNameOrDescription(feature)) {
-                      feature.set('layerId', layer.id);
-                      features.push(feature);
-                    }
-                  }
-                });
+                var pixel = map.getPixelFromCoordinate(coordinates);
+                return findVectorFeaturesOnPixel(pixel, vectorLayer);
               }
+            }
+
+            function findVectorFeaturesInDragBox(geometry) {
+              var features = [];
+              map.getLayers().getArray().forEach(function(layer){
+                if (gaFeaturesUtils.isVectorLayer(layer)) {
+                  layer.getSource()
+                    .getFeatures()
+                    .forEach(function(feature) {
+                      var featureGeometryExtent = feature.getGeometry().getExtent();
+                      var geometryExtent = geometry.getExtent();
+
+                      if (ol.extent.intersects(geometryExtent, featureGeometryExtent)) {
+                        feature.set('layerId', layer.id);
+                        features.push(feature);
+                      }
+                    });
+                }
+              });
+
+              return features;
+            }
+
+            function findVectorFeaturesOnPixel(pixel, vectorLayer) {
+              var features = [];
+              map.forEachFeatureAtPixel(pixel, function(feature, layer) {
+                if (layer && vectorLayer === layer) {
+                  if (gaFeaturesUtils.hasNameOrDescription(feature)) {
+                    feature.set('layerId', layer.id);
+                    features.push(feature);
+                  }
+                }
+              });
+
               return features;
             }
 
             // Find features for all type of layers
             function findFeatures(geometry, size, mapExtent) {
-              var identifyUrl = scope.options.identifyUrlTemplate
-                  .replace('{Topic}', currentTopic),
-                  layersToQuery = gaFeaturesUtils.getLayersToQuery(map);
-              var coordinates;
-              if (geometry instanceof ol.geom.Geometry) {
-                coordinates = geometry.getExtent();
-              } else {
-                coordinates = geometry;
-              }
+              var layersToQuery = gaFeaturesUtils.getLayersToQuery(map);
+              var coordinates = gaFeaturesUtils.getCoords(geometry);
               initTooltip();
               for (var i = 0; i < layersToQuery.length; i++) {
                 var layerToQuery = layersToQuery[i];
@@ -227,29 +231,35 @@ goog.require('ga_styles_service');
                     showFeatures(features);
                   }
                 } else { // queryable bod layers
-                  var params = angular.extend({}, scope.options.params, {
-                    geometry: coordinates.join(','),
-                    // FIXME: make sure we are passing the right dpi here.
-                    imageDisplay: size[0] + ',' + size[1] + ',96',
-                    mapExtent: mapExtent.join(','),
-                    tolerance: scope.options.tolerance,
-                    layers: 'all:' + layerToQuery.bodId
-                  });
-
-                  // Only timeEnabled layers use the timeInstant parameter
-                  if (layerToQuery.timeEnabled) {
-                    params.timeInstant = year ||
-                        gaFeaturesUtils.yearFromString(layerToQuery.time);
-                  }
-
-                  $http.get(identifyUrl, {
-                    timeout: canceler.promise,
-                    params: params
-                  }).success(function(features) {
-                    showFeatures(features.results);
-                  });
+                  findQueryableLayerFeatures(coordinates, size, mapExtent, layerToQuery);
                 }
               }
+            }
+
+            function findQueryableLayerFeatures(coordinates, size, mapExtent, layerToQuery) {
+              var identifyUrl = scope.options.identifyUrlTemplate
+                  .replace('{Topic}', currentTopic);
+              var params = angular.merge({}, scope.options.params, {
+                geometry: coordinates.join(','),
+                // FIXME: make sure we are passing the right dpi here.
+                imageDisplay: size[0] + ',' + size[1] + ',96',
+                mapExtent: mapExtent.join(','),
+                tolerance: scope.options.tolerance,
+                layers: 'all:' + layerToQuery.bodId
+              });
+
+              // Only timeEnabled layers use the timeInstant parameter
+              if (layerToQuery.timeEnabled) {
+                params.timeInstant = year ||
+                    gaFeaturesUtils.yearFromString(layerToQuery.time);
+              }
+
+              $http.get(identifyUrl, {
+                timeout: canceler.promise,
+                params: params
+              }).success(function(features) {
+                showFeatures(features.results);
+              });
             }
 
             // Highlight the features found
@@ -272,30 +282,24 @@ goog.require('ga_styles_service');
 
             function displayFeature(value) {
               if (value instanceof ol.Feature) {
-                var feature = new ol.Feature(value.getGeometry());
-                var layerId = value.get('layerId');
-                feature.layerId = layerId;
-                feature.properties = {
-                  name: value.get('name'),
-                  description: value.get('description'),
-                  type: value.get('type')
-                };
-                feature.set('layerId', layerId);
-                gaPreviewFeatures.add(map, feature);
-                showPopup(feature);
+                displayVectorFeature(value);
               } else {
-                //draw feature, but only if it should be drawn
-                if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
-                  value.layerId = value.layerBodId;
-                  var features = parser.readFeatures(value);
-                  for (var i = 0, ii = features.length; i < ii; ++i) {
-                    features[i].set('layerId', value.layerBodId);
-                    gaPreviewFeatures.add(map, features[i]);
-                  }
-                }
-
-                showPopup(value);
+                displayQueryableLayerFeature(value);
               }
+            }
+
+            function displayVectorFeature(value) {
+              var feature = new ol.Feature(value.getGeometry());
+              var layerId = value.get('layerId');
+              feature.layerId = layerId;
+              feature.properties = {
+                name: value.get('name'),
+                description: value.get('description'),
+                type: value.get('type')
+              };
+              feature.set('layerId', layerId);
+              gaPreviewFeatures.add(map, feature);
+              showPopup(feature);
             }
 
             // Show the popup with all features informations
@@ -311,6 +315,19 @@ goog.require('ga_styles_service');
               }
               featuresToDisplay[feature.layerId].push(feature);
               gridsOptions[feature.layerId].data.push(feature.properties);
+            }
+
+            function displayQueryableLayerFeature(value) {
+              //draw feature, but only if it should be drawn
+              if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
+                value.layerId = value.layerBodId;
+                var features = parser.readFeatures(value);
+                for (var i = 0, ii = features.length; i < ii; ++i) {
+                  features[i].set('layerId', value.layerBodId);
+                  gaPreviewFeatures.add(map, features[i]);
+                }
+              }
+              showPopup(value);
             }
 
             function initPopup(feature) {

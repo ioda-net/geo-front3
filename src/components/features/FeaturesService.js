@@ -125,7 +125,8 @@ goog.require('ga_map_service');
       yearFromString: yearFromString,
       clearObject: clearObject,
       hasImportedQueryableLayer: hasImportedQueryableLayer,
-      hasNameOrDescription: hasNameOrDescription
+      hasNameOrDescription: hasNameOrDescription,
+      getCoords: getCoords
     };
 
     // Test if the layer is a vector layer
@@ -187,6 +188,14 @@ goog.require('ga_map_service');
 
     function hasNameOrDescription(feature) {
       return feature.get('name') || feature.get('description');
+    }
+
+    function getCoords(geometry) {
+      if (geometry instanceof ol.geom.Geometry) {
+        return geometry.getExtent();
+      } else {
+        return geometry;
+      }
     }
   });
 
