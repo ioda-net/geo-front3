@@ -20,7 +20,7 @@ goog.require('ga_styles_service');
   module.directive('gaFeatures',
       function($timeout, $http, $q, gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures,
-          gaDragBox, gaFeaturesTable, gaFeaturesUtils, gaFeaturesGrid) {
+          gaDragBox, gaFeaturesUtils, gaFeaturesGrid) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -66,7 +66,6 @@ goog.require('ga_styles_service');
             });
 
             scope.$on('gaTriggerTooltipRequest', function(event, data) {
-              var size = map.getSize();
               initTooltip();
 
               // We use $timeout to execute the showFeature when the
@@ -341,7 +340,7 @@ goog.require('ga_styles_service');
               });
               scope.popupToggle = true;
               scope.options.currentTab = feature.layerId;
-              gaFeaturesTable.setSize();
+              gaFeaturesGrid.setSize();
             }
 
             function initFeaturesForLayer(feature) {

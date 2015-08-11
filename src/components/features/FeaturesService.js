@@ -60,63 +60,6 @@ goog.require('ga_map_service');
     };
   });
 
-  module.factory('gaFeaturesTable', function($window) {
-    function setSize() {
-      var popup = $('.ga-features-popup').parent().parent();
-
-      $window.addEventListener('resize', function () {
-        correctTableSize(popup, false);
-      });
-      popup.on('DOMSubtreeModified', function(evt) {
-        correctTableSize(popup, true);
-      });
-    }
-
-    function correctTableSize(popup, domEvent) {
-      correctWith(popup);
-      correctHeight(popup);
-      // We must only react to DOM events on the creation of the popup. We can
-      // safely deactivate afterwards.
-      if (domEvent) {
-        popup.off('DOMSubtreeModified', correctTableSize);
-      }
-    }
-
-    function correctWith(popup) {
-      // max-width on features container to always view buttons
-      var table = $('.ga-features-popup .grid');
-      if (table.length > 0) {
-        var popupContent = popup.find('.ga-popup-content');
-        var newWidth = $window.innerWidth -
-                parseInt(popupContent.css('padding-left'), 10) -
-                parseInt(popupContent.css('padding-right'), 10);
-        table.css('width', newWidth);
-      }
-    }
-
-    function correctHeight(popup) {
-      // max-height on features container to scroll vertically
-      // We must take into account the size of the title bar which may
-      // be inserted in the DOM after this function is called.
-      var table = $('.ga-features-popup .grid');
-      var popupTitle = popup.find('.popover-title');
-      var heightTitle = parseInt(
-              popupTitle.outerHeight(), 10);
-      // On some browsers (eg Firefox), the DOM will be updated
-      // multiple times and the CSS may not have been applied yet.
-      if (popupTitle.length > 0 && heightTitle !== 0 && table.length > 0) {
-        var popupContent = popup.find('.ga-popup-content');
-        var newHeight = parseInt(popup.css('height'), 10) -
-                heightTitle -
-                parseInt(popupContent.css('padding-top'), 10) -
-                parseInt(popupContent.css('padding-bottom'), 10);
-        table.css('height', newHeight);
-      }
-    }
-
-    return {setSize: setSize};
-  });
-
   module.factory('gaFeaturesUtils', function(gaLayers) {
     return {
       isVectorLayer: isVectorLayer,
@@ -199,7 +142,7 @@ goog.require('ga_map_service');
     }
   });
 
-  module.factory('gaFeaturesGrid', function(gaPreviewFeatures) {
+  module.factory('gaFeaturesGrid', function($window, gaPreviewFeatures) {
     var parser = new ol.format.GeoJSON();
     var globalGridOptions = {
       enableGridMenu: true,
@@ -223,7 +166,8 @@ goog.require('ga_map_service');
     };
 
     return {
-      getLayerOptions: getLayerOptions
+      getLayerOptions: getLayerOptions,
+      setSize: setSize
     };
 
     function getLayerOptions(feature, featuresToDisplay, map, onRegisterApi) {
@@ -254,6 +198,59 @@ goog.require('ga_map_service');
       };
       angular.merge(layerGridOptions, globalGridOptions);
       return layerGridOptions;
+    }
+
+    function setSize() {
+      var popup = $('.ga-features-popup').parent().parent();
+
+      $window.addEventListener('resize', function () {
+        correctTableSize(popup, false);
+      });
+      popup.on('DOMSubtreeModified', function(evt) {
+        correctTableSize(popup, true);
+      });
+    }
+
+    function correctTableSize(popup, domEvent) {
+      correctWith(popup);
+      correctHeight(popup);
+      // We must only react to DOM events on the creation of the popup. We can
+      // safely deactivate afterwards.
+      if (domEvent) {
+        popup.off('DOMSubtreeModified', correctTableSize);
+      }
+    }
+
+    function correctWith(popup) {
+      // max-width on features container to always view buttons
+      var table = $('.ga-features-popup .grid');
+      if (table.length > 0) {
+        var popupContent = popup.find('.ga-popup-content');
+        var newWidth = $window.innerWidth -
+                parseInt(popupContent.css('padding-left'), 10) -
+                parseInt(popupContent.css('padding-right'), 10);
+        table.css('width', newWidth);
+      }
+    }
+
+    function correctHeight(popup) {
+      // max-height on features container to scroll vertically
+      // We must take into account the size of the title bar which may
+      // be inserted in the DOM after this function is called.
+      var table = $('.ga-features-popup .grid');
+      var popupTitle = popup.find('.popover-title');
+      var heightTitle = parseInt(
+              popupTitle.outerHeight(), 10);
+      // On some browsers (eg Firefox), the DOM will be updated
+      // multiple times and the CSS may not have been applied yet.
+      if (popupTitle.length > 0 && heightTitle !== 0 && table.length > 0) {
+        var popupContent = popup.find('.ga-popup-content');
+        var newHeight = parseInt(popup.css('height'), 10) -
+                heightTitle -
+                parseInt(popupContent.css('padding-top'), 10) -
+                parseInt(popupContent.css('padding-bottom'), 10);
+        table.css('height', newHeight);
+      }
     }
   });
 })();
