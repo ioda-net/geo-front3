@@ -104,7 +104,7 @@ goog.require('ga_styles_service');
                   });
               }
               if (!hasQueryableLayer) {
-                feature = findVectorFeature(evt.pixel);
+                feature = findVectorFirstFeature(evt.pixel);
               }
               map.getTarget().style.cursor = (hasQueryableLayer || feature) ?
                   'pointer' : '';
@@ -177,24 +177,24 @@ goog.require('ga_styles_service');
             });
 
             // Find the first feature from a vector layer
-            function findVectorFeature(pixel, vectorLayer) {
+            function findVectorFirstFeature(pixel, vectorLayer) {
               var featureFound;
 
               map.forEachFeatureAtPixel(pixel, function(feature, layer) {
                 // vectorLayer is defined when a feature is clicked.
                 // onclick
-                if (layer) {
-                  if (!vectorLayer || vectorLayer == layer) {
-                    if (!featureFound &&
-                        (feature.get('name') ||
-                        feature.get('description'))) {
-                      feature.set('layerId', layer.id);
-                      featureFound = feature;
-                    }
+                if (layer && (!vectorLayer || vectorLayer == layer)) {
+                  if (!featureFound && hasNameOrDescription(feature)) {
+                    feature.set('layerId', layer.id);
+                    featureFound = feature;
                   }
                 }
               });
               return featureFound;
+            }
+
+            function hasNameOrDescription(feature) {
+              return feature.get('name') || feature.get('description');
             }
 
             // Find features for all type of layers
@@ -207,7 +207,7 @@ goog.require('ga_styles_service');
               for (var i = 0, ii = layersToQuery.length; i < ii; i++) {
                 var layerToQuery = layersToQuery[i];
                 if (gaFeaturesUtils.isVectorLayer(layerToQuery)) {
-                  var feature = findVectorFeature(pixel, layerToQuery);
+                  var feature = findVectorFirstFeature(pixel, layerToQuery);
                   if (feature) {
                     var htmlpopup =
                       '<div class="htmlpopup-container">' +
@@ -276,27 +276,28 @@ goog.require('ga_styles_service');
                   }
                 );
 
-                angular.forEach(foundFeatures, function(value) {
+                angular.forEach(foundFeatures, displayFeature);
+              }
+            }
 
-                  if (value instanceof ol.Feature) {
-                    var feature = new ol.Feature(value.getGeometry());
-                    var layerId = value.get('layerId');
-                    feature.set('layerId', layerId);
-                    gaPreviewFeatures.add(map, feature);
-                    showPopup(value.get('htmlpopup'));
-                  } else {
-                    //draw feature, but only if it should be drawn
-                    if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
-                      var features = parser.readFeatures(value);
-                      for (var i = 0, ii = features.length; i < ii; ++i) {
-                        features[i].set('layerId', value.layerBodId);
-                        gaPreviewFeatures.add(map, features[i]);
-                      }
-                    }
-
-                    showPopup(value);
+            function displayFeature(feature) {
+              if (feature instanceof ol.Feature) {
+                var feature = new ol.Feature(feature.getGeometry());
+                var layerId = feature.get('layerId');
+                feature.set('layerId', layerId);
+                gaPreviewFeatures.add(map, feature);
+                showPopup(feature.get('htmlpopup'));
+              } else {
+                //draw feature, but only if it should be drawn
+                if (gaLayers.getLayer(feature.layerBodId) && feature.geometry) {
+                  var features = parser.readFeatures(feature);
+                  for (var i = 0, ii = features.length; i < ii; ++i) {
+                    features[i].set('layerId', feature.layerBodId);
+                    gaPreviewFeatures.add(map, features[i]);
                   }
-                });
+                }
+
+                showPopup(feature);
               }
             }
 
@@ -305,29 +306,37 @@ goog.require('ga_styles_service');
               // Show popup on first result
               if (Object.keys(featuresToDisplay).length === 0) {
                 if (!scope.popupToggle) {
-                  angular.extend(scope.options, {
-                    content: popupContent,
-                    features: featuresToDisplay,
-                    gridsOptions: gridsOptions
-                  });
-                  angular.extend(scope.options.popupOptions, {
-                    close: close
-                  });
-                  scope.popupToggle = true;
-                  scope.options.currentTab = feature.layerBodId;
-                  gaFeaturesTable.setSize();
+                  initPopup(feature);
                 }
               }
               if (!(feature.layerBodId in featuresToDisplay)) {
-                featuresToDisplay[feature.layerBodId] = [];
-                gridsOptions[feature.layerBodId] = gaFeaturesGrid
-                        .getLayerOptions(feature, featuresToDisplay, map,
-                          function(gridApi){
-                            scope.options.gridApi = gridApi;
-                          });
+                initFeaturesForLayer(feature);
               }
               featuresToDisplay[feature.layerBodId].push(feature);
               gridsOptions[feature.layerBodId].data.push(feature.properties);
+            }
+
+            function initPopup(feature) {
+              angular.extend(scope.options, {
+                content: popupContent,
+                features: featuresToDisplay,
+                gridsOptions: gridsOptions
+              });
+              angular.extend(scope.options.popupOptions, {
+                close: close
+              });
+              scope.popupToggle = true;
+              scope.options.currentTab = feature.layerBodId;
+              gaFeaturesTable.setSize();
+            }
+
+            function initFeaturesForLayer(feature) {
+              featuresToDisplay[feature.layerBodId] = [];
+              gridsOptions[feature.layerBodId] = gaFeaturesGrid
+                      .getLayerOptions(feature, featuresToDisplay, map,
+                        function(gridApi){
+                          scope.options.gridApi = gridApi;
+                        });
             }
 
             function close() {
