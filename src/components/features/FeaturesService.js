@@ -134,10 +134,10 @@ goog.require('ga_map_service');
     }
 
     function getCoords(geometry) {
-      if (geometry instanceof ol.geom.Geometry) {
-        return geometry.getExtent();
-      } else {
+      if (geometry instanceof Array) {
         return geometry;
+      } else {
+        return geometry.getExtent();
       }
     }
   });

@@ -174,11 +174,11 @@ goog.require('ga_styles_service');
 
             // Find the first feature from a vector layer
             function findVectorFeatures(coordinates, vectorLayer, geometry) {
-              if (geometry instanceof ol.geom.Geometry) {
-                return findVectorFeaturesInDragBox(geometry);
-              } else {
+              if (geometry instanceof Array) {
                 var pixel = map.getPixelFromCoordinate(coordinates);
                 return findVectorFeaturesOnPixel(pixel, vectorLayer);
+              } else {
+                return findVectorFeaturesInDragBox(geometry);
               }
             }
 
