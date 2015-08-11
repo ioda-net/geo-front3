@@ -123,7 +123,9 @@ goog.require('ga_map_service');
       isQueryableBodLayer: isQueryableBodLayer,
       getLayersToQuery: getLayersToQuery,
       yearFromString: yearFromString,
-      clearObject: clearObject
+      clearObject: clearObject,
+      hasImportedQueryableLayer: hasImportedQueryableLayer,
+      hasNameOrDescription: hasNameOrDescription
     };
 
     // Test if the layer is a vector layer
@@ -171,6 +173,20 @@ goog.require('ga_map_service');
           delete obj[key];
         }
       }
+    }
+
+    function hasImportedQueryableLayer(map, pixel) {
+      var featureFound = false;
+      map.forEachFeatureAtPixel(pixel, function(feature) {
+        if (!featureFound && hasNameOrDescription(feature)) {
+          featureFound = true;
+        }
+      });
+      return featureFound;
+    }
+
+    function hasNameOrDescription(feature) {
+      return feature.get('name') || feature.get('description');
     }
   });
 

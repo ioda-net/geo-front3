@@ -91,7 +91,6 @@ goog.require('ga_styles_service');
 
             // Change cursor style on mouse move, only on desktop
             var updateCursorStyle = function(evt) {
-              var feature;
               var hasQueryableLayer = false;
               if (!gaBrowserSniffer.msie || gaBrowserSniffer.msie > 10) {
                 hasQueryableLayer = map.forEachLayerAtPixel(evt.pixel,
@@ -103,10 +102,8 @@ goog.require('ga_styles_service');
                     return gaFeaturesUtils.isQueryableBodLayer(layer);
                   });
               }
-              if (!hasQueryableLayer) {
-                feature = findVectorFirstFeature(evt.pixel);
-              }
-              map.getTarget().style.cursor = (hasQueryableLayer || feature) ?
+              map.getTarget().style.cursor = (hasQueryableLayer ||
+                      gaFeaturesUtils.hasImportedQueryableLayer(map, evt.pixel)) ?
                   'pointer' : '';
             };
             var updateCursorStyleDebounced = gaDebounce.debounce(
@@ -177,24 +174,18 @@ goog.require('ga_styles_service');
             });
 
             // Find the first feature from a vector layer
-            function findVectorFirstFeature(pixel, vectorLayer) {
-              var featureFound;
+            function findVectorFeatures(pixel, vectorLayer) {
+              var features = [];
 
               map.forEachFeatureAtPixel(pixel, function(feature, layer) {
-                // vectorLayer is defined when a feature is clicked.
-                // onclick
-                if (layer && (!vectorLayer || vectorLayer == layer)) {
-                  if (!featureFound && hasNameOrDescription(feature)) {
+                if (layer && vectorLayer === layer) {
+                  if (gaFeaturesUtils.hasNameOrDescription(feature)) {
                     feature.set('layerId', layer.id);
-                    featureFound = feature;
+                    features.push(feature);
                   }
                 }
               });
-              return featureFound;
-            }
-
-            function hasNameOrDescription(feature) {
-              return feature.get('name') || feature.get('description');
+              return features;
             }
 
             // Find features for all type of layers
@@ -204,37 +195,12 @@ goog.require('ga_styles_service');
                   layersToQuery = gaFeaturesUtils.getLayersToQuery(map),
                   pixel = map.getPixelFromCoordinate(geometry);
               initTooltip();
-              for (var i = 0, ii = layersToQuery.length; i < ii; i++) {
+              for (var i = 0; i < layersToQuery.length; i++) {
                 var layerToQuery = layersToQuery[i];
                 if (gaFeaturesUtils.isVectorLayer(layerToQuery)) {
-                  var feature = findVectorFirstFeature(pixel, layerToQuery);
-                  if (feature) {
-                    var htmlpopup =
-                      '<div class="htmlpopup-container">' +
-                        '<div class="htmlpopup-header">' +
-                          '<span>' + layerToQuery.label + ' &nbsp;</span>' +
-                          '{{name}}' +
-                        '</div>' +
-                        '<div class="htmlpopup-content">' +
-                          '{{descr}}' +
-                        '</div>' +
-                      '</div>';
-                    var name = feature.get('name');
-                    htmlpopup = htmlpopup.
-                        replace('{{descr}}', feature.get('description') || '').
-                        replace('{{name}}', (name) ? '(' + name + ')' : '');
-                    feature.set('htmlpopup', htmlpopup);
-                    showFeatures([feature]);
-                    // Iframe communication from inside out
-                    if (top != window) {
-                      var featureId = feature.getId();
-                      var layerBodId = layerToQuery.get('bodId');
-                      if (featureId && layerBodId) {
-                        window.parent.postMessage(
-                            layerBodId + '#' + featureId, '*'
-                        );
-                      }
-                    }
+                  var features = findVectorFeatures(pixel, layerToQuery);
+                  if (features) {
+                    showFeatures(features);
                   }
                 } else { // queryable bod layers
                   var params = angular.extend({}, scope.options.params, {
