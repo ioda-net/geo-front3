@@ -58,9 +58,13 @@
   <button type="submit"
           class="btn btn-default col-xs-12"
           accesskey="p"
-          ng-hide="options.printing || printError"
+          ng-hide="options.printing || printError || !printConfigLoaded"
           ng-disabled="!printConfigLoaded"
           ng-click="submit()" translate>print_action</button>
+  <button class="btn btn-default col-xs-12"
+          ng-show="!printConfigLoaded"
+          ng-disabled="true"
+          translate>loading_print_config</button>
   <button ng-show="printError" class="btn btn-danger col-xs-12"
           ng-click="retry()"
           translate>print_error</button>

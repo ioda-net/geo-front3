@@ -230,15 +230,6 @@ goog.require('sigeom_plugins');
     };
 
     // Listeners
-    $scope.$on('gaTopicChange', function(event, topic) {
-      canceler = $q.defer();
-      if (!$scope.printConfigLoaded) {
-        print.getCapabilities({timeout: canceler.promise})
-                .success(updatePrintConfig)
-                .error(handlePrintError);
-      }
-    });
-        // Listeners
     $scope.$on('gaLayersChange', function() {
       refreshComp();
     });
@@ -253,7 +244,16 @@ goog.require('sigeom_plugins');
     });
     $scope.$watch('active', function(newVal) {
       if (newVal === true) {
-        activate();
+        if ($scope.printConfigLoaded) {
+          activate();
+        } else {
+          canceler = $q.defer();
+          print.getCapabilities({timeout: canceler.promise})
+              .success(function(data) {
+                updatePrintConfig(data);
+                activate();
+              }).error(handlePrintError);
+        }
       } else {
         deactivate();
       }
