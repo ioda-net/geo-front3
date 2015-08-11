@@ -1,6 +1,7 @@
 goog.provide('ga_translation_directive');
 
 goog.require('ga_translation_service');
+goog.require('ga_topic_service');
 (function() {
 
   var module = angular.module('ga_translation_directive', [
@@ -8,7 +9,7 @@ goog.require('ga_translation_service');
   ]);
 
   module.directive('gaTranslationSelector', function($rootScope,
-      gaBrowserSniffer, gaLang, gaGlobalOptions) {
+      gaBrowserSniffer, gaLang, gaTopic) {
     return {
       restrict: 'A',
       scope: {
@@ -37,6 +38,10 @@ goog.require('ga_translation_service');
         });
         scope.$on('gaTopicChange', function(event, newTopic) {
           scope.langs = newTopic.langs;
+        });
+
+        gaTopic.loadConfig().then(function() {
+          scope.langs = gaTopic.get().langs;
         });
       }
     };
