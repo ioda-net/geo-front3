@@ -173,4 +173,57 @@ goog.require('ga_map_service');
       }
     }
   });
+
+  module.factory('gaFeaturesGrid', function(gaPreviewFeatures) {
+    var parser = new ol.format.GeoJSON();
+    var globalGridOptions = {
+      enableGridMenu: true,
+      enableSelectAll: true,
+      exporterMenuPdf: false,
+      exporterPdfPageSize: 'A4',
+      exporterPdfOrientation: 'landscape',
+      exporterPdfFooter: function (currentPage, pageCount) {
+        return {text: currentPage.toString() + ' / ' + pageCount.toString()};
+      },
+      exporterCsvLinkElement:
+              angular.element(
+                document.querySelectorAll('.custom-csv-link-location')),
+      rowTemplate: '<div ng-mouseover="grid.appScope.highlight(rowRenderIndex)" ' +
+              'ng-mouseleave="grid.appScope.clearHighlight()">' +
+              '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.uid" ' +
+              'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
+              'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
+              'ui-grid-cell="">' +
+              '</div></div>'
+    };
+
+    return {
+      getLayerOptions: getLayerOptions
+    };
+
+    function getLayerOptions(feature, featuresToDisplay, map, onRegisterApi) {
+      onRegisterApi = onRegisterApi || function() {};
+      var exporterCsvFilename = feature.layerBodId.replace(/,/g, '_') + '.csv';
+      var layerGridOptions = {
+        data: [],
+        exporterCsvFilename: exporterCsvFilename,
+        exporterPdfHeader: {
+          text: feature.layerBodId
+        },
+        onRegisterApi: onRegisterApi,
+        appScopeProvider: {
+          highlight: function(rowIndex) {
+            var geometry = parser.readFeature(
+                    featuresToDisplay[feature.layerBodId][rowIndex]);
+            gaPreviewFeatures.highlight(map, geometry);
+          },
+          clearHighlight: function() {
+            gaPreviewFeatures.clearHighlight(map);
+          }
+        }
+      };
+      angular.merge(layerGridOptions, globalGridOptions);
+      return layerGridOptions;
+    }
+  });
 })();

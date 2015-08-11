@@ -20,7 +20,7 @@ goog.require('ga_styles_service');
   module.directive('gaFeatures',
       function($timeout, $http, $q, gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures,
-          gaDragBox, gaFeaturesTable, gaFeaturesUtils) {
+          gaDragBox, gaFeaturesTable, gaFeaturesUtils, gaFeaturesGrid) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -53,26 +53,6 @@ goog.require('ga_styles_service');
                 findFeatures(geometry, size, mapExtent);
               });
             });
-            var globalGridOptions = {
-              enableGridMenu: true,
-              enableSelectAll: true,
-              exporterMenuPdf: false,
-              exporterPdfPageSize: 'A4',
-              exporterPdfOrientation: 'landscape',
-              exporterPdfFooter: function (currentPage, pageCount) {
-                return {text: currentPage.toString() + ' / ' + pageCount.toString()};
-              },
-              exporterCsvLinkElement:
-                      angular.element(
-                        document.querySelectorAll('.custom-csv-link-location')),
-              rowTemplate: '<div ng-mouseover="grid.appScope.highlight(rowRenderIndex)" ' +
-                      'ng-mouseleave="grid.appScope.clearHighlight()">' +
-                      '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.uid" ' +
-                      'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
-                      'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
-                      'ui-grid-cell="">' +
-                      '</div></div>'
-            };
 
             parser = new ol.format.GeoJSON();
 
@@ -340,29 +320,11 @@ goog.require('ga_styles_service');
               }
               if (!(feature.layerBodId in featuresToDisplay)) {
                 featuresToDisplay[feature.layerBodId] = [];
-                var exporterCsvFilename =
-                    feature.layerBodId.replace(/,/g, '_') + '.csv';
-                var layerGridOptions = {
-                  data: [],
-                  exporterCsvFilename: exporterCsvFilename,
-                  onRegisterApi: function(gridApi){
-                    scope.options.gridApi = gridApi;
-                  },
-                  appScopeProvider: {
-                    highlight: function(rowIndex) {
-                      var geometry = parser.readFeature(
-                              featuresToDisplay[feature.layerBodId][rowIndex]);
-                      gaPreviewFeatures.highlight(map, geometry);
-                    },
-                    clearHighlight: function() {
-                      gaPreviewFeatures.clearHighlight(map);
-                    }
-                  }
-                };
-                gridsOptions[feature.layerBodId] =
-                    angular.extend({}, globalGridOptions, layerGridOptions);
-                gridsOptions[feature.layerBodId].exporterPdfHeader =
-                        {text: feature.layerBodId};
+                gridsOptions[feature.layerBodId] = gaFeaturesGrid
+                        .getLayerOptions(feature, featuresToDisplay, map,
+                          function(gridApi){
+                            scope.options.gridApi = gridApi;
+                          });
               }
               featuresToDisplay[feature.layerBodId].push(feature);
               gridsOptions[feature.layerBodId].data.push(feature.properties);
