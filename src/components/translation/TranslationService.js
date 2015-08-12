@@ -21,8 +21,10 @@ goog.require('ga_topic_service');
 
       // Verify if a language is supported by the current topic
       var isLangSupportedByTopic = function(lang, topic) {
-        if (!topic) {
+        if (!topic && gaGlobalOptions.languages.indexOf(lang) > -1) {
           return true;
+        } else if (!topic) {
+          return false;
         }
         var langs = gaTopic.get().langs;
         return (langs.indexOf(lang) != -1);
