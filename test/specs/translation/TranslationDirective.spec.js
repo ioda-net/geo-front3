@@ -1,5 +1,5 @@
 describe('ga_translation_directive', function() {
-  var element, $rootScope, $compile, $gaBrowserSniffer;
+  var element, $rootScope, $compile, $gaBrowserSniffer, def;
       lang = 'rm',
       langs = ['de', 'fr', 'it', 'rm', 'en'],
       topics = [{
@@ -28,11 +28,17 @@ describe('ga_translation_directive', function() {
       $provide.value('gaBrowserSniffer', {
         mobile: false
       });
+      $provide.value('gaTopic', {
+        loadConfig: function() {
+          return def.promise;
+        }
+      });
     });
 
-    inject(function(_$rootScope_, _$compile_, _gaGlobalOptions_, _gaBrowserSniffer_) {
+    inject(function(_$rootScope_, _$compile_, $q, _gaGlobalOptions_, _gaBrowserSniffer_) {
       $rootScope = _$rootScope_;
       $compile = _$compile_;
+      def = $q.defer();
       gaGlobalOptions = _gaGlobalOptions_;
       gaBrowserSniffer = _gaBrowserSniffer_;
     });

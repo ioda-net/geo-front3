@@ -6,7 +6,7 @@ goog.provide('ga_catalogtree_controller');
   module.controller('GaCatalogtreeController',
       function($scope, gaGlobalOptions) {
         $scope.options = {
-          catalogUrlTemplate: '/json/' + gaGlobalOptions.portalName + '/catalog_{Topic}_{lang}.json'
+          catalogUrlTemplate: '/json/' + gaGlobalOptions.portalName + '/catalog_{Topic}_{Lang}.json'
         };
       });
 })();

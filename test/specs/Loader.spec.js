@@ -19,6 +19,7 @@ beforeEach(function() {
     var apacheBasePath = '/';
     var cacheAdd = '/' + version;
     var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
+    var navLang = (window.navigator.userLanguage || window.navigator.language).split('-')[0];
     $provide.constant('gaGlobalOptions', {
       version: '123456',
       defaultExtent: [420000, 30000, 900000, 350000],
@@ -36,6 +37,7 @@ beforeEach(function() {
       ],
       defaultTopicId: 'sometopic',
       translationFallbackCode: 'somelang',
+      languages: [navLang, 'rm', 'de', 'en', 'it','somelang'],
       defaultResolution: 500.0,
       publicUrlRegexp: /^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*/,
       adminUrlRegexp: /^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)/
