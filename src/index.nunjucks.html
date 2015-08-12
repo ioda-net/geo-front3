@@ -682,7 +682,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
 
           gaLayersProvider.layersConfigUrlTemplate =
-              '/json/' + gaGlobalOptions.portalName + '/layersConfig.json';
+              '/json/' + gaGlobalOptions.portalName + '/layersConfig_{Lang}.json';
 
           gaLayersProvider.legendUrlTemplate =
               gaGlobalOptions.apiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
