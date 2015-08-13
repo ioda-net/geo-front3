@@ -317,9 +317,9 @@ goog.require('ga_styles_service');
             }
 
             function displayQueryableLayerFeature(value) {
+              value.layerId = value.layerBodId;
               //draw feature, but only if it should be drawn
               if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
-                value.layerId = value.layerBodId;
                 var features = parser.readFeatures(value);
                 for (var i = 0, ii = features.length; i < ii; ++i) {
                   features[i].set('layerId', value.layerBodId);
