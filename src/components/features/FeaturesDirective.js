@@ -319,7 +319,7 @@ goog.require('ga_styles_service');
             function displayQueryableLayerFeature(value) {
               value.layerId = value.layerBodId;
               //draw feature, but only if it should be drawn
-              if (gaLayers.getLayer(value.layerBodId) && value.geometry) {
+              if (isBodLayer(value.layerBodId) && value.geometry) {
                 var features = parser.readFeatures(value);
                 for (var i = 0, ii = features.length; i < ii; ++i) {
                   features[i].set('layerId', value.layerBodId);
@@ -327,6 +327,22 @@ goog.require('ga_styles_service');
                 }
               }
               showPopup(value);
+            }
+
+            function isBodLayer(layerBodId) {
+              var ids = [];
+              if (layerBodId.indexOf(',') > -1) {
+                ids = layerBodId.split(',');
+              } else {
+                ids.push(layerBodId);
+              }
+
+              var containsBodLayer = false;
+              ids.forEach(function(id) {
+                containsBodLayer = containsBodLayer || !!gaLayers.getLayer(id);
+              });
+
+              return containsBodLayer;
             }
 
             function initPopup(feature) {
