@@ -4,9 +4,9 @@ goog.provide('ga_catalogtree_controller');
   var module = angular.module('ga_catalogtree_controller', []);
 
   module.controller('GaCatalogtreeController',
-      function($scope, gaGlobalOptions) {
+      function($scope) {
         $scope.options = {
-          catalogUrlTemplate: '/json/' + gaGlobalOptions.portalName + '/catalog_{Topic}_{Lang}.json'
+          catalogUrlTemplate: '/json/catalog_{Topic}_{Lang}.json'
         };
       });
 })();

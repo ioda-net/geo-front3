@@ -682,15 +682,14 @@ itemscope itemtype="http://schema.org/WebApplication"
           gaLayersProvider.wmtsGetTileUrlTemplate =
               '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
 
-          gaLayersProvider.layersConfigUrlTemplate =
-              '/json/' + gaGlobalOptions.portalName + '/layersConfig_{Lang}.json';
+          gaLayersProvider.layersConfigUrlTemplate = '/json/layersConfig_{Lang}.json';
 
           gaLayersProvider.legendUrlTemplate =
               gaGlobalOptions.apiUrl + '/rest/services/{Topic}/MapServer/{Layer}/legend?lang={Lang}';
         });
 
         module.config(function(gaTopicProvider, gaGlobalOptions) {
-          gaTopicProvider.topicsUrl = '/json/' + gaGlobalOptions.portalName + '/services.json';
+          gaTopicProvider.topicsUrl = '/json/services.json';
           gaTopicProvider.thumbnailUrlTemplate = gaGlobalOptions.resourceUrl + 'img/{Topic}.jpg';
         });
 
