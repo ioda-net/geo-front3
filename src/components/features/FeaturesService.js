@@ -156,7 +156,7 @@ goog.require('ga_map_service');
       exporterCsvLinkElement:
               angular.element(
                 document.querySelectorAll('.custom-csv-link-location')),
-      rowTemplate: '<div ng-mouseover="grid.appScope.highlight(rowRenderIndex)" ' +
+      rowTemplate: '<div ng-mouseover="grid.appScope.highlight(row)" ' +
               'ng-mouseleave="grid.appScope.clearHighlight()">' +
               '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.uid" ' +
               'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
@@ -170,7 +170,7 @@ goog.require('ga_map_service');
       setSize: setSize
     };
 
-    function getLayerOptions(feature, featuresToDisplay, map, onRegisterApi) {
+    function getLayerOptions(feature, featuresToDisplay, featuresIdToIndex, map, onRegisterApi) {
       onRegisterApi = onRegisterApi || function() {};
       var exporterCsvFilename = feature.layerId.replace(/,/g, '_') + '.csv';
       var layerGridOptions = {
@@ -181,9 +181,10 @@ goog.require('ga_map_service');
         },
         onRegisterApi: onRegisterApi,
         appScopeProvider: {
-          highlight: function(rowIndex) {
+          highlight: function(row) {
             var geometry;
-            var currentFeature = featuresToDisplay[feature.layerId][rowIndex];
+            var currentIndex = featuresIdToIndex[feature.layerId][row.entity.label];
+            var currentFeature = featuresToDisplay[feature.layerId][currentIndex];
             if (currentFeature instanceof ol.Feature) {
               geometry = currentFeature;
             } else {

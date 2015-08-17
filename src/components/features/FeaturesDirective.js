@@ -37,6 +37,7 @@ goog.require('ga_styles_service');
           },
           link: function(scope, element, attrs) {
             var featuresToDisplay = {},
+                featuresIdToIndex = {},
                 gridsOptions = {},
                 map = scope.map,
                 popup,
@@ -126,6 +127,7 @@ goog.require('ga_styles_service');
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
               gaFeaturesUtils.clearObject(featuresToDisplay);
+              gaFeaturesUtils.clearObject(featuresIdToIndex);
               gaFeaturesUtils.clearObject(gridsOptions);
               if (scope.popupToggle) {
                 $timeout(function() {
@@ -312,6 +314,7 @@ goog.require('ga_styles_service');
               if (!(feature.layerId in featuresToDisplay)) {
                 initFeaturesForLayer(feature);
               }
+              featuresIdToIndex[feature.layerId][feature.featureId] = featuresToDisplay[feature.layerId].length;
               featuresToDisplay[feature.layerId].push(feature);
               gridsOptions[feature.layerId].data.push(feature.properties);
             }
@@ -360,9 +363,10 @@ goog.require('ga_styles_service');
             }
 
             function initFeaturesForLayer(feature) {
+              featuresIdToIndex[feature.layerId] = {};
               featuresToDisplay[feature.layerId] = [];
               gridsOptions[feature.layerId] = gaFeaturesGrid
-                      .getLayerOptions(feature, featuresToDisplay, map,
+                      .getLayerOptions(feature, featuresToDisplay, featuresIdToIndex, map,
                         function(gridApi){
                           scope.options.gridApi = gridApi;
                         });
