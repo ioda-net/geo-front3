@@ -206,7 +206,8 @@ goog.require('ga_map_service');
           name: name,
           displayName: name,
           visible: true,
-          headerCellFilter: 'translate'
+          headerCellFilter: 'translate',
+          cellFilter: 'translate'
         });
       });
       return layerGridOptions;
