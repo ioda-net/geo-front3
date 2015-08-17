@@ -432,6 +432,11 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
             geojsonFeature.properties.hasOwnProperty('Style')) {
       delete geojsonFeature.properties.Style;
     }
+    if (geojsonFeature.hasOwnProperty('properties') &&
+            geojsonFeature.properties &&
+            geojsonFeature.properties.hasOwnProperty('overlays')) {
+      delete geojsonFeature.properties.overlays;
+    }
 
     var styles = null;
     var styleFunction = feature.getStyleFunction();
