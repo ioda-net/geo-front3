@@ -197,6 +197,18 @@ goog.require('ga_map_service');
         }
       };
       angular.merge(layerGridOptions, globalGridOptions);
+
+      // Must initialize all columns to translate them.
+      layerGridOptions.columnDefs = [];
+      Object.keys(feature.properties).forEach(function(name) {
+        layerGridOptions.columnDefs.push({
+          field: name,
+          name: name,
+          displayName: name,
+          visible: true,
+          headerCellFilter: 'translate'
+        });
+      });
       return layerGridOptions;
     }
 
