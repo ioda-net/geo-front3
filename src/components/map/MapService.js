@@ -901,7 +901,8 @@ goog.require('ga_urlutils_service');
             var wmsUrl = gaUrlUtils.remove(
                 layer.wmsUrl, ['request', 'service', 'version'], true);
 
-            var hostname = gaUrlUtils.getHostname($window.location.protocol + wmsUrl);
+            var hostname =
+                gaUrlUtils.getHostname($window.location.protocol + wmsUrl);
             if (gaGlobalOptions.externalWmsHostnames.indexOf(hostname) > -1) {
               crossOrigin = undefined;
             }

@@ -150,7 +150,7 @@ goog.require('ga_map_service');
       exporterMenuPdf: false,
       exporterPdfPageSize: 'A4',
       exporterPdfOrientation: 'landscape',
-      exporterPdfFooter: function (currentPage, pageCount) {
+      exporterPdfFooter: function(currentPage, pageCount) {
         return {text: currentPage.toString() + ' / ' + pageCount.toString()};
       },
       exporterCsvLinkElement:
@@ -158,7 +158,9 @@ goog.require('ga_map_service');
                 document.querySelectorAll('.custom-csv-link-location')),
       rowTemplate: '<div ng-mouseover="grid.appScope.highlight(row)" ' +
               'ng-mouseleave="grid.appScope.clearHighlight()">' +
-              '<div ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.uid" ' +
+              '<div ' +
+                'ng-repeat="(colRenderIndex, col) in ' +
+                  'colContainer.renderedColumns track by col.uid" ' +
               'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
               'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
               'ui-grid-cell="">' +
@@ -170,7 +172,8 @@ goog.require('ga_map_service');
       setSize: setSize
     };
 
-    function getLayerOptions(feature, featuresToDisplay, featuresIdToIndex, map, onRegisterApi) {
+    function getLayerOptions(feature, featuresToDisplay, featuresIdToIndex,
+        map, onRegisterApi) {
       onRegisterApi = onRegisterApi || function() {};
       var exporterCsvFilename = feature.layerId.replace(/,/g, '_') + '.csv';
       var layerGridOptions = {
@@ -183,8 +186,10 @@ goog.require('ga_map_service');
         appScopeProvider: {
           highlight: function(row) {
             var geometry;
-            var currentIndex = featuresIdToIndex[feature.layerId][row.entity.label];
-            var currentFeature = featuresToDisplay[feature.layerId][currentIndex];
+            var currentIndex =
+                featuresIdToIndex[feature.layerId][row.entity.label];
+            var currentFeature =
+                featuresToDisplay[feature.layerId][currentIndex];
             if (currentFeature instanceof ol.Feature) {
               geometry = currentFeature;
             } else {
@@ -217,7 +222,7 @@ goog.require('ga_map_service');
     function setSize() {
       var popup = $('.ga-features-popup').parent().parent();
 
-      $window.addEventListener('resize', function () {
+      $window.addEventListener('resize', function() {
         correctTableSize(popup, false);
       });
       popup.on('DOMSubtreeModified', function(evt) {

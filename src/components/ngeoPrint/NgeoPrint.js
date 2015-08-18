@@ -774,16 +774,18 @@ ngeo.Print.prototype.getWmtsUrl_ = function(source) {
 /**
  * Encode map overlays. Imported from Swisstopo.
  * @param {type} arr
+ * @param {Array} overlays
+ * @param {int} scale
  * @private
  */
-ngeo.Print.prototype.encodeOverlays_ = function (arr, overlays, scale) {
+ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
   var apiUrl = this.apiUrl_;
   var yOffset =
       (27 / ngeo.PrintUtils.DOTS_PER_INCH_ /
         ngeo.PrintUtils.INCHES_PER_METER_ * scale);
   var bubbleYOffset = yOffset / 2.7;
   var textYOffset = -yOffset / 12;
-  overlays.forEach(function (overlay) {
+  overlays.forEach(function(overlay) {
     var elt = overlay.getElement();
     // We print only overlay added by the MarkerOverlayService
     // or by crosshair permalink

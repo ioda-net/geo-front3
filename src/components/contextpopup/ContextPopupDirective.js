@@ -13,7 +13,8 @@ goog.require('sigeom_plugins');
 
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
-          gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions, sgPlugins) {
+          gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions,
+          sgPlugins) {
         return {
           restrict: 'A',
           replace: true,

@@ -1,7 +1,7 @@
 goog.provide('ga_translation_directive');
 
-goog.require('ga_translation_service');
 goog.require('ga_topic_service');
+goog.require('ga_translation_service');
 (function() {
 
   var module = angular.module('ga_translation_directive', [
