@@ -111,7 +111,7 @@ ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
  * @param {string} url URL to MapFish print web service.
  * @param {angular.$http} $http Angular $http service.
  */
-ngeo.Print = function(url, $http) {
+ngeo.Print = function(url, $http, gaGlobalOptions) {
   /**
    * @type {string}
    * @private
@@ -123,6 +123,8 @@ ngeo.Print = function(url, $http) {
    * @private
    */
   this.$http_ = $http;
+
+  this.apiUrl_ = gaGlobalOptions.resourceUrl;
 };
 
 
@@ -206,6 +208,7 @@ ngeo.Print.prototype.encodeMap_ = function(map, scale, object) {
   goog.asserts.assert(!goog.isNull(layersCollection));
   var layers = layersCollection.getArray().slice().reverse();
 
+  this.encodeOverlays_(object.layers, map.getOverlays(), scale);
   goog.array.forEach(layers,
       /**
        * @param {ol.layer.Layer} layer Layer.
@@ -731,6 +734,70 @@ ngeo.Print.prototype.getWmtsUrl_ = function(source) {
 
 
 /**
+ * Encode map overlays. Imported from Swisstopo.
+ * @param {type} arr
+ * @private
+ */
+ngeo.Print.prototype.encodeOverlays_ = function (arr, overlays, scale) {
+  var apiUrl = this.apiUrl_;
+  var yOffset = (27 / ngeo.PrintUtils.DOTS_PER_INCH_ / ngeo.PrintUtils.INCHES_PER_METER_ * scale);
+  var bubbleYOffset = yOffset / 2.7;
+  var textYOffset = -yOffset / 12;
+  overlays.forEach(function (overlay) {
+    var elt = overlay.getElement();
+    // We print only overlay added by the MarkerOverlayService
+    // or by crosshair permalink
+    if ($(elt).hasClass('popover')) {
+      return;
+    }
+    var center = overlay.getPosition();
+
+    if (center) {
+      var encOverlayLayer = {
+        type: 'geoJson',
+        style: {
+          version: 2,
+          "[_ngeo_style_0 = 'measure']": {
+            symbolizers: [{
+                type: 'Text',
+                label: $(elt).text(),
+                labelAlign: 'center',
+                labelXOffset: 0,
+                labelYOffset: textYOffset,
+                fontColor: '#ffffff',
+                fontSize: 7,
+                fontWeight: 'bold',
+                fontFamily: 'Helvetica'
+              }, {
+                type: 'Point',
+                externalGraphic: apiUrl + '/img/bubble.png'
+              }]
+          }
+        },
+        geoJson: {
+          type: 'FeatureCollection',
+          features: [{
+              type: 'Feature',
+              properties: {
+                name: $(elt).text(),
+                type: 'annotation',
+                _ngeo_style_0: 'measure'
+              },
+              geometry: {
+                type: 'Point',
+                coordinates: [center[0], center[1] + bubbleYOffset, 0]
+              }
+            }]
+        },
+        opacity: 1
+      };
+      arr.push(encOverlayLayer);
+    }
+  });
+};
+
+
+/**
  * Send a create report request to the MapFish Print service.
  * @param {MapFishPrintSpec} printSpec Print specification.
  * @param {angular.$http.Config=} opt_httpConfig $http config object.
@@ -791,13 +858,13 @@ ngeo.Print.prototype.getCapabilities = function(opt_httpConfig) {
  * @return {ngeo.CreatePrint} The function to create a print service.
  * @ngInject
  */
-ngeo.createPrintServiceFactory = function($http) {
+ngeo.createPrintServiceFactory = function($http, gaGlobalOptions) {
   return (
       /**
        * @param {string} url URL to MapFish print service.
        */
       function(url) {
-        return new ngeo.Print(url, $http);
+        return new ngeo.Print(url, $http, gaGlobalOptions);
       });
 };
 
