@@ -128,7 +128,7 @@ ngeo.PrintUtils.prototype.getOptimalScale = function(
       ngeo.PrintUtils.DOTS_PER_INCH_ / printMapSize[1];
 
   var scale = Math.min(scaleWidth, scaleHeight);
-  var optimal = Infinity;
+  var optimal = printMapScales[0];
 
   for (var i = 0, ii = printMapScales.length; i < ii; ++i) {
     if (scale > printMapScales[i]) {
