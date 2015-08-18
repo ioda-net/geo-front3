@@ -20,7 +20,7 @@ goog.require('ga_permalink');
    * "response" scope property to "success" or "error".
    */
   module.directive('gaFeedback',
-      function($http, $translate, gaPermalink, gaBrowserSniffer, gaExportKml) {
+      function($http, $translate, gaPermalink, gaBrowserSniffer, gaExportKml, gaGlobalOptions) {
           return {
             restrict: 'A',
             replace: true,
@@ -55,6 +55,13 @@ goog.require('ga_permalink');
                                            scope.map.getView().getProjection());
                 }
                 // Not supported by IE9
+                var id = (new Date()).toISOString()
+                    .replace(/-/g, '')
+                    .replace(/:/g, '')
+                    .replace(/\./g, '')
+                    .replace(/T/gi, '')
+                    .replace(/Z/gi, '');
+
                 if (!scope.isIE || gaBrowserSniffer.msie > 9) {
                     formData = new FormData();
                     formData.append('email', scope.email);
@@ -63,6 +70,8 @@ goog.require('ga_permalink');
                     formData.append('permalink', scope.permalinkValue);
                     formData.append('attachment', scope.file || '');
                     formData.append('kml', kml);
+                    formData.append('subject',
+                      '[feedback-' + gaGlobalOptions.portalName + '-' + id + '] ' + scope.subject);
                     return formData;
                 } else {
                     formData = {
@@ -166,6 +175,7 @@ goog.require('ga_permalink');
                   scope.showProgress = false;
                   scope.file = null;
                   scope.feedback = '';
+                  scope.subject = '';
                 };
 
 
