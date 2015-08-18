@@ -61,6 +61,8 @@ goog.require('ga_permalink');
                     .replace(/\./g, '')
                     .replace(/T/gi, '')
                     .replace(/Z/gi, '');
+                var subject =
+                    '[feedback-' + gaGlobalOptions.portalName + '-' + id + '] ' + scope.subject;
 
                 if (!scope.isIE || gaBrowserSniffer.msie > 9) {
                     formData = new FormData();
@@ -70,8 +72,8 @@ goog.require('ga_permalink');
                     formData.append('permalink', scope.permalinkValue);
                     formData.append('attachment', scope.file || '');
                     formData.append('kml', kml);
-                    formData.append('subject',
-                      '[feedback-' + gaGlobalOptions.portalName + '-' + id + '] ' + scope.subject);
+                    formData.append('subject', subject);
+                    formData.append('to', gaGlobalOptions.feedbackRecipient);
                     return formData;
                 } else {
                     formData = {
@@ -80,7 +82,9 @@ goog.require('ga_permalink');
                       ua: navigator.userAgent,
                       permalink: scope.permalinkValue,
                       attachment: '',
-                      kml: kml
+                      kml: kml,
+                      subject: subject,
+                      to: gaGlobalOptions.feedbackRecipient
                     };
                     return $.param(formData);
                 }
