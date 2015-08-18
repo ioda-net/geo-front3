@@ -61,7 +61,7 @@ goog.require('ga_permalink');
                     formData.append('feedback', scope.feedback);
                     formData.append('ua', navigator.userAgent);
                     formData.append('permalink', scope.permalinkValue);
-                    formData.append('attachement', scope.file || '');
+                    formData.append('attachment', scope.file || '');
                     formData.append('kml', kml);
                     return formData;
                 } else {
@@ -70,7 +70,7 @@ goog.require('ga_permalink');
                       feedback: scope.feedback,
                       ua: navigator.userAgent,
                       permalink: scope.permalinkValue,
-                      attachement: '',
+                      attachment: '',
                       kml: kml
                     };
                     return $.param(formData);
