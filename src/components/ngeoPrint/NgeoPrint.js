@@ -110,6 +110,7 @@ ngeo.PrintStyleTypes_[ol.geom.GeometryType.MULTI_POLYGON] =
  * @constructor
  * @param {string} url URL to MapFish print web service.
  * @param {angular.$http} $http Angular $http service.
+ * @param {object} gaGlobalOptions Global options.
  */
 ngeo.Print = function(url, $http, gaGlobalOptions) {
   /**
@@ -460,8 +461,13 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
         var style = styles[j];
         var styleId = goog.getUid(style).toString();
         var featureStyleProp = ngeo.Print.FEAT_STYLE_PROP_PREFIX_ + j;
+        // A line can have multiple style. If the first has a dash style but
+        // not the others, a solid line will be drawn. We check if the previous
+        // style is dashed. If so, we force all the other style to be.
+        var mustAddDash = this.isPreviousDashed_(styles, j);
         this.encodeVectorStyle_(
-            mapfishStyleObject, geometryType, style, styleId, featureStyleProp);
+            mapfishStyleObject, geometryType, style, styleId, featureStyleProp,
+            mustAddDash);
         geojsonFeature.properties[featureStyleProp] = styleId;
       }
     }
@@ -489,15 +495,39 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
 
 
 /**
+ *
+ * @param {Array} styles Array of style for this feature.
+ * @param {int} j Index of current style.
+ * @return {bool} Return if the previous style has a dash style.
+ * @private
+ */
+ngeo.Print.prototype.isPreviousDashed_ = function(styles, j) {
+  if (j > 0) {
+    var previousStyle = styles[j - 1];
+    var strokeStyle = previousStyle.getStroke();
+    if (!goog.isNull(strokeStyle)) {
+      return !goog.isNull(strokeStyle.getLineDash());
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+};
+
+
+/**
  * @param {MapFishPrintVectorStyle} object MapFish style object.
  * @param {ol.geom.GeometryType} geometryType Type of the GeoJSON geometry
  * @param {ol.style.Style} style Style.
  * @param {string} styleId Style id.
  * @param {string} featureStyleProp Feature style property name.
+ * @param {bool} mustAddDashStyle
  * @private
  */
 ngeo.Print.prototype.encodeVectorStyle_ =
-    function(object, geometryType, style, styleId, featureStyleProp) {
+    function(object, geometryType, style, styleId, featureStyleProp,
+      mustAddDashStyle) {
   if (!(geometryType in ngeo.PrintStyleTypes_)) {
     // unsupported geometry type
     return;
@@ -519,11 +549,12 @@ ngeo.Print.prototype.encodeVectorStyle_ =
   if (styleType == ngeo.PrintStyleType.POLYGON) {
     if (!goog.isNull(fillStyle)) {
       this.encodeVectorStylePolygon_(
-          styleObject.symbolizers, fillStyle, strokeStyle);
+          styleObject.symbolizers, fillStyle, strokeStyle, mustAddDashStyle);
     }
   } else if (styleType == ngeo.PrintStyleType.LINE_STRING) {
     if (!goog.isNull(strokeStyle)) {
-      this.encodeVectorStyleLine_(styleObject.symbolizers, strokeStyle);
+      this.encodeVectorStyleLine_(
+          styleObject.symbolizers, strokeStyle, mustAddDashStyle);
     }
   } else if (styleType == ngeo.PrintStyleType.POINT) {
     if (!goog.isNull(imageStyle)) {
@@ -555,14 +586,15 @@ ngeo.Print.prototype.encodeVectorStyleFill_ = function(symbolizer, fillStyle) {
  * @param {Array.<MapFishPrintSymbolizer>} symbolizers Array of MapFish Print
  *     symbolizers.
  * @param {!ol.style.Stroke} strokeStyle Stroke style.
+ * @param {bool} mustAddDashStyle Whether to force a dash style to be appended.
  * @private
  */
 ngeo.Print.prototype.encodeVectorStyleLine_ =
-    function(symbolizers, strokeStyle) {
+    function(symbolizers, strokeStyle, mustAddDashStyle) {
   var symbolizer = /** @type {MapFishPrintSymbolizerLine} */ ({
     type: 'line'
   });
-  this.encodeVectorStyleStroke_(symbolizer, strokeStyle);
+  this.encodeVectorStyleStroke_(symbolizer, strokeStyle, mustAddDashStyle);
   symbolizers.push(symbolizer);
 };
 
@@ -613,16 +645,17 @@ ngeo.Print.prototype.encodeVectorStylePoint_ =
  *     symbolizers.
  * @param {!ol.style.Fill} fillStyle Fill style.
  * @param {ol.style.Stroke} strokeStyle Stroke style.
+ * @param {bool} mustAddDashStyle Whether to force a dash style to be appended.
  * @private
  */
 ngeo.Print.prototype.encodeVectorStylePolygon_ =
-    function(symbolizers, fillStyle, strokeStyle) {
+    function(symbolizers, fillStyle, strokeStyle, mustAddDashStyle) {
   var symbolizer = /** @type {MapFishPrintSymbolizerPolygon} */ ({
     type: 'polygon'
   });
   this.encodeVectorStyleFill_(symbolizer, fillStyle);
   if (!goog.isNull(strokeStyle)) {
-    this.encodeVectorStyleStroke_(symbolizer, strokeStyle);
+    this.encodeVectorStyleStroke_(symbolizer, strokeStyle, mustAddDashStyle);
   }
   symbolizers.push(symbolizer);
 };
@@ -631,10 +664,11 @@ ngeo.Print.prototype.encodeVectorStylePolygon_ =
 /**
  * @param {MapFishPrintSymbolizer} symbolizer MapFish Print symbolizer.
  * @param {!ol.style.Stroke} strokeStyle Stroke style.
+ * @param {bool} mustAddDashStyle Whether to force a dash style to be appended.
  * @private
  */
 ngeo.Print.prototype.encodeVectorStyleStroke_ =
-    function(symbolizer, strokeStyle) {
+    function(symbolizer, strokeStyle, mustAddDashStyle) {
   var strokeColor = strokeStyle.getColor();
   if (!goog.isNull(strokeColor)) {
     var strokeColorRgba = ol.color.asArray(strokeColor);
@@ -644,6 +678,10 @@ ngeo.Print.prototype.encodeVectorStyleStroke_ =
   var strokeWidth = strokeStyle.getWidth();
   if (goog.isDef(strokeWidth)) {
     symbolizer.strokeWidth = strokeWidth;
+  }
+  var strokeDash = strokeStyle.getLineDash();
+  if (!goog.isNull(strokeDash) || mustAddDashStyle) {
+    symbolizer.strokeDashstyle = 'dash';
   }
 };
 
@@ -740,7 +778,9 @@ ngeo.Print.prototype.getWmtsUrl_ = function(source) {
  */
 ngeo.Print.prototype.encodeOverlays_ = function (arr, overlays, scale) {
   var apiUrl = this.apiUrl_;
-  var yOffset = (27 / ngeo.PrintUtils.DOTS_PER_INCH_ / ngeo.PrintUtils.INCHES_PER_METER_ * scale);
+  var yOffset =
+      (27 / ngeo.PrintUtils.DOTS_PER_INCH_ /
+        ngeo.PrintUtils.INCHES_PER_METER_ * scale);
   var bubbleYOffset = yOffset / 2.7;
   var textYOffset = -yOffset / 12;
   overlays.forEach(function (overlay) {
@@ -856,6 +896,7 @@ ngeo.Print.prototype.getCapabilities = function(opt_httpConfig) {
 /**
  * @param {angular.$http} $http Angular $http service.
  * @return {ngeo.CreatePrint} The function to create a print service.
+ * @param {object} gaGlobalOptions Global options.
  * @ngInject
  */
 ngeo.createPrintServiceFactory = function($http, gaGlobalOptions) {
