@@ -274,7 +274,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       <div ga-features
            ga-features-map="map"
            ga-features-options="options"
-           ga-features-active="!globals.isDrawActive"></div>
+           ga-features-active="!globals.isDrawActive && !globals.feedbackPopupShown"></div>
     </div>
 {% if device != 'embed' %}
     <div  id="pulldown" ng-cloak translate-cloak ng-show="!globals.offline"
