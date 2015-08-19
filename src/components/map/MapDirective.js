@@ -15,7 +15,8 @@ goog.require('ga_permalink');
 
   module.directive('gaMap',
       function($window, $parse, $rootScope, $timeout, gaPermalink,
-          gaBrowserSniffer, gaLayers, gaDebounce, gaOffline) {
+          gaBrowserSniffer, gaLayers, gaDebounce, gaOffline, gaGlobalOptions) {
+
         return {
           restrict: 'A',
           scope: {
@@ -23,7 +24,6 @@ goog.require('ga_permalink');
           },
           link: function(scope, element, attrs) {
             var map = scope.map;
-
             var view = map.getView();
 
             // set view states based on URL query string

@@ -1,5 +1,6 @@
 goog.provide('ga_main_controller');
 
+goog.require('ga_background_service');
 goog.require('ga_map');
 goog.require('ga_networkstatus_service');
 goog.require('ga_storage_service');
@@ -10,7 +11,8 @@ goog.require('ga_storage_service');
     'pascalprecht.translate',
     'ga_map',
     'ga_networkstatus_service',
-    'ga_storage_service'
+    'ga_storage_service',
+    'ga_background_service'
   ]);
 
   /**
@@ -20,7 +22,7 @@ goog.require('ga_storage_service');
       $translate, $window, $document, gaBrowserSniffer, gaHistory,
       gaFeaturesPermalinkManager, gaLayersPermalinkManager, gaMapUtils,
       gaRealtimeLayersManager, gaNetworkStatus, gaPermalink, gaStorage,
-      gaGlobalOptions) {
+      gaGlobalOptions, gaBackground) {
 
     var createMap = function() {
       var toolbar = $('#zoomButtons')[0];
@@ -69,15 +71,68 @@ goog.require('ga_storage_service');
       return map;
     };
 
+    // Url of ol3cesium library
+    var ol3CesiumLibUrl = gaGlobalOptions.resourceUrl + 'lib/ol3cesium.js';
+
+    // Create the cesium viewer with basic layers
+    var loadCesiumViewer = function(map, enabled) {
+      var cesiumViewer = new olcs.OLCesium({
+        map: map
+      });
+      cesiumViewer.setEnabled(enabled);
+      var terrainProvider = new Cesium.CesiumTerrainProvider({
+        url: 'https://3d.geo.admin.ch' +
+          '/1.0.0/ch.swisstopo.terrain.3d/default/20151231/4326',
+        credit: 'Swisstopo terrain'
+      });
+      var scene = cesiumViewer.getCesiumScene();
+      scene.globe.depthTestAgainstTerrain = true;
+      scene.terrainProvider = terrainProvider;
+      var ip = new Cesium.WebMapServiceImageryProvider({
+        url: '//api3.geo.admin.ch/mapproxy/service',
+        layers: 'ch.swisstopo.swisstlm3d-karte-farbe'
+      });
+      var layer = scene.imageryLayers.addImageryProvider(ip);
+      layer.show = true;
+      return cesiumViewer;
+    };
+
     // Determines if the window has a height <= 550
     var isWindowTooSmall = function() {
       return ($($window).height() <= 550);
     };
     var dismiss = 'none';
 
+    $scope.ol3d = undefined;
+
     // The main controller creates the OpenLayers map object. The map object
     // is central, as most directives/components need a reference to it.
     $scope.map = createMap();
+
+    if (gaGlobalOptions.dev3d && gaBrowserSniffer.webgl) {
+      $rootScope.$on('gaBgChange', function(evt, newBg) {
+        $scope.globals.is3dActive = !!newBg.is3d;
+      });
+      $scope.map.on('change:target', function(event) {
+        if (!!$scope.map.getTargetElement()) {
+          $scope.$watch('globals.is3dActive', function(active) {
+            if (active && !$scope.ol3d) {
+              if (!$window.olcs) {
+                // lazy load cesium library
+                $.getScript(ol3CesiumLibUrl, function() {
+                  $scope.ol3d = loadCesiumViewer($scope.map, active);
+                });
+              } else {
+                // cesium library is already loaded
+                $scope.ol3d = loadCesiumViewer($scope.map, active);
+              }
+            } else if ($scope.ol3d) {
+              $scope.ol3d.setEnabled(active);
+            }
+          });
+        }
+      });
+    }
 
     // We add manually the keyboard interactions to have the possibility to
     // specify a condition
@@ -88,6 +143,9 @@ goog.require('ga_storage_service');
     });
     $scope.map.addInteraction(keyboardPan);
     $scope.map.addInteraction(new ol.interaction.KeyboardZoom());
+
+    // Load the background if the "bgLayer" parameter exist.
+    gaBackground.init($scope.map);
 
     // Activate the "layers" parameter permalink manager for the map.
     gaLayersPermalinkManager($scope.map);
@@ -170,7 +228,8 @@ goog.require('ga_storage_service');
       isShareActive: false,
       isDrawActive: false,
       isFeatureTreeActive: false,
-      isSwipeActive: false
+      isSwipeActive: false,
+      is3dActive: false
     };
 
     // Deactivate all tools when draw is opening

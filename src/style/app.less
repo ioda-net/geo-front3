@@ -432,32 +432,41 @@ input[type=text][readonly] {
   }
 }
 
+.logo-small(){
+  background-image: data-uri('../img/logo.ch-19x21.png');
+}
+
+.ga-logo {
+  background: white no-repeat left center;
+}
+
 #logo {
-  width: 320px;
   display: inline-block;
-  background: white;
-  
-  img:last-of-type {
-    display: none;
-    width: 19px;
-    height: 19.5px;
+  width: 320px;
+  height: 100%;
+
+  &.ga-logo-de {
+    background-image: data-uri('../img/logo.ch.de.png');
   }
-  
-  @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
-    padding: 13px 0 0 13px;
-    height: 50px;
-    
-    img:last-of-type {
-      display: inline;
-    }
-    
-    img:first-of-type {
-      display: none;
-    }
+  &.ga-logo-fr {
+    background-image: data-uri('../img/logo.ch.fr.png');
   }
-  
-  @media (max-width: @screen-phone) {
-    width: 44px;
+  &.ga-logo-it {
+    background-image: data-uri('../img/logo.ch.it.png');
+  }
+  &.ga-logo-rm {
+    background-image: data-uri('../img/logo.ch.rm.png');
+  }
+  &.ga-logo-en {
+    background-image: data-uri('../img/logo.ch.en.png');
+  }
+
+  &[class^="ga-logo-"], &[class*=" ga-logo-"] {
+    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+      width: 44px;
+      .logo-small();
+      background-position: center;
+    }
   }
 }
 
@@ -486,13 +495,18 @@ input[type=text][readonly] {
  
   .btn-primary {
     margin-top: 1px;
+  } 
+  .btn-primary .icon-arrow-left{
+    vertical-align: middle;
   }
+
   [ga-help] {
     visibility: visible;
     height: 100%;
     float: left;
     width: 30px;
   }
+
   .ga-title {
     font-size: 2em;
     line-height: 1.7em;
@@ -615,21 +629,18 @@ a .ga-icon-separator {
     z-index: 1100;
   }
   
-  .hidden-collapsed {
-    display: inline;
+  .icon-caret-down {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin: 0 7px 0 12px;
+    text-align: center;
+    transition: transform 0.2s ease;
+    vertical-align: -2px;
   }
-  
-  .visible-collapsed {
-    display: none;
-  }
-  
-  .collapsed {
-    .hidden-collapsed {
-      display: none;
-    }
-    .visible-collapsed {
-      display: inline;
-    }
+
+  .collapsed .icon-caret-down {
+    transform: rotate(-90deg);
   }
 
   .panel {
@@ -676,7 +687,7 @@ a .ga-icon-separator {
       max-height: 250px;
       @media (max-height: 800px) {
         max-height: 150px;
-      }
+    }
       @media (max-width: @screen-phone) {
         max-height: 250px;
       }
@@ -703,11 +714,21 @@ a .ga-icon-separator {
     text-decoration: none;
     .pulldown-hover;
   }
-  .panel > .accordion-toggle {
-    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
-      padding-top: 12px;
-      padding-bottom: 12px;
+
+  > .panel > .panel-heading {
+    padding: 10px 10px 10px 0;
+
+    [ga-help] {
+      padding: 0;
+      vertical-align: middle;
     }
+
+    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+      padding: 12px 10px 12px 0;
+    }
+  }
+
+  .panel > .accordion-toggle {
     border-bottom: 1px solid #c7c7c7;
     font-weight: bold;
     .transition(background-color .35s ease);
@@ -721,12 +742,6 @@ a .ga-icon-separator {
       background-color: #e9e9e9;
       color: #000;
       border-bottom: 1px solid #fff;
-    }
-    &.panel-heading .icon-caret-right {
-      padding: 0 1px 0 2px;
-    }
-    .icon-caret-right, .icon-caret-down {
-      margin-right: .5em;
     }
     .pulldown-hover;
   }
@@ -743,18 +758,38 @@ a .ga-icon-separator {
   color: #fff;
   font-weight: bold;
   .box-shadow(6px 6px 12px rgba(0, 0, 0, 0.175));
-  .transition(all .35s ease);
 
+  .icon-caret-up {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+  .visible-collapsed {
+    display: none;
+  }
+  &.collapsed {
+    .icon-caret-up {
+      transform: rotate(180deg);
+    }
+    .visible-collapsed {
+      display: inline;
+    }
+    .hidden-collapsed {
+      display: none;
+    }
+  }
   .icon-reorder, .icon-remove {
     display: none;
   }
 
+  .icon-caret-up, .icon-caret-down, .icon-reorder {
+    vertical-align: middle;
+  }
   &:hover, &:focus {
     background-color: #3A3C3C;
     border-color: #2E2F2F;
     color: #fff;
   }
-
+  
   @media (max-width: @screen-phone) {
     position: fixed;
     top: 0;
@@ -764,7 +799,11 @@ a .ga-icon-separator {
     margin: 0;
     padding: 0;
     border-bottom-right-radius: 0;
-
+    transition: background-color 0.2s ease;
+  
+    .icon-caret-up {
+      display: none;
+    }
     &.collapsed {
       box-shadow: none;
       background: transparent;
@@ -773,7 +812,7 @@ a .ga-icon-separator {
       color: #333 !important;
     }
 
-    .icon-caret-down, .icon-caret-up, span[translate] {
+    span[translate], .icon-caret-up {
       display: none;
     }
 
@@ -792,9 +831,14 @@ a .ga-icon-separator {
   position: relative;
   .dropdown-toggle {
     float: right;
-    padding-right: 1em;
+    margin-right: 5px;
     height: 40px;
     line-height: 40px;
+
+    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+      height: 44px;
+      line-height: 44px;
+    }
   }
   a i {
     .transition(all .20s ease);
@@ -805,6 +849,10 @@ a .ga-icon-separator {
     .icon-chevron-sign-right {
       .rotate(180deg);
     }
+  }
+  i.icon-chevron-sign-right {
+    vertical-align: middle;
+    height: 14px;
   }
   .dropdown-menu {
     top: 0;
@@ -1465,22 +1513,29 @@ body:not(.embed) {
     z-index: 1000;
     top: 5px;
     left: 5px;
-     
+
+    .ga-logo {
+      .logo-small();
+      background-size: 14px;
+      background-position-x: 5px; 
+
+      span {
+        padding-left: 19px;
+      }
+    }
+
     > div {
       position: relative;
       padding: 2px 5px;
       .box-shadow(rgba(0, 0, 0, .29) 0px 1px 4px -1px);
-      border-radius: 4px; 
+      border-radius: 4px;
       background-color: white;
       font-weight: bold;
-      
+      margin-bottom: 5px;
+
       &:last-child {
         position: absolute;
         text-decoration: inherit;
-      }
-      
-      img {
-        height: 15px;
       }
     }
   }

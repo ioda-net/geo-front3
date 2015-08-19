@@ -21,6 +21,7 @@ beforeEach(function() {
     var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
     var navLang = (window.navigator.userLanguage || window.navigator.language).split('-')[0];
     $provide.constant('gaGlobalOptions', {
+      dev3d: false,
       version: '123456',
       defaultExtent: [420000, 30000, 900000, 350000],
       resolutions: [650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
@@ -37,7 +38,7 @@ beforeEach(function() {
       ],
       defaultTopicId: 'sometopic',
       translationFallbackCode: 'somelang',
-      languages: [navLang, 'rm', 'de', 'en', 'it','somelang'],
+      languages: ['de', 'fr', 'it', 'en', 'rm', 'somelang'],
       defaultResolution: 500.0,
       publicUrlRegexp: /^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*/,
       adminUrlRegexp: /^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)/

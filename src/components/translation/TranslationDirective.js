@@ -36,8 +36,13 @@ goog.require('ga_translation_service');
             scope.lang = newLang.language;
           }
         });
-        scope.$on('gaTopicChange', function(event, newTopic) {
-          scope.langs = newTopic.langs;
+
+        gaTopic.loadConfig().then(function() {
+          scope.$on('gaTopicChange', function(event, newTopic) {
+            scope.langs = newTopic.langs;
+          });
+
+          scope.langs = gaTopic.get().langs;
         });
 
         gaTopic.loadConfig().then(function() {

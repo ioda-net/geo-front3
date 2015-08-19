@@ -115,7 +115,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           'offline': globals.offline,
           'online': !globals.offline,
           'embed': globals.embed,
-          'ga-draw-active': globals.isDrawActive
+          'ga-draw-active': globals.isDrawActive,
+          'ga-3d-active': globals.is3dActive
         }">
     <!-- The below conditional is ignored by >= IE10 and all other browsers -->
     <!--![if IE]>
@@ -139,21 +140,18 @@ itemscope itemtype="http://schema.org/WebApplication"
         IE9Fix.call(this);
       </script>
     <![endif]-->
-
-    <!-- to be removed once 3d is live -->
-    <div class="corner-ribbon top-left sticky red shadow" ng-if="globals.dev3d">3D - ALPHA</div>
-
+    <div ng-cloak ng-if="globals.dev3d"
+         class="corner-ribbon top-left sticky red shadow">
+      3D - ALPHA
+    </div>
     <div ng-controller="GaSeoController">
       <div ga-seo ga-seo-options="options" ga-seo-map="map"></div>
     </div>
 % if device != 'embed':
     <div ng-cloak translate-cloak id="header" class="navbar navbar-fixed-top">
-      <div id="logo" class="pull-left">
-        <a href="?topic={{topicId}}&lang={{langId}}">
-          <img ng-if="langId" ng-src="${versionslashed}img/logo.ch.{{langId}}.png" alt="big_logo" draggable="false"/>
-          <img src="${versionslashed}img/logo.ch.small.png" alt="small_logo" draggable="false"/>
-        </a>
-      </div>
+      <a href="?topic={{topicId}}&lang={{langId}}">
+        <div id="logo" class="pull-left ga-logo ga-logo-{{langId}}"></div>
+      </a>
       <div id="search-container" ng-controller="GaSearchController">
         <div ga-search ga-search-map="map" ga-search-options="options" ga-search-focused="globals.searchFocused"></div>
   % if device == 'desktop':
@@ -199,8 +197,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   % if device == 'embed':
       <a ng-cloak translate-cloak id="bigMapLink" target="_blank" href="{{toMainHref}}">
-        <div>
-          <img src="${versionslashed}img/logo.ch.small.png" alt="small_logo" draggable="false"/>
+        <div class="ga-logo">
           <span translate-values="{{host}}" translate>view_on_mapgeoadminch</span>
         </div>
         <div ng-show="time">{{time}}</div>
@@ -233,12 +230,11 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 % endif
 
+% if device != 'embed':
     <div ng-cloak ga-background-selector
          ga-background-selector-map="map"
-         ng-hide="globals.embed || globals.offline">
+         ng-hide="globals.offline">
     </div>
-
-% if device != 'embed':
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
       <div  class="pull-left" ga-scale-line ga-scale-line-map="map"></div>
   % if device == 'desktop':
@@ -293,8 +289,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           <a id="shareHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#share"
              ga-collapsible-show="globals.isShareActive">
-            <i class="visible-collapsed icon-caret-right spacer"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-caret-down"></i>
             <span translate>share</span>
           </a>
           <div id="share" class="panel-collapse collapse">
@@ -310,8 +305,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           <a id="printHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#print"
              ga-collapsible-show="globals.printShown">
-            <i class="visible-collapsed icon-caret-right spacer"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-caret-down"></i>
             <span translate>print</span>
           </a>
           <div id="print" class="panel-collapse collapse">
@@ -329,8 +323,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           <a id="drawHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#draw"
              ga-collapsible-show="globals.isDrawActive" accesskey="r">
-            <i class="visible-collapsed icon-caret-right spacer"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-caret-down"></i>
             <span translate>draw_panel_title</span>
           </a>
           <div id="draw" class="panel-collapse collapse">
@@ -348,8 +341,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         <div class="panel">
           <a id="toolsHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#tools">
-            <i class="visible-collapsed icon-caret-right spacer"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-caret-down"></i>
             <span translate>map_tools</span>
           </a>
           <div id="tools" class="collapse">
@@ -409,8 +401,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           <a id="catalogHeading" class="panel-heading accordion-toggle light collapsed"
              data-toggle="collapse" href="#catalog"
              ga-collapsible-show="globals.catalogShown">
-            <i class="visible-collapsed icon-caret-right"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-caret-down"></i>
             <span>{{topicId | translate}}</span>
 
   % if device == 'desktop':
@@ -435,8 +426,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         <div class="panel" ng-hide="globals.isDrawActive">
           <a id="selectionHeading" class="panel-heading accordion-toggle light"
              data-toggle="collapse" href="#selection">
-            <i class="visible-collapsed icon-caret-right"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
+            <i class="icon-caret-down"></i>
             <span translate>layer_selection</span>
 
 % if device == 'desktop':
@@ -453,9 +443,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   % if device == 'mobile':
         <div class="panel">
           <a class="panel-heading accordion-toggle collapsed" data-toggle="collapse" data-parent="#pulldown-content" href="#settings">
-            <i class="visible-collapsed icon-caret-right spacer"></i>
-            <i class="hidden-collapsed icon-caret-down"></i>
-            <!--i class="icon-gear"></i-->
+            <i class="icon-caret-down"></i>
             <span translate>settings</span>
           </a>
           <div id="settings" class="collapse">
@@ -488,14 +476,13 @@ itemscope itemtype="http://schema.org/WebApplication"
       <button id="menu-button" class="btn btn-default"
               data-toggle="collapse" data-target="#pulldown-content"
               ga-collapsible-show="globals.pulldownShown">
+        <i class="icon-caret-up"></i>
         <span class="hidden-collapsed">
           <i class="icon-remove"></i>
-          <i class="icon-caret-up"></i>
           <span translate>close_menu</span>
         </span>
         <span class="visible-collapsed">
           <i class="icon-reorder"></i>
-          <i class="icon-caret-down"></i>
           <span translate>open_menu</span>
         </span>
       </button>
@@ -611,6 +598,10 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
 
 % if mode == 'prod':
+  
+    <script>
+      window.CESIUM_BASE_URL="${versionslashed}lib/Cesium/";
+    </script>
     <script src="${versionslashed}lib/build.js"></script>
     <!-- For <= IE9, we load it explicitely as XDomain does not support
          dynamic/lazy loading of javascript -->
@@ -645,8 +636,8 @@ itemscope itemtype="http://schema.org/WebApplication"
     <script src="lib/localforage.js"></script>
     <script src="lib/filesaver.js"></script>
     <script src="lib/moment-with-customlocales.js"></script>
-
-
+    <script src="lib/Cesium/Cesium.js"></script>
+   
 
     <!-- Use Closure to load the application scripts -->
     <script>
@@ -656,8 +647,9 @@ itemscope itemtype="http://schema.org/WebApplication"
     <!-- ol-debug.js includes Closure's base.js code, so we don't
          need to load base.js ourselves. We keep Closure's base.js file
          around in case we need to test with ol.js or ol-simple.js. -->
-    <script src="lib/ol-debug.js"></script>
     <!--<script src="lib/closure/base.js"></script>-->
+    <!-- ol3 and ol3-cesium are built together in debug mode --> 
+    <script src="lib/ol3cesium-debug.js"></script>
     <script src="deps.js"></script>
     <script>
       goog.require('ga');
@@ -688,7 +680,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         module.constant('gaGlobalOptions', {
           //dev3d to be removed once 3d goes live
-          dev3d : !!window.location.search.match(/(dev3d=true)/),
+          dev3d: !!window.location.search.match(/(dev3d=true)/),
           mapUrl : location.origin + '${apache_base_path}',
           apiUrl : location.protocol + '${api_url}',
           publicUrl : location.protocol + '${public_url}',
@@ -707,7 +699,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           resolutions: JSON.parse(${resolutions}),
           defaultEpsg: '${default_epsg}',
           defaultEpsgExtent: JSON.parse(${default_epsg_extend}),
-          defaultElevationModel: '${default_elevation_model}'
+          defaultElevationModel: '${default_elevation_model}',
+          languages: JSON.parse(${languages})
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {
@@ -727,13 +720,13 @@ itemscope itemtype="http://schema.org/WebApplication"
               '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
 
           gaLayersProvider.layersConfigUrlTemplate =
-              gaGlobalOptions.cachedApiUrl + '/rest/services/all/MapServer/layersConfig?lang={Lang}';
+              gaGlobalOptions.resourceUrl + 'layersConfig?lang={Lang}';
 
           gaLayersProvider.legendUrlTemplate =
               gaGlobalOptions.apiUrl + '/rest/services/all/MapServer/{Layer}/legend?lang={Lang}';
         });
         module.config(function(gaTopicProvider, gaGlobalOptions) {
-          gaTopicProvider.topicsUrl = gaGlobalOptions.cachedApiUrl + '/rest/services';
+          gaTopicProvider.topicsUrl = gaGlobalOptions.resourceUrl + 'services';
         });
 
         module.config(function(gaExportKmlProvider, gaGlobalOptions) {
