@@ -200,8 +200,9 @@ goog.require('ga_styles_service');
                         .getExtent();
                       var geometryExtent = geometry.getExtent();
 
-                      if (ol.extent.intersects(geometryExtent,
-                            featureGeometryExtent)) {
+                      if (gaFeaturesUtils.hasNameOrDescription(feature) &&
+                            ol.extent.intersects(geometryExtent,
+                              featureGeometryExtent)) {
                         feature.set('layerId', layer.id);
                         features.push(feature);
                       }
