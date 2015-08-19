@@ -214,8 +214,9 @@ goog.require('ga_styles_service');
             }
 
             function vectorFeatureSetProperties(feature, layer) {
+              var featureId = feature.getId() || gaFeaturesUtils.getRandomId();
               feature.set('layerId', layer.id);
-              feature.set('featureId', feature.getId());
+              feature.set('featureId', featureId);
             }
 
             function findVectorFeaturesOnPixel(pixel, vectorLayer) {

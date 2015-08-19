@@ -79,7 +79,8 @@ goog.require('ga_map_service');
       clearObject: clearObject,
       hasImportedQueryableLayer: hasImportedQueryableLayer,
       hasNameOrDescription: hasNameOrDescription,
-      getCoords: getCoords
+      getCoords: getCoords,
+      getRandomId: getRandomId
     };
 
     // Test if the layer is a vector layer
@@ -149,6 +150,10 @@ goog.require('ga_map_service');
       } else {
         return geometry.getExtent();
       }
+    }
+
+    function getRandomId() {
+      return Math.random().toString().split('.')[1];
     }
   });
 
