@@ -230,7 +230,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 {% endif %}
 
-{% if device == 'embded' %}
+{% if device != 'embded' %}
   <div ng-cloak ga-background-selector
            ga-background-selector-map="map"
     ng-hide="globals.offline">
