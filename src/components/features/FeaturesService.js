@@ -33,21 +33,31 @@ goog.require('ga_map_service');
           boxOverlay.setMap(null);
         };
 
-        dragBox.on('boxstart', function(evt) {
+        this.enable = function() {
+          dragBox.on('boxstart', boxStart);
+          dragBox.on('boxend', boxEnd);
+        };
+
+        this.disable = function() {
+          dragBox.un('boxstart', boxStart);
+          dragBox.un('boxend', boxEnd);
+        };
+
+        function boxStart() {
           resetGeometry();
-        });
+        }
 
         function resetGeometry() {
           boxFeature.setGeometry(null);
         }
 
-        dragBox.on('boxend', function(evt) {
+        function boxEnd(evt) {
           boxFeature.setGeometry(evt.target.getGeometry());
           var geometry = boxFeature.getGeometry();
 
           onDragBoxEnd(geometry);
           showBox(map);
-        });
+        }
 
         function showBox(map) {
           boxOverlay.setMap(map);
