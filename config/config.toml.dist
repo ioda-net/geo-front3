@@ -32,4 +32,4 @@ default_elevation_model = 'MNT50'
 activatedPlugins = ["communes"]
 
 # Feedback
-feedback_recipient = 'contact@sigeom.ch'
+feedback_recipient = 'support@sigeom.ch'
