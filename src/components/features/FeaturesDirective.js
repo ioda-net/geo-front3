@@ -203,7 +203,7 @@ goog.require('ga_styles_service');
                       if (gaFeaturesUtils.hasNameOrDescription(feature) &&
                             ol.extent.intersects(geometryExtent,
                               featureGeometryExtent)) {
-                        feature.set('layerId', layer.id);
+                        vectorFeatureSetProperties(feature, layer);
                         features.push(feature);
                       }
                     });
@@ -213,12 +213,17 @@ goog.require('ga_styles_service');
               return features;
             }
 
+            function vectorFeatureSetProperties(feature, layer) {
+              feature.set('layerId', layer.id);
+              feature.set('featureId', feature.getId());
+            }
+
             function findVectorFeaturesOnPixel(pixel, vectorLayer) {
               var features = [];
               map.forEachFeatureAtPixel(pixel, function(feature, layer) {
                 if (layer && vectorLayer === layer) {
                   if (gaFeaturesUtils.hasNameOrDescription(feature)) {
-                    feature.set('layerId', layer.id);
+                    vectorFeatureSetProperties(feature, layer);
                     features.push(feature);
                   }
                 }
@@ -302,14 +307,14 @@ goog.require('ga_styles_service');
 
             function displayVectorFeature(value) {
               var feature = new ol.Feature(value.getGeometry());
-              var layerId = value.get('layerId');
-              feature.layerId = layerId;
+              feature.layerId = value.get('layerId');
+              feature.featureId = value.get('featureId');
               feature.properties = {
                 name: value.get('name'),
                 description: value.get('description'),
-                type: value.get('type')
+                type: value.get('type'),
+                label: value.get('featureId')
               };
-              feature.set('layerId', layerId);
               gaPreviewFeatures.add(map, feature);
               showPopup(feature);
             }
