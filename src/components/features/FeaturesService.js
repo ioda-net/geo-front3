@@ -211,7 +211,7 @@ goog.require('ga_map_service');
           field: name,
           name: name,
           displayName: name,
-          visible: true,
+          visible: name !== 'label',
           headerCellFilter: 'translate',
           cellFilter: 'translate'
         });
