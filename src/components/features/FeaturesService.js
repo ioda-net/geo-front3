@@ -182,6 +182,14 @@ goog.require('ga_map_service');
               '</div></div>'
     };
 
+    var cellTemplates = {
+      grudis: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
+          '<a target="_blank" href="{{COL_FIELD}}">[G]</a></div>',
+      url: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
+          '<a target="_blank" href="{{COL_FIELD}}">' +
+          '{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+    };
+
     return {
       getLayerOptions: getLayerOptions,
       setSize: setSize
@@ -222,13 +230,20 @@ goog.require('ga_map_service');
       // Must initialize all columns to translate them.
       layerGridOptions.columnDefs = [];
       Object.keys(feature.properties).forEach(function(name) {
+        var cellTemplate;
+        if (name.endsWith('_url')) {
+          cellTemplate = cellTemplates.url.replace('{name}', name);
+        } else {
+          cellTemplate = cellTemplates[name];
+        }
         layerGridOptions.columnDefs.push({
           field: name,
           name: name,
           displayName: name,
           visible: name !== 'label',
           headerCellFilter: 'translate',
-          cellFilter: 'translate'
+          cellFilter: 'translate',
+          cellTemplate: cellTemplate
         });
       });
       return layerGridOptions;
