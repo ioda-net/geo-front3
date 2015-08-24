@@ -18,6 +18,8 @@ var config = utils.loadConf(process.argv[2], cliOptions);
 
 var src = {
   js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
+  cesium: 'src/lib/Cesium/**/*',
+  ol3cesium: 'src/lib/ol3cesium.js',
   css: ['src/**/*.css'],
   font: ['src/**/*.eot', 'src/**/*.otf', 'src/**/*.svg', 'src/**/*.ttf', 'src/**/*.woff'],
   plugins: 'src/plugins/*.js',
@@ -115,6 +117,7 @@ gulp.task('prod', function (cb) {
             'index.html',
             'app.css',
             'copy-fonts',
+            'copy-cesium',
             'copy-css',
             'copy-checker',
             'copy-IE',

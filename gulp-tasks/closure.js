@@ -36,6 +36,8 @@ function load(src, dest, config) {
       '--externs externs/angular.js',
       '--externs externs/jquery.js',
       '--externs externs/ol.js',
+      '--externs externs/ol3-cesium.js',
+      '--externs externs/Cesium.externs.js',
       '--js_output_file /tmp/geo-front3/closure-compiler'
     ]);
 

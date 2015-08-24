@@ -10,6 +10,18 @@ function load(src, dest, config) {
   });
 
 
+  gulp.task('copy-cesium', ['copy-cesium-folder'], function() {
+    return gulp.src(src.ol3cesium)
+        .pipe(gulp.dest(dest.prod + '/lib'));
+  });
+
+
+  gulp.task('copy-cesium-folder', function() {
+    return gulp.src(src.cesium)
+        .pipe(gulp.dest(dest.prod + '/lib/Cesium'));
+  });
+
+
   gulp.task('copy-pdfmake-prod', function () {
     return gulp.src(src.pdfmakeProd)
             .pipe(uglify())
