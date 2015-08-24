@@ -7,17 +7,21 @@ function load(src, dest, config) {
     del(['/tmp/geo-front3'], {force: true}, cb);
   });
 
-  gulp.task('clean', function (cb) {
+  gulp.task('clean', ['clean-prod'], function (cb) {
     del([
       'src/style/app.css',
       'src/js/SigeomPlugins.js',
       'test/app-whitespace.js',
       'test/karma-conf.dev.js',
       'test/karma-conf.prod.js',
-      'prod/' + config.portal_name,
       'dev/' + config.portal_name
     ], cb);
   }).help = 'remove generated files.';
+
+
+  gulp.task('clean-prod', function(cb) {
+    del(['prod/' + config.portal_name]);
+  });
 
 
   gulp.task('cleanall', ['clean'], function (cb) {
