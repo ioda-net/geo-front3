@@ -1,16 +1,16 @@
-goog.provide('ga_importwms_directive');
+goog.provide('ga_importows_directive');
 
 goog.require('ga_map_service');
 goog.require('ga_urlutils_service');
 (function() {
 
-  var module = angular.module('ga_importwms_directive', [
+  var module = angular.module('ga_importows_directive', [
     'ga_map_service',
     'ga_urlutils_service',
     'pascalprecht.translate'
   ]);
 
-  module.controller('GaImportWmsDirectiveController',
+  module.controller('GaImportOwsDirectiveController',
       function($scope, $http, $q, $translate, gaUrlUtils, gaWms) {
 
           // List of layers available in the GetCapabilities.
@@ -240,7 +240,7 @@ goog.require('ga_urlutils_service');
          };
   });
 
-  module.controller('GaImportWmsItemDirectiveController', function($scope,
+  module.controller('GaImportOwsItemDirectiveController', function($scope,
       $translate, gaPreviewLayers) {
 
     // Add preview layer
@@ -270,7 +270,7 @@ goog.require('ga_urlutils_service');
     };
   });
 
-  module.directive('gaImportWmsItem', function($compile) {
+  module.directive('gaImportOwsItem', function($compile) {
 
     /**** UTILS functions ****/
     // from OL2
@@ -326,8 +326,8 @@ goog.require('ga_urlutils_service');
 
     return {
       restrict: 'A',
-      templateUrl: 'components/importwms/partials/importwms-item.html',
-      controller: 'GaImportWmsItemDirectiveController',
+      templateUrl: 'components/importows/partials/importows-item.html',
+      controller: 'GaImportOwsItemDirectiveController',
       compile: function(tEl, tAttr) {
         var contents = tEl.contents().remove();
         var compiledContent;
@@ -361,16 +361,16 @@ goog.require('ga_urlutils_service');
     };
   });
 
-  module.directive('gaImportWms',
+  module.directive('gaImportOws',
       function($http, $translate, $rootScope) {
           return {
             restrict: 'A',
-            templateUrl: 'components/importwms/partials/importwms.html',
+            templateUrl: 'components/importows/partials/importows.html',
             scope: {
-              map: '=gaImportWmsMap',
-              options: '=gaImportWmsOptions'
+              map: '=gaImportOwsMap',
+              options: '=gaImportOwsOptions'
             },
-            controller: 'GaImportWmsDirectiveController',
+            controller: 'GaImportOwsDirectiveController',
             link: function(scope, elt, attrs, controller) {
 
               // Create the typeAhead input for the list of WMSs available
@@ -396,7 +396,7 @@ goog.require('ga_urlutils_service');
 
 
               // Toggle list of suggestions
-              elt.find('.ga-import-wms-open').on('click', function(evt) {
+              elt.find('.ga-import-ows-open').on('click', function(evt) {
                 elt.find('.tt-dropdown-menu').toggle();
                 // Re-initialize the list of suggestions
                 initSuggestions();

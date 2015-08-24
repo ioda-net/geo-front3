@@ -2,23 +2,23 @@
   <form ng-class="{'has-error': error}">
     <input type="url" name="url" autocomplete="off" placeholder="{{'choose_wms_url' | translate}}"
       ng-model="fileUrl" required class="form-control"/>
-    <div class="ga-import-wms-open icon-collapse"></div>
-    <button type="button" class="btn btn-default ga-import-wms-connect"
+    <div class="ga-import-ows-open icon-collapse"></div>
+    <button type="button" class="btn btn-default ga-import-ows-connect"
             ng-click="handleFileUrl()" translate>connect</button>
     <div class="ga-message">{{userMessage}}</div>
   </form>
-  <div class="ga-import-wms-container">
-    <div class="ga-import-wms-header" ng-click="reverse = !reverse">
+  <div class="ga-import-ows-container">
+    <div class="ga-import-ows-header" ng-click="reverse = !reverse">
       <label translate>title</label>
       <button class="pull-right" ng-class="{
         'icon-sort-by-alphabet': !reverse,
         'icon-sort-by-alphabet-alt': reverse
       }"></button>
     </div>
-    <div class="ga-import-wms-content">
+    <div class="ga-import-ows-content">
       <ul>
         <li ng-repeat="layer in layers | orderBy:'Title':reverse">
-          <div ga-import-wms-item></div>
+          <div ga-import-ows-item></div>
         </li>
       </ul>
     </div>
@@ -28,10 +28,10 @@
       </div>
     </div>
   </div>
-  <div class="ga-import-wms-descr">
+  <div class="ga-import-ows-descr">
     <label translate>description</label>
     <textarea  placeholder="{{'description_instructions' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
-    <button type="button" class="btn btn-default ga-import-wms-add"
+    <button type="button" class="btn btn-default ga-import-ows-add"
     ng-disabled="(options.layerSelected && options.layerSelected.isInvalid)" ng-click="addLayerSelected()" translate>add_layer</button>
   </div>
 </div>
