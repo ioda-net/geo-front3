@@ -172,7 +172,6 @@ goog.require('ga_urlutils_service');
             if ($scope.options.layerSelected) {
               var layerAdded = $scope.addLayer($scope.options.layerSelected,
                   /* isPreview */ false);
-                  console.log(layerAdded)
               if (layerAdded) {
                 if ($scope.options.owsType === 'WMS') {
                   $scope.userMessage = $translate.instant(
