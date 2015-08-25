@@ -99,7 +99,7 @@ goog.require('sigeom_plugins');
 
               scope.coord21781 = formatCoordinates(coord21781, 1);
               scope.coord4326 = formatCoordinates(coord4326, 5, true);
-              scope.coord2056 = formatCoordinates(coord2056, 2) + ' *';
+              scope.coord2056 = formatCoordinates(coord2056, 1) + ' *';
               if (coord4326[0] < 6 && coord4326[0] >= 0) {
                 var utm_31t = ol.proj.transform(coord4326,
                     'EPSG:4326', 'EPSG:32631');
@@ -143,7 +143,7 @@ goog.require('sigeom_plugins');
                   }
                 }).success(function(response) {
                   coord2056 = response.coordinates;
-                  scope.coord2056 = formatCoordinates(coord2056, 2);
+                  scope.coord2056 = formatCoordinates(coord2056, 1);
                 });
 
               });
