@@ -357,11 +357,11 @@ itemscope itemtype="http://schema.org/WebApplication"
                   </a>
                 </li>
                 <li><!-- Import WMTS -->
-                  <a href="" ng-click="globals.importWmsPopupShown = !globals.importWmsPopupShown"
+                  <a href="" ng-click="globals.importWmtsPopupShown = !globals.importWmtsPopupShown"
                      data-original-title="{{'wmtsimport_tooltip' | translate}}"
                      class="ga-custom-tooltip" data-placement="bottom"
                      accesskey="m">
-                    <span ng-class="{'selected': globals.importWmsPopupShown}" translate>import_wmts</span>
+                    <span ng-class="{'selected': globals.importWmtsPopupShown}" translate>import_wmts</span>
                   </a>
                 </li>
                 <li><!-- Import KML -->
@@ -527,7 +527,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div> <!-- end Import WMS -->
 
     <!-- Popup: Import WMTS -->
-    <div ga-popup="globals.importWmsPopupShown"
+    <div ga-popup="globals.importWmtsPopupShown"
          ga-popup-options="{title:'import_wmts', help:'62'}"
          ga-draggable=".popover-title"
          id="import-ows-popup" >
