@@ -11,7 +11,7 @@ goog.require('ga_urlutils_service');
   ]);
 
   module.controller('GaImportOwsDirectiveController',
-      function($scope, $http, $q, $translate, gaUrlUtils, gaWms) {
+      function($scope, $http, $q, $translate, gaUrlUtils, gaWms, gaWmts) {
 
           // List of layers available in the GetCapabilities.
           // The layerXXXX properties use layer objects from the parsing of
@@ -32,7 +32,13 @@ goog.require('ga_urlutils_service');
             if (gaUrlUtils.isValid(url)) {
 
               // Append GetCapabilities default parameters
-              url = gaUrlUtils.append(url, $scope.options.defaultGetCapParams);
+              if ($scope.options.owsType === 'WMS') {
+                url =
+                  gaUrlUtils.append(url, $scope.options.defaultGetCapParams);
+              } else if ($scope.options.owsType === 'WMTS') {
+                url += '/' + $scope.options.wmtsVersion + '/' +
+                        $scope.options.wmtsCap;
+              }
 
               // Use lang param only for admin.ch servers
               if (url.indexOf('admin.ch') > 0) {
@@ -76,19 +82,10 @@ goog.require('ga_urlutils_service');
             $scope.options.layerHovered = null;
 
             try {
-              var result = new ol.format.WMSCapabilities().read(data);
-              $scope.userMessage = (result.Service.MaxWidth) ?
-                  $translate.instant('wms_max_size_allowed') + ' ' +
-                    result.Service.MaxWidth +
-                    ' * ' + result.Service.MaxHeight : '';
-
-              if (result.Capability.Layer) {
-                var root = getChildLayers(result.Capability.Layer,
-                    $scope.map.getView().getProjection().getCode(),
-                    result.version);
-                if (root) {
-                  $scope.layers = root.Layer;
-                }
+              if ($scope.options.owsType === 'WMS') {
+                displayWmsFileContent(data);
+              } else if ($scope.options.owsType === 'WMTS') {
+                displayWmtsFileContent(data);
               }
 
               $scope.userMessage = $translate.instant('parse_succeeded');
@@ -101,6 +98,42 @@ goog.require('ga_urlutils_service');
               $scope.progress = 0;
             }
           };
+
+          function displayWmsFileContent(data) {
+            var result = new ol.format.WMSCapabilities().read(data);
+            $scope.userMessage = (result.Service.MaxWidth) ?
+                $translate.instant('wms_max_size_allowed') + ' ' +
+                  result.Service.MaxWidth +
+                  ' * ' + result.Service.MaxHeight : '';
+
+            if (result.Capability.Layer) {
+              var root = getChildLayers(result.Capability.Layer,
+                  $scope.map.getView().getProjection().getCode(),
+                  result.version);
+              if (root) {
+                $scope.layers = root.Layer;
+              }
+            }
+          }
+
+          function displayWmtsFileContent(data) {
+            var result = new ol.format.WMTSCapabilities().read(data);
+            $scope.userMessage = '';
+            var tileMatrixSetToCrs = {};
+            for (var i = 0; i < result.Contents.TileMatrixSet.length; i++) {
+              var set = result.Contents.TileMatrixSet[i];
+              tileMatrixSetToCrs[set['Identifier']] = set['SupportedCRS'];
+            }
+
+            if (result.Contents) {
+              var root = getChildLayers(result.Contents,
+                $scope.map.getView().getProjection().getCode(),
+                result.version, tileMatrixSetToCrs);
+              if (root) {
+                $scope.layers = root.Layer;
+              }
+            }
+          }
 
           // copy from ImportKml
           $scope.cancel = function() {
@@ -117,7 +150,12 @@ goog.require('ga_urlutils_service');
           $scope.addLayer = function(getCapLayer) {
             if (getCapLayer) {
               try {
-                var olLayer = gaWms.getOlLayerFromGetCapLayer(getCapLayer);
+                var olLayer;
+                if ($scope.options.owsType === 'WMS') {
+                  olLayer = gaWms.getOlLayerFromGetCapLayer(getCapLayer);
+                } else if ($scope.options.owsType === 'WMTS') {
+                  olLayer = gaWmts.getOlLayerFromGetCapLayer(getCapLayer);
+                }
                 if (olLayer) {
                   $scope.map.addLayer(olLayer);
                 }
@@ -155,25 +193,33 @@ goog.require('ga_urlutils_service');
           };
 
           // Test if the layer can be displayed with a specific projection
-          var canUseProj = function(layer, projCode) {
-            var projCodeList = layer.CRS || layer.SRS;
+          var canUseProj = function(layer, projCode, tileMatrixSetToCrs) {
+            var projCodeList = '';
+            if ($scope.options.owsType === 'WMS') {
+              projCodeList = layer.CRS || layer.SRS;
+            } else if ($scope.options.owsType === 'WMTS' &&
+                    layer.TileMatrixSetLink) {
+              var setId = layer.TileMatrixSetLink[0].TileMatrixSet;
+              projCodeList = tileMatrixSetToCrs[setId];
+            }
             // If no proj code list available we assume the layer can be
             // displayed, used for wms 1.1.1 until the PR
             // https://github.com/openlayers/ol3/pull/2944 is finished.
             return (!projCodeList ||
-                projCodeList.indexOf(projCode.toUpperCase()) != -1 ||
-                projCodeList.indexOf(projCode.toLowerCase()) != -1);
+                projCodeList.indexOf(projCode.toUpperCase()) !== -1 ||
+                projCodeList.indexOf(projCode.toLowerCase()) !== -1);
           };
 
           // Go through all layers, assign needed properties,
           // and remove useless layers (no name or bad crs without childs)
-          var getChildLayers = function(layer, projCode, wmsVersion) {
+          var getChildLayers = function(layer, projCode, owsVersion,
+              tileMatrixSetToCrs) {
 
             // If projCode is undefined that means the parent layer can be
             // displayed with the current map projection, since it's an herited
             // property no need to test again.
             if (projCode) {
-              if (!canUseProj(layer, projCode)) {
+              if (!canUseProj(layer, projCode, tileMatrixSetToCrs)) {
                 layer.isInvalid = true;
                 layer.Abstract = 'layer_invalid_no_crs';
               } else {
@@ -182,23 +228,34 @@ goog.require('ga_urlutils_service');
             }
 
             // If the WMS layer has no name, it can't be displayed
-            if (!layer.Name) {
+            if ((!layer.Name && $scope.options.owsType === 'WMS') ||
+                  (!layer.Title && $scope.options.owsType === 'WMTS')) {
               layer.isInvalid = true;
               layer.Abstract = 'layer_invalid_no_name';
             }
 
-            if (!layer.isInvalid) {
+            if (!layer.isInvalid && $scope.options.owsType === 'WMS') {
               layer.wmsUrl = $scope.fileUrl;
-              layer.wmsVersion = wmsVersion;
+              layer.wmsVersion = owsVersion;
               layer.id = 'WMS||' + layer.wmsUrl + '||' + layer.Name;
               layer.extent = getLayerExtentFromGetCap(layer);
+            } else if (!layer.isInvalid && $scope.options.owsType === 'WMTS') {
+              layer.wmtsCapabilityUrl = $scope.fileUrl;
+              layer.wmtsTemplateUrl = layer.ResourceURL[0].template;
+              layer.wmtsVersion = owsVersion;
+              layer.dimensions = getDimensions(layer);
+              layer.id = 'WMTS||' + layer.Title + '||' +
+                  gaWmts.formatDimensions(layer.dimensions) +
+                  '||' + layer.wmtsTemplateUrl;
+              layer.extent = layer.WGS84BoundingBox;
             }
 
             // Go through the child to get valid layers
             if (layer.Layer) {
 
               for (var i = 0; i < layer.Layer.length; i++) {
-                var l = getChildLayers(layer.Layer[i], projCode, wmsVersion);
+                var l = getChildLayers(layer.Layer[i], projCode, owsVersion,
+                  tileMatrixSetToCrs);
                 if (!l) {
                   layer.Layer.splice(i, 1);
                   i--;
@@ -206,7 +263,7 @@ goog.require('ga_urlutils_service');
               }
 
               // No valid child
-              if (layer.Layer.length == 0) {
+              if (layer.Layer.length === 0) {
                 layer.Layer = undefined;
               }
             }
@@ -238,6 +295,15 @@ goog.require('ga_urlutils_service');
               return ol.proj.transformExtent(extent, 'EPSG:4326', projCode);
             }
          };
+
+         var getDimensions = function(getCapLayer) {
+          if (getCapLayer.Dimension && getCapLayer.Dimension.Identifier) {
+            var dimensions = {};
+            dimensions[getCapLayer.Dimension.Identifier] =
+              getCapLayer.Dimension.Default;
+            return dimensions;
+          }
+        };
   });
 
   module.controller('GaImportOwsItemDirectiveController', function($scope,
@@ -250,7 +316,11 @@ goog.require('ga_urlutils_service');
       if (getCapLayer.isInvalid) {
         return;
       }
-      gaPreviewLayers.addGetCapWMSLayer($scope.map, getCapLayer);
+      if ($scope.options.owsType === 'WMS') {
+        gaPreviewLayers.addGetCapWMSLayer($scope.map, getCapLayer);
+      } else if ($scope.options.owsType === 'WMTS') {
+        gaPreviewLayers.addGetCapWMTSLayer($scope.map, getCapLayer);
+      }
     };
 
     // Remove preview layer

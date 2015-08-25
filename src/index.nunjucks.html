@@ -356,6 +356,14 @@ itemscope itemtype="http://schema.org/WebApplication"
                     <span ng-class="{'selected': globals.importWmsPopupShown}" translate>import_wms</span>
                   </a>
                 </li>
+                <li><!-- Import WMTS -->
+                  <a href="" ng-click="globals.importWmsPopupShown = !globals.importWmsPopupShown"
+                     data-original-title="{{'wmtsimport_tooltip' | translate}}"
+                     class="ga-custom-tooltip" data-placement="bottom"
+                     accesskey="m">
+                    <span ng-class="{'selected': globals.importWmsPopupShown}" translate>import_wmts</span>
+                  </a>
+                </li>
                 <li><!-- Import KML -->
                   <a href=""  ng-click="globals.importKmlPopupShown = !globals.importKmlPopupShown"
                      data-original-title="{{'kmlimport_tooltip' | translate}}"
@@ -517,6 +525,19 @@ itemscope itemtype="http://schema.org/WebApplication"
         </div>
       </div>
     </div> <!-- end Import WMS -->
+
+    <!-- Popup: Import WMTS -->
+    <div ga-popup="globals.importWmsPopupShown"
+         ga-popup-options="{title:'import_wmts', help:'62'}"
+         ga-draggable=".popover-title"
+         id="import-ows-popup" >
+      <div ng-controller="GaImportWmtsController">
+        <div ga-import-ows
+             ga-import-ows-map="map"
+             ga-import-ows-options="options">
+        </div>
+      </div>
+    </div> <!-- end Import WMTS -->
 
     <!-- Popup: Import KML -->
     <div ga-popup="globals.importKmlPopupShown"
