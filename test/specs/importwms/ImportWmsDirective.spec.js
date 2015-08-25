@@ -1,4 +1,4 @@
-describe('ga_importwms_directive', function() {
+describe('ga_importows_directive', function() {
   var element, scope, map;
    
   beforeEach(function() {
@@ -19,12 +19,13 @@ describe('ga_importwms_directive', function() {
       map.getView().fitExtent([-20000000, -20000000, 20000000, 20000000], map.getSize());
 
       element = angular.element(
-          '<div ga-import-wms ga-import-wms-map="map" ' +
-               'ga-import-wms-options="options">' +
+          '<div ga-import-ows ga-import-ows-map="map" ' +
+               'ga-import-ows-options="options">' +
           '</div>');
       scope = $rootScope.$new();
       scope.map = map;
       scope.options = {
+        owsType: 'WMS',
         proxyUrl: 'http://admin.ch/ogcproxy?url=',
         defaultGetCapParams: 'SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0',
         defaultWMSList: [
@@ -35,8 +36,8 @@ describe('ga_importwms_directive', function() {
            'http://mapserver1.gr.ch/wms/admineinteilung?'
         ]
       };
-      $injector.get('$controller')('GaImportWmsDirectiveController', {'$scope': scope});
-      $injector.get('$controller')('GaImportWmsItemDirectiveController', {'$scope': scope});
+      $injector.get('$controller')('GaImportOwsDirectiveController', {'$scope': scope});
+      $injector.get('$controller')('GaImportOwsItemDirectiveController', {'$scope': scope});
       $compile(element)(scope);
       $rootScope.$digest();
       $translate.use('fr');
@@ -47,13 +48,13 @@ describe('ga_importwms_directive', function() {
     var form = element.find('form');
     expect(form.find('input[type=url][ng-model=fileUrl]').length).to.be(1);
     expect(form.find('.twitter-typeahead').length).to.be(1);
-    expect(form.find('.ga-import-wms-open').length).to.be(1);    
-    expect(form.find('.ga-import-wms-connect').length).to.be(1); 
-    expect(element.find('.ga-import-wms-container').length).to.be(1); 
-    expect(element.find('.ga-import-wms-content').length).to.be(1);  
+    expect(form.find('.ga-import-ows-open').length).to.be(1);
+    expect(form.find('.ga-import-ows-connect').length).to.be(1);
+    expect(element.find('.ga-import-ows-container').length).to.be(1);
+    expect(element.find('.ga-import-ows-content').length).to.be(1);
     expect(element.find('textarea').length).to.be(1); 
-    expect(element.find('.ga-import-wms-add').length).to.be(1); 
-    form.find('.ga-import-wms-open').click();
+    expect(element.find('.ga-import-ows-add').length).to.be(1);
+    form.find('.ga-import-ows-open').click();
     expect(element.find('.tt-dropdown-menu').css('display')).not.to.be('none');
     expect(element.find('.tt-suggestion').length).to.be(5);
   }));
@@ -150,12 +151,13 @@ describe('ga_importwms_directive', function() {
     });
 
     it('uploads and parses successfully', inject(function() {
-      expect(scope.userMessage).to.be('parse_succeeded');   
+      expect(scope.userMessage).to.be('parse_succeeded');
+      console.error(scope.layers)
       expect(scope.layers.length).to.be(2); 
       expect(scope.layers[1].Layer.length).to.be(1);
     }));
     
-    describe('ga_importwms_item_directive', function() {
+    describe('ga_importows_item_directive', function() {
       var evt = {
         stopPropagation: function(){}
       };

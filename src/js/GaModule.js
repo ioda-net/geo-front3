@@ -18,8 +18,9 @@ goog.require('ga_geolocation');
 goog.require('ga_help');
 goog.require('ga_importkml');
 goog.require('ga_importkml_controller');
-goog.require('ga_importwms');
+goog.require('ga_importows');
 goog.require('ga_importwms_controller');
+goog.require('ga_importwmts_controller');
 goog.require('ga_layermanager');
 goog.require('ga_main_controller');
 goog.require('ga_map');
@@ -61,7 +62,7 @@ goog.require('ga_draw_controller');
     'ga_catalogtree',
     'ga_contextpopup',
     'ga_importkml',
-    'ga_importwms',
+    'ga_importows',
     'ga_help',
     'ga_map',
     'ga_mouseposition',
@@ -95,6 +96,7 @@ goog.require('ga_draw_controller');
     'ga_geolocation',
     'ga_rotate',
     'ga_importwms_controller',
+    'ga_importwmts_controller',
     'ga_main_controller',
     'ga_catalogtree_controller',
     'ga_mouseposition_controller',

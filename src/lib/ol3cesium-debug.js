@@ -1,6 +1,6 @@
 // Ol3-Cesium. See https://github.com/openlayers/ol3-cesium/
 // License: https://github.com/openlayers/ol3-cesium/blob/master/LICENSE
-// Version: v1.7
+// Version: v1.7-24-ge60e769
 
 var CLOSURE_NO_DEPS = true;
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
@@ -19704,45 +19704,6 @@ ol.TileRange.prototype.intersects = function(tileRange) {
       this.minY <= tileRange.maxY &&
       this.maxY >= tileRange.minY;
 };
-/**
- * @return {number} Min X
- */
-ol.TileRange.prototype.getMinX = function() {
-  return this.minX;
-}
-goog.exportProperty(ol.TileRange.prototype, 'getMinX',
-    ol.TileRange.prototype.getMinX);
-
-
-/**
- * @return {number} Max X
- */
-ol.TileRange.prototype.getMaxX = function() {
-  return this.maxX;
-}
-goog.exportProperty(ol.TileRange.prototype, 'getMaxX',
-    ol.TileRange.prototype.getMaxX);
-
-
-/**
- * @return {number} Min Y
- */
-ol.TileRange.prototype.getMinY = function() {
-  return this.minY;
-}
-goog.exportProperty(ol.TileRange.prototype, 'getMinY',
-    ol.TileRange.prototype.getMinY);
-
-
-/**
- * @return {number} Max Y
- */
-ol.TileRange.prototype.getMaxY = function() {
-  return this.maxY;
-}
-goog.exportProperty(ol.TileRange.prototype, 'getMaxY',
-    ol.TileRange.prototype.getMaxY);
-
 
 goog.provide('ol.Attribution');
 
@@ -30707,9 +30668,6 @@ ol.tilegrid.createOriginTopLeftTileCoordTransform = function(tileGrid) {
       }
   );
 };
-goog.exportProperty(ol.tilegrid.TileGrid.prototype, 'getTileRangeForExtentAndZ',
-    ol.tilegrid.TileGrid.prototype.getTileRangeForExtentAndZ);
-
 
 goog.provide('ol.source.Tile');
 goog.provide('ol.source.TileEvent');
@@ -51822,7 +51780,6 @@ ol.style.defaultGeometryFunction = function(feature) {
       'feature must not be null');
   return feature.getGeometry();
 };
-goog.exportSymbol('ol.style.defaultStyleFunction', ol.style.defaultStyleFunction);
 
 goog.provide('ol.interaction.DragZoom');
 
@@ -97985,6 +97942,18 @@ ol.format.WMTSCapabilities.readTileMatrixSetLink_ = function(node,
  * @private
  * @param {Node} node Node.
  * @param {Array.<*>} objectStack Object stack.
+ * @return {Object|undefined} Dimension object.
+ */
+ol.format.WMTSCapabilities.readDimension_ = function(node, objectStack) {
+  return ol.xml.pushParseAndPop({},
+      ol.format.WMTSCapabilities.DIMENSION_PARSERS_, node, objectStack);
+};
+
+
+/**
+ * @private
+ * @param {Node} node Node.
+ * @param {Array.<*>} objectStack Object stack.
  * @return {Object|undefined} Resource URL object.
  */
 ol.format.WMTSCapabilities.readResourceUrl_ = function(node, objectStack) {
@@ -98128,6 +98097,8 @@ ol.format.WMTSCapabilities.LAYER_PARSERS_ = ol.xml.makeParsersNS(
           ol.format.XSD.readString),
       'TileMatrixSetLink': ol.xml.makeObjectPropertyPusher(
           ol.format.WMTSCapabilities.readTileMatrixSetLink_),
+      'Dimension': ol.xml.makeObjectPropertySetter(
+          ol.format.WMTSCapabilities.readDimension_),
       'ResourceURL': ol.xml.makeObjectPropertyPusher(
           ol.format.WMTSCapabilities.readResourceUrl_)
     }, ol.xml.makeParsersNS(ol.format.WMTSCapabilities.OWS_NAMESPACE_URIS_, {
@@ -98169,6 +98140,23 @@ ol.format.WMTSCapabilities.TMS_LINKS_PARSERS_ = ol.xml.makeParsersNS(
       'TileMatrixSet': ol.xml.makeObjectPropertySetter(
           ol.format.XSD.readString)
     });
+
+
+/**
+ * @const
+ * @type {Object.<string, Object.<string, ol.xml.Parser>>}
+ * @private
+ */
+ol.format.WMTSCapabilities.DIMENSION_PARSERS_ = ol.xml.makeParsersNS(
+    ol.format.WMTSCapabilities.NAMESPACE_URIS_, {
+      'Default': ol.xml.makeObjectPropertySetter(
+          ol.format.XSD.readString),
+      'Value': ol.xml.makeObjectPropertyPusher(
+          ol.format.XSD.readString)
+    }, ol.xml.makeParsersNS(ol.format.WMTSCapabilities.OWS_NAMESPACE_URIS_, {
+      'Identifier': ol.xml.makeObjectPropertySetter(
+          ol.format.XSD.readString)
+    }));
 
 
 /**
@@ -112591,6 +112579,10 @@ goog.require('ol.proj');
  * @extends {Cesium.ImageryProvider}
  */
 olcs.core.OLImageryProvider = function(source, opt_fallbackProj) {
+  // Do not goog.inherit() or call super constructor from
+  // Cesium.ImageryProvider since this particular function is a
+  // 'non instanciable interface' which throws on instanciation.
+
   /**
    * @type {!ol.source.TileImage}
    * @private
@@ -112622,7 +112614,6 @@ olcs.core.OLImageryProvider = function(source, opt_fallbackProj) {
   }, this);
   this.handleSourceChanged_();
 };
-goog.inherits(olcs.core.OLImageryProvider, Cesium.ImageryProvider);
 
 
 // definitions of getters that are required to be present
@@ -112928,10 +112919,11 @@ olcs.core.rotateAroundAxis = function(camera, angle, axis, transform,
  * @param {!Cesium.Scene} scene
  * @param {number} heading
  * @param {!Cesium.Cartesian3} bottomCenter
+ * @param {olcsx.core.RotateAroundAxisOption=} opt_options
  * @api
  */
 olcs.core.setHeadingUsingBottomCenter = function(scene, heading,
-    bottomCenter) {
+    bottomCenter, opt_options) {
   var camera = scene.camera;
   // Compute the camera position to zenith quaternion
   var angleToZenith = olcs.core.computeAngleToZenith(scene, bottomCenter);
@@ -112949,7 +112941,7 @@ olcs.core.setHeadingUsingBottomCenter = function(scene, heading,
   // Actually rotate around the zenith normal
   var transform = Cesium.Matrix4.fromTranslation(zenith);
   var rotateAroundAxis = olcs.core.rotateAroundAxis;
-  rotateAroundAxis(camera, heading, zenith, transform);
+  rotateAroundAxis(camera, heading, zenith, transform, opt_options);
 };
 
 
@@ -113868,7 +113860,7 @@ olcs.Camera.prototype.calcResolutionForDistance_ = function(distance,
   return resolution;
 };
 
-goog.provide('olcs.core.OlLayerPrimitive');
+goog.provide('olcs.core.VectorLayerCounterpart');
 
 
 
@@ -113877,14 +113869,12 @@ goog.provide('olcs.core.OlLayerPrimitive');
  * @constructor
  * @param {!(ol.proj.Projection|string)} layerProjection
  * @param {!Cesium.Scene} scene
- * @extends {Cesium.PrimitiveCollection}
  */
-olcs.core.OlLayerPrimitive = function(layerProjection, scene) {
-  goog.base(this);
-
+olcs.core.VectorLayerCounterpart = function(layerProjection, scene) {
   var billboards = new Cesium.BillboardCollection({scene: scene});
   var primitives = new Cesium.PrimitiveCollection();
 
+  this.rootCollection_ = new Cesium.PrimitiveCollection();
   /**
    * @type {!olcsx.core.OlFeatureToCesiumContext}
    */
@@ -113895,9 +113885,17 @@ olcs.core.OlLayerPrimitive = function(layerProjection, scene) {
     primitives: primitives
   };
 
-  this.add(billboards);
+  this.rootCollection_.add(billboards);
+  this.rootCollection_.add(primitives);
 };
-goog.inherits(olcs.core.OlLayerPrimitive, Cesium.PrimitiveCollection);
+
+
+/**
+ * @return {!Cesium.Primitive}
+ */
+olcs.core.VectorLayerCounterpart.prototype.getRootPrimitive = function() {
+  return this.rootCollection_;
+};
 
 // FIXME: box style
 goog.provide('olcs.DragBox');
@@ -114131,7 +114129,7 @@ goog.require('ol.layer.Vector');
 goog.require('ol.proj');
 goog.require('ol.source.TileImage');
 goog.require('ol.style.Style');
-goog.require('olcs.core.OlLayerPrimitive');
+goog.require('olcs.core.VectorLayerCounterpart');
 
 
 
@@ -114554,6 +114552,11 @@ olcs.FeatureConverter.prototype.olPointGeometryToCesium =
   geometry = olcs.core.olGeometryCloneTo4326(geometry, projection);
 
   var imageStyle = style.getImage();
+  if (imageStyle instanceof ol.style.Icon) {
+    // make sure the image is scheduled for load
+    imageStyle.load();
+  }
+
   var image = imageStyle.getImage(1); // get normal density
   var isImageLoaded = function(image) {
     return image.src != '' &&
@@ -114947,7 +114950,7 @@ olcs.FeatureConverter.prototype.olFeatureToCesium =
  * @param {!ol.layer.Vector} olLayer
  * @param {!ol.View} olView
  * @param {!Object.<number, !Cesium.Primitive>} featurePrimitiveMap
- * @return {!olcs.core.OlLayerPrimitive}
+ * @return {!olcs.core.VectorLayerCounterpart}
  * @api
  */
 olcs.FeatureConverter.prototype.olVectorLayerToCesium =
@@ -114962,8 +114965,8 @@ olcs.FeatureConverter.prototype.olVectorLayerToCesium =
     // are defined
     throw new Error('View not ready');
   }
-  var allPrimitives = new olcs.core.OlLayerPrimitive(proj, this.scene);
-  var context = allPrimitives.context;
+  var counterpart = new olcs.core.VectorLayerCounterpart(proj, this.scene);
+  var context = counterpart.context;
   for (var i = 0; i < features.length; ++i) {
     var feature = features[i];
     if (!goog.isDefAndNotNull(feature)) {
@@ -114979,10 +114982,10 @@ olcs.FeatureConverter.prototype.olVectorLayerToCesium =
     var primitives = this.olFeatureToCesium(olLayer, feature, style, context);
     if (!primitives) continue;
     featurePrimitiveMap[goog.getUid(feature)] = primitives;
-    allPrimitives.add(primitives);
+    counterpart.getRootPrimitive().add(primitives);
   }
 
-  return allPrimitives;
+  return counterpart;
 };
 
 
@@ -115080,15 +115083,25 @@ olcs.RasterSynchronizer.prototype.removeAllCesiumObjects = function(destroy) {
 
 
 /**
+ * Creates a Cesium.ImageryLayer.
+ * May be overriden by child classes to implement custom behavior.
+ * The default implementation handles tiled imageries in EPSG:4326 or
+ * EPSG:3859.
+ * @param {!ol.layer.Layer} olLayer
+ * @param {?ol.proj.Projection} viewProj Projection of the view.
+ * @return {?Cesium.ImageryLayer} null if not possible (or supported)
+ * @protected
+ */
+olcs.RasterSynchronizer.prototype.convertLayerToCesiumImagery =
+    olcs.core.tileLayerToImageryLayer;
+
+
+/**
  * @inheritDoc
  */
 olcs.RasterSynchronizer.prototype.createSingleCounterpart = function(olLayer) {
-  if (!(olLayer instanceof ol.layer.Tile)) {
-    return null;
-  }
-
   var viewProj = this.view.getProjection();
-  var cesiumObject = olcs.core.tileLayerToImageryLayer(olLayer, viewProj);
+  var cesiumObject = this.convertLayerToCesiumImagery(olLayer, viewProj);
   if (!goog.isNull(cesiumObject)) {
     olLayer.on(
         ['change:brightness', 'change:contrast', 'change:hue',
@@ -115129,7 +115142,7 @@ goog.require('ol.layer.Vector');
 goog.require('olcs.AbstractSynchronizer');
 goog.require('olcs.FeatureConverter');
 goog.require('olcs.core');
-goog.require('olcs.core.OlLayerPrimitive');
+goog.require('olcs.core.VectorLayerCounterpart');
 
 
 
@@ -115139,7 +115152,7 @@ goog.require('olcs.core.OlLayerPrimitive');
  * @param {!Cesium.Scene} scene
  * @param {olcs.FeatureConverter=} opt_converter
  * @constructor
- * @extends {olcs.AbstractSynchronizer.<olcs.core.OlLayerPrimitive>}
+ * @extends {olcs.AbstractSynchronizer.<olcs.core.VectorLayerCounterpart>}
  * @api
  */
 olcs.VectorSynchronizer = function(map, scene, opt_converter) {
@@ -115164,9 +115177,9 @@ goog.inherits(olcs.VectorSynchronizer, olcs.AbstractSynchronizer);
 /**
  * @inheritDoc
  */
-olcs.VectorSynchronizer.prototype.addCesiumObject = function(object) {
-  goog.asserts.assert(!goog.isNull(object));
-  this.csAllPrimitives_.add(object);
+olcs.VectorSynchronizer.prototype.addCesiumObject = function(counterpart) {
+  goog.asserts.assert(!goog.isNull(counterpart));
+  this.csAllPrimitives_.add(counterpart.getRootPrimitive());
 };
 
 
@@ -115174,7 +115187,7 @@ olcs.VectorSynchronizer.prototype.addCesiumObject = function(object) {
  * @inheritDoc
  */
 olcs.VectorSynchronizer.prototype.destroyCesiumObject = function(object) {
-  object.destroy();
+  object.getRootPrimitive().destroy();
 };
 
 
@@ -115201,8 +115214,9 @@ olcs.VectorSynchronizer.prototype.createSingleCounterpart = function(olLayer) {
   var view = this.view;
   var source = olLayer.getSource();
   var featurePrimitiveMap = {};
-  var csPrimitives = this.converter.olVectorLayerToCesium(olLayer, view,
+  var counterpart = this.converter.olVectorLayerToCesium(olLayer, view,
       featurePrimitiveMap);
+  var csPrimitives = counterpart.getRootPrimitive();
 
   olLayer.on('change:visible', function(e) {
     csPrimitives.show = olLayer.getVisible();
@@ -115210,7 +115224,7 @@ olcs.VectorSynchronizer.prototype.createSingleCounterpart = function(olLayer) {
 
   var onAddFeature = goog.bind(function(feature) {
     goog.asserts.assertInstanceof(olLayer, ol.layer.Vector);
-    var context = csPrimitives.context;
+    var context = counterpart.context;
     var prim = this.converter.convert(olLayer, view, feature, context);
     if (prim) {
       featurePrimitiveMap[goog.getUid(feature)] = prim;
@@ -115222,7 +115236,7 @@ olcs.VectorSynchronizer.prototype.createSingleCounterpart = function(olLayer) {
     var geometry = feature.getGeometry();
     var id = goog.getUid(feature);
     if (!geometry || geometry.getType() == 'Point') {
-      var context = csPrimitives.context;
+      var context = counterpart.context;
       var bb = context.featureToCesiumMap[id];
       delete context.featureToCesiumMap[id];
       if (bb instanceof Cesium.Billboard) {
@@ -115253,7 +115267,7 @@ olcs.VectorSynchronizer.prototype.createSingleCounterpart = function(olLayer) {
     onAddFeature(feature);
   }, this);
 
-  return csPrimitives;
+  return counterpart;
 };
 
 goog.provide('olcs.OLCesium');

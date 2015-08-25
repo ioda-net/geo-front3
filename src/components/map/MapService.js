@@ -398,6 +398,112 @@ goog.require('ga_urlutils_service');
   });
 
   /**
+   * Manage external WMTS layers
+   */
+  module.provider('gaWmts', function() {
+    this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils,
+        gaTileGrid) {
+      var Wmts = function() {
+
+        var formatDimensions = function(dimensions) {
+          var exportedDimensions = [];
+          Object.keys(dimensions).forEach(function(key) {
+            exportedDimensions.push(key + ':' + dimensions[key]);
+          });
+
+          return exportedDimensions.join(';');
+        };
+
+        var createWmtsLayer = function(options) {
+          options = options || {};
+          var attributions;
+
+          if (options.attribution) {
+            attributions = [
+              gaMapUtils.getAttribution(options.attribution)
+            ];
+            if (gaUrlUtils.isValid(options.attribution)) {
+              options.attribution = gaUrlUtils.getHostname(options.attribution);
+            }
+          }
+
+          var source = new ol.source.WMTS({
+            attributions: attributions,
+            dimensions: options.dimensions,
+            projection: 'EPSG:21781',
+            requestEncoding: 'REST',
+            tileGrid: gaTileGrid.get(),
+            url: options.templateUrl,
+            extent: options.extent,
+            ratio: options.ratio || 1
+          });
+
+          var layer = new ol.layer.Tile({
+            id: 'WMTS||' + options.label + '||' +
+                    formatDimensions(options.dimensions) + '||' +
+                    options.templateUrl,
+            extent: gaMapUtils.intersectWithDefaultExtent(
+                    source.getProjection().getExtent()),
+            //minResolution: layer.minResolution,
+            preload: gaMapUtils.preload,
+            //maxResolution: layer.maxResolution,
+            opacity: options.opacity,
+            attribution: options.attribution,
+            source: source
+          });
+          gaDefinePropertiesForLayer(layer);
+          layer.preview = options.preview;
+          layer.displayInLayerManager = !layer.preview;
+          layer.useThirdPartyData =
+                  gaUrlUtils.isThirdPartyValid(options.capabilitiesUrl);
+          layer.label = options.label;
+          return layer;
+        };
+
+        // Create an ol WMS layer from GetCapabilities informations
+        this.getOlLayerFromGetCapLayer = function(getCapLayer) {
+          var wmtsOptions = {
+            templateUrl: getCapLayer.wmtsTemplateUrl,
+            capabilitiesUrl: getCapLayer.wmtsCapabilityUrl,
+            label: getCapLayer.Title,
+            extent: gaMapUtils.intersectWithDefaultExtent(getCapLayer.extent),
+            attribution: getCapLayer.owsUrl,
+            dimensions: getCapLayer.dimensions
+          };
+          return createWmtsLayer(wmtsOptions);
+        };
+
+        // Create a WMTS layer and add it to the map
+        this.addWmtsToMap = function(map, layerOptions, index) {
+          var olLayer = createWmtsLayer(layerOptions);
+          if (index) {
+            map.getLayers().insertAt(index, olLayer);
+          } else {
+            map.addLayer(olLayer);
+          }
+          return olLayer;
+        };
+
+        this.importDimensions = function(formatedDimensions) {
+          var linkDimensions = formatedDimensions.split(';');
+          if (linkDimensions.length > 0) {
+            var dimensions = {};
+            linkDimensions.forEach(function(dimension) {
+              var keyValue = dimension.split(':');
+              dimensions[keyValue[0]] = keyValue[1];
+            });
+
+            return dimensions;
+          }
+        };
+
+        this.formatDimensions = formatDimensions;
+      };
+      return new Wmts();
+    };
+  });
+
+  /**
    * Manage KML layers
    */
   module.provider('gaKml', function() {
@@ -1269,6 +1375,19 @@ goog.require('ga_urlutils_service');
           return olLayerOrId.type == 'WMS';
         },
 
+        // Test if a layer is an external WMTS layer added by the ImportWMTS
+        // tool or permalink
+        isExternalWmtsLayer: function(olLayerOrId) {
+          if (!olLayerOrId) {
+            return false;
+          } else if (angular.isString(olLayerOrId)) {
+            return /^WMTS\|\|/.test(olLayerOrId) &&
+                olLayerOrId.split('||').length === 4;
+          } else {
+            return olLayerOrId.type === 'WMTS';
+          }
+        },
+
         moveLayerOnTop: function(map, olLayer) {
           var olLayers = map.getLayers().getArray();
           var idx = olLayers.indexOf(olLayer);
@@ -1481,8 +1600,8 @@ goog.require('ga_urlutils_service');
   module.provider('gaLayersPermalinkManager', function() {
 
     this.$get = function($rootScope, gaLayers, gaPermalink, $translate, $http,
-        gaKml, gaMapUtils, gaWms, gaLayerFilters, gaUrlUtils, gaFileStorage,
-        gaTopic, gaGlobalOptions, $q) {
+        gaKml, gaMapUtils, gaWms, gaWmts, gaLayerFilters, gaUrlUtils,
+        gaFileStorage, gaTopic, gaGlobalOptions, $q) {
 
       var layersParamValue = gaPermalink.getParams().layers;
       var layersOpacityParamValue = gaPermalink.getParams().layers_opacity;
@@ -1692,6 +1811,24 @@ goog.require('ga_urlutils_service');
                   index + 1);
               } catch (e) {
                 // Adding external WMS layer failed, native alert, log message?
+                console.error('Loading of external WMS layer ' + layerSpec +
+                        ' failed.');
+              }
+            } else if (gaMapUtils.isExternalWmtsLayer(layerSpec)) {
+              var infos = layerSpec.split('||');
+              try {
+                var dimensions = gaWmts.importDimensions(infos[2]);
+
+                gaWmts.addWmtsToMap(map,
+                  {
+                    dimensions: dimensions,
+                    templateUrl: infos[3],
+                    label: infos[1]
+                  }, index + 1);
+              } catch (e) {
+                // Adding external WMTS layer failed
+                console.error('Loading of external WMTS layer ' + layerSpec +
+                        ' failed. ' + e);
               }
             }
           });
@@ -1990,7 +2127,7 @@ goog.require('ga_urlutils_service');
     // We store all review layers we add
     var olPreviewLayers = {};
 
-    this.$get = function($rootScope, gaLayers, gaWms) {
+    this.$get = function($rootScope, gaLayers, gaWms, gaWmts) {
       var olPreviewLayer;
       var time;
 
@@ -2045,6 +2182,25 @@ goog.require('ga_urlutils_service');
           // Something failed, layer doesn't exist
           if (!olPreviewLayer) {
             return undefined;
+          }
+
+          olPreviewLayer.preview = true;
+          olPreviewLayer.displayInLayerManager = false;
+          olPreviewLayers[getCapLayer.id] = olPreviewLayer;
+          map.addLayer(olPreviewLayer);
+
+          return olPreviewLayer;
+        };
+
+        this.addGetCapWMTSLayer = function(map, getCapLayer) {
+          // Remove all preview layers
+          this.removeAll(map);
+
+          // Search or create the preview layer
+          var olPreviewLayer = olPreviewLayers[getCapLayer.id];
+
+          if (!olPreviewLayer) {
+            olPreviewLayer = gaWmts.getOlLayerFromGetCapLayer(getCapLayer);
           }
 
           olPreviewLayer.preview = true;
