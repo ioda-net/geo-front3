@@ -30,7 +30,8 @@
   </div>
   <div class="ga-import-ows-descr">
     <label translate>description</label>
-    <textarea  placeholder="{{'description_instructions' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
+    <textarea ng-if="options.owsType === 'WMS'" placeholder="{{'description_instructions' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
+    <textarea ng-if="options.owsType === 'WMTS'" placeholder="{{'description_instructions_wmts' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
     <button type="button" class="btn btn-default ga-import-ows-add"
     ng-disabled="(options.layerSelected && options.layerSelected.isInvalid)" ng-click="addLayerSelected()" translate>add_layer</button>
   </div>

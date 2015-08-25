@@ -159,12 +159,10 @@ goog.require('ga_urlutils_service');
                 if (olLayer) {
                   $scope.map.addLayer(olLayer);
                 }
-                return olLayer;
+                return true;
 
               } catch (e) {
-                $scope.userMessage = $translate.instant(
-                                     'add_wms_layer_failed') + e.message;
-                return null;
+                return false;
               }
             }
           };
@@ -174,10 +172,23 @@ goog.require('ga_urlutils_service');
             if ($scope.options.layerSelected) {
               var layerAdded = $scope.addLayer($scope.options.layerSelected,
                   /* isPreview */ false);
-
+                  console.log(layerAdded)
               if (layerAdded) {
-                $scope.userMessage = $translate.instant(
-                                      'add_wms_layer_succeeded');
+                if ($scope.options.owsType === 'WMS') {
+                  $scope.userMessage = $translate.instant(
+                                        'add_wms_layer_succeeded');
+                } else if ($scope.options.owsType === 'WMTS') {
+                  $scope.userMessage = $translate.instant(
+                                        'add_wmts_layer_succeeded');
+                }
+              } else {
+                if ($scope.options.owsType === 'WMS') {
+                  $scope.userMessage = $translate.instant(
+                                        'add_wms_layer_failed');
+                } else if ($scope.options.owsType === 'WMTS') {
+                  $scope.userMessage = $translate.instant(
+                                        'add_wmts_layer_failed');
+                }
               }
 
               alert($scope.userMessage);
