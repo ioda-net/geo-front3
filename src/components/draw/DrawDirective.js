@@ -890,12 +890,21 @@ goog.require('ga_permalink');
             });
           };
 
+          var getWebdavUrl = function(url, file) {
+            if (!url.endsWith('/')) {
+              url += '/';
+            }
+
+            return url + file;
+          };
+
+
           var getWebdavRequest = function(method) {
             method = method || 'GET';
 
             return {
                 method: method,
-                url: scope.webdav.url,
+                url: getWebdavUrl(scope.webdav.url, scope.webdav.file),
                 withCredentials: true,
                 headers: {
                   Authorization: 'Basic ' + btoa(scope.webdav.user + ':' + scope.webdav.password),
