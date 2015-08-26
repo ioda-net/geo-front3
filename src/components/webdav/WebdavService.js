@@ -13,11 +13,12 @@ goog.require('ga_export_kml_service');
       getErrorMessage: getErrorMessage,
       delete: webdavDelete,
       save: save,
-      getKmlString: getKmlString
+      getKmlString: getKmlString,
+      exists: exists
     };
 
-    function load(def, layer, map, url, file, user, password) {
-      var req = getWebdavRequest('GET', getKmlString(layer, map), url, file,
+    function load(def, map, url, file, user, password) {
+      var req = getWebdavRequest('GET', url, file,
         user, password);
 
       return $http(req).success(function(data, status, headers) {
@@ -29,13 +30,19 @@ goog.require('ga_export_kml_service');
             useImageVector: gaKml.useImageVector(fileSize),
             zoomToExtent: true
           });
-          def.resolve($translate.instant('draw_load_success'));
+          def.resolve({
+            message: $translate.instant('draw_load_success'),
+            success: true
+          });
         } else {
           def.reject();
         }
       }).error(function(data, status) {
-        def.resolve(getErrorMessage(
-                  $translate.instant('draw_load_error'), status));
+        def.resolve({
+          message: getErrorMessage(
+                  $translate.instant('draw_load_error'), status),
+          success: false
+        });
       });
     }
 
@@ -43,7 +50,7 @@ goog.require('ga_export_kml_service');
       return gaExportKml.create(layer, map.getView().getProjection());
     }
 
-    function getWebdavRequest(method, data, url, file, user, password) {
+    function getWebdavRequest(method, url, file, user, password, data) {
       method = method || 'GET';
 
       return {
@@ -89,7 +96,7 @@ goog.require('ga_export_kml_service');
 
     function webdavDelete(layer, map, url, file, user, password) {
       if (url) {
-        var req = getWebdavRequest('DELETE', getKmlString(layer, map), url, file, user, password);
+        var req = getWebdavRequest('DELETE', url, file, user, password);
 
         return $http(req);
       }
@@ -97,7 +104,13 @@ goog.require('ga_export_kml_service');
 
     function save(layer, map, url, file, user, password) {
       // user and password are optional, webdav can be anonymous
-      var req = getWebdavRequest('PUT', getKmlString(layer, map), url, file, user, password);
+      var req = getWebdavRequest('PUT', url, file, user, password,
+        getKmlString(layer, map));
+      return $http(req);
+    }
+
+    function exists(url, file, user, password) {
+      var req = getWebdavRequest('GET', url, file, user, password);
       return $http(req);
     }
   });

@@ -1,5 +1,5 @@
 Requirements: you must be able to connect to a webdav server with a username and
-a password. On this server you must have access to a KML and another file.
+a password. On this server you must have access to 2 KMLs and another file.
 
 To perform these tests, you must be in drawing mode and select "Save
 automatically on custom server".
@@ -37,13 +37,24 @@ automatically on custom server".
 1. Existing
    - Enter all fields correctly
    - Start drawing
-   - **Result:** the previous KML must be replaced
+   - **Result:** a prompt appears asking if you really want to override this
+     file. If you confirm, the KML will be overridden, if you cancel it won't be
+     saved.
 
 2. Creating
    - Enter all fields correctly
    - Enter the name of a new KML
    - Start drawing
    - **Result:** the KML must be created
+
+3. Changing name
+   - Enter all fields correctly
+   - Load an existing KML
+   - Change the name of the KML to your other file
+   - Draw
+   - **Result:** a prompt appears asking if you really want to override this
+     file. If you confirm, the KML will be overridden, if you cancel, it won't
+     be saved.
 
 
 # File delete

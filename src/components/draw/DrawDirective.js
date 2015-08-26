@@ -185,9 +185,23 @@ goog.require('ga_webdav_service');
             userPlaceholder: 'draw_webdav_user_help',
             passwordPlaceholder: 'draw_webdav_password_help',
             info: 'draw_webdav_info',
-            loadInfo: 'draw_webdav_load'
+            loadInfo: 'draw_webdav_load',
+            canOverrideFile: false
           };
           scope.drawingSave = "server";
+
+          // If the URL or the file change, we cannot assume we can override the
+          // file
+          scope.$watch('webdav.url', function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+              scope.webdav.canOverrideFile = false;
+            }
+          });
+          scope.$watch('webdav.file', function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+              scope.webdav.canOverrideFile = false;
+            }
+          });
 
           // Add select interaction
           var select = new ol.interaction.Select({
@@ -813,14 +827,7 @@ goog.require('ga_webdav_service');
                 break;
               case 'custom':
                 if (scope.webdav.url) {
-                  gaWebdav.save(layer, map, scope.webdav.url, scope.webdav.file,
-                    scope.webdav.user, scope.webdav.password)
-                  .success(function() {
-                    scope.statusMsgId = 'draw_file_saved';
-                  }).error(function(data, status) {
-                    scope.statusMsgId = gaWebdav.getErrorMessage(
-                      $translate.instant('draw_save_error'), status);
-                  });
+                  saveWebdav();
                 } else {
                   scope.statusMsgId = $translate.instant('draw_give_url');
                 }
@@ -854,6 +861,35 @@ goog.require('ga_webdav_service');
             });
           };
 
+          var saveWebdav = function() {
+            if (scope.webdav.canOverrideFile) {
+              performWebdavSave();
+            } else {
+              gaWebdav.exists(scope.webdav.url, scope.webdav.file, scope.webdav.user, scope.webdav.password)
+              .success(function() {
+                scope.webdav.canOverrideFile = confirm($translate.instant('draw_webdav_can_override_file'));
+                if (scope.webdav.canOverrideFile) {
+                  performWebdavSave();
+                }
+              })
+              .error(function(data, status) {
+                scope.webdav.canOverrideFile = true;
+                performWebdavSave();
+              });
+            }
+          };
+
+          var performWebdavSave = function() {
+            gaWebdav.save(layer, map, scope.webdav.url, scope.webdav.file,
+              scope.webdav.user, scope.webdav.password)
+            .success(function() {
+              scope.statusMsgId = 'draw_file_saved';
+            }).error(function(data, status) {
+              scope.statusMsgId = gaWebdav.getErrorMessage(
+                $translate.instant('draw_save_error'), status);
+            });
+          };
+
           $rootScope.$on('$translateChangeEnd', function() {
             if (layer) {
               layer.label = $translate.instant('draw');
@@ -864,11 +900,13 @@ goog.require('ga_webdav_service');
             if (scope.webdav.url) {
               scope.statusMsgId = $translate.instant('draw_webdav_loading');
               var def = $q.defer();
-              gaWebdav.load(def, layer, scope.map, scope.webdav.url, scope.webdav.file,
+              gaWebdav.load(def, scope.map, scope.webdav.url, scope.webdav.file,
                 scope.webdav.user, scope.webdav.password);
 
-              def.promise.then(function(message) {
-                scope.statusMsgId = message;
+              def.promise.then(function(resp) {
+                scope.statusMsgId = resp.message;
+                // If the user load the KML, we can override it
+                scope.webdav.canOverrideFile = resp.success;
               });
             } else {
               scope.statusMsgId = $translate.instant('draw_give_url');
