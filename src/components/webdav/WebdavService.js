@@ -1,20 +1,24 @@
 goog.provide('ga_webdav_service');
 
 goog.require('ga_export_kml_service');
+goog.require('ga_map_service');
 (function() {
   var module = angular.module('ga_webdav_service', [
     'ga_export_kml_service',
+    'ga_map_service',
     'pascalprecht.translate'
   ]);
 
-  module.factory('gaWebdav', function(gaKml, gaExportKml, $http, $translate) {
+  module.factory('gaWebdav', function(gaKml, gaExportKml, gaMapUtils, $http,
+      $translate) {
     return {
       load: load,
       getErrorMessage: getErrorMessage,
       delete: webdavDelete,
       save: save,
       getKmlString: getKmlString,
-      exists: exists
+      exists: exists,
+      isWebdavStoredKmlLayer: isWebdavStoredKmlLayer
     };
 
     function load(def, map, url, file, user, password) {
@@ -112,6 +116,25 @@ goog.require('ga_export_kml_service');
     function exists(url, file, user, password) {
       var req = getWebdavRequest('GET', url, file, user, password);
       return $http(req);
+    }
+
+    // Test if a KML comes from a webdav service
+    // @param olLayer An ol layer or an id of a layer
+    // @param webdavUrl The url of the webdav server the layer should belong
+    function isWebdavStoredKmlLayer(olLayerOrId, url, file) {
+      var id = olLayerOrId;
+      if (id instanceof ol.layer.Layer) {
+        id = olLayerOrId.id;
+      }
+      // A drawing can be created by a drawing loaded from our server. In that
+      // case, we don't have a url to test for WebdavLayer.
+      if (url) {
+        var fullUrl = getWebdavUrl(url, file);
+        var regex = new RegExp(fullUrl + '$');
+        return gaMapUtils.isKmlLayer(olLayerOrId) && regex.test(id);
+      } else {
+        return false;
+      }
     }
   });
 })();

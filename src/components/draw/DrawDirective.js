@@ -274,9 +274,9 @@ goog.require('ga_webdav_service');
               // If there is a layer loaded from public.admin.ch, we use it for
               // modification.
               map.getLayers().forEach(function(item) {
-                var webdavUrl = scope.webdav.url;
-                if (gaMapUtils.isStoredKmlLayer(item) ||
-                        gaMapUtils.isWebdavStoredKmlLayer(item, webdavUrl)) {
+                var isWebdavLayer = gaWebdav.isWebdavStoredKmlLayer(item,
+                  scope.webdav.url, scope.webdav.file);
+                if (gaMapUtils.isStoredKmlLayer(item) || isWebdavLayer) {
                   layer = item;
                 }
               });
@@ -323,11 +323,11 @@ goog.require('ga_webdav_service');
             // DnD ...) and the currentlayer has no features, we define a
             // new layer.
             unLayerAdd = map.getLayers().on('add', function(evt) {
-              var webdavUrl = scope.webdav.url;
               var added = evt.element;
-              if ((gaMapUtils.isStoredKmlLayer(added) ||
-                      gaMapUtils.isWebdavStoredKmlLayer(added, webdavUrl)) &&
-                  layer.getSource().getFeatures().length == 0 &&
+              var isWebdavLayer = gaWebdav.isWebdavStoredKmlLayer(added,
+                scope.webdav.url, scope.webdav.file);
+              if ((gaMapUtils.isStoredKmlLayer(added) || isWebdavLayer) &&
+                  layer.getSource().getFeatures().length === 0 &&
                   !useTemporaryLayer) {
                 defineLayerToModify();
               }
