@@ -252,9 +252,11 @@ itemscope itemtype="http://schema.org/WebApplication"
         <a target="_blank" href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
       </div>
   {% if device == 'index' %}
+      {# <!-- Remove fix temp https://github.com/ioda-net/geo-front3/issues/58 -->
       <div class="pull-right">
         <a target="_blank" href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
       </div>
+      #}
   {% endif %}
     </div><!-- #footer -->
 
@@ -470,8 +472,10 @@ itemscope itemtype="http://schema.org/WebApplication"
               </div>
               <hr>
               <p>
+                {# <!-- Remove fix temp https://github.com/ioda-net/geo-front3/issues/58 -->
                 <a target="_blank" href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
                 <br>
+                #}
                 <a target="_blank" href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
               </p>
             </div>
