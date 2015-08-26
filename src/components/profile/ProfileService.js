@@ -248,7 +248,7 @@ goog.require('ga_urlutils_service');
               .attr('y', 11)
               .attr('width', 100)
               .attr('height', 30)
-              .text('swissALTI3D/DHM25');
+              .text(elevationModel);
 
           group.append('text')
               .attr('class', 'ga-profile-label ga-profile-label-x')
@@ -298,7 +298,7 @@ goog.require('ga_urlutils_service');
               .transition().duration(transitionTime)
                 .attr('x', width - 113)
                 .attr('y', 11)
-                .text('swissALTI3D/DHM25');
+                .text(elevationModel);
           } else {
             this.data = this.formatData(data);
           }
