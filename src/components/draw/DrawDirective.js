@@ -861,7 +861,7 @@ goog.require('ga_webdav_service');
             }
           });
 
-          scope.webdavLoad = function () {
+          scope.webdav.load = function () {
             if (scope.webdav.url) {
               scope.userMessage = $translate.instant('draw_webdav_loading');
               var def = $q.defer();
