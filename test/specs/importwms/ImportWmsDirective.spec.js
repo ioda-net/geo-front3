@@ -152,7 +152,6 @@ describe('ga_importows_directive', function() {
 
     it('uploads and parses successfully', inject(function() {
       expect(scope.userMessage).to.be('parse_succeeded');
-      console.error(scope.layers)
       expect(scope.layers.length).to.be(2); 
       expect(scope.layers[1].Layer.length).to.be(1);
     }));

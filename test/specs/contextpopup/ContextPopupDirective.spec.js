@@ -94,7 +94,7 @@ describe('ga_contextpopup_directive', function() {
       var tds = $(tables[0]).find('td');
 
       expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
-      expect($(tds[3]).text()).to.be('2\'725\'984.40, 1\'180\'787.40');
+      expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
       expect($(tds[11]).text()).to.be('Moutier');
       expect($(tds[13]).text()).to.be('1233 m');
     });
@@ -133,7 +133,7 @@ describe('ga_contextpopup_directive', function() {
         var tds = $(tables[0]).find('td');
 
         expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
-        expect($(tds[3]).text()).to.be('2\'725\'984.40, 1\'180\'787.40');
+        expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
         expect($(tds[11]).text()).to.be('Moutier');
         expect($(tds[13]).text()).to.be('1233 m');
       });
@@ -207,7 +207,7 @@ describe('ga_contextpopup_directive', function() {
       var tds = $(tables[0]).find('td');
 
       expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
-      expect($(tds[3]).text()).to.be('2\'725\'984.40, 1\'180\'787.40');
+      expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
       expect($(tds[11]).text()).to.be('1233 m');
     });
   });
