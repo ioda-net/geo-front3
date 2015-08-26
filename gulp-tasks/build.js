@@ -32,7 +32,7 @@ function load(src, dest, config) {
       'src/lib/fastclick.min.js',
       'src/lib/localforage.min.js',
       'src/lib/filesaver.min.js',
-      '/tmp/geo-front3/closure-compiler'
+      dest.closure
     ])
             .pipe(uglify())
             .pipe(concat('build.js'))
@@ -67,7 +67,7 @@ function load(src, dest, config) {
             .pipe(ngAnnotate({
               add: true
             }))
-            .pipe(gulp.dest('/tmp/geo-front3/annotated'));
+            .pipe(gulp.dest(dest.annotated));
   });
 }
 

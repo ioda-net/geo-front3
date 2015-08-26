@@ -5,6 +5,7 @@
 
 var glob = require('glob');
 var fs = require('fs');
+var mktemp = require('mktemp');
 var path = require('path');
 var toml = require('toml');
 
@@ -36,8 +37,8 @@ function getPartials(partialsGlob, htmlMinConfig) {
   return partials;
 }
 
-function getJsFiles() {
-  return fs.readFileSync('/tmp/geo-front3/js-files')
+function getJsFiles(src) {
+  return fs.readFileSync(src.js_files)
           .toString()
           .replace('\n', ' ');
 }
@@ -85,9 +86,15 @@ var loadConf = function (taskName, cliOptions) {
 };
 
 
+function createTmpDir() {
+  return mktemp.createDirSync('/tmp/geo-front3-XXXXXX');
+}
+
+
 module.exports.getPartials = getPartials;
 module.exports.getJsFiles = getJsFiles;
 module.exports.passArgvOpts = passArgvOpts;
 module.exports.formatCmd = formatCmd;
 module.exports.formatArgvOpts = formatArgvOpts;
 module.exports.loadConf = loadConf;
+module.exports.createTmpDir = createTmpDir;

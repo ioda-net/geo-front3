@@ -4,7 +4,7 @@ var del = require('del');
 
 function load(src, dest, config) {
   gulp.task('clean-tmp', function (cb) {
-    del(['/tmp/geo-front3'], {force: true}, cb);
+    del([dest.tmp], {force: true}, cb);
   });
 
   gulp.task('clean', ['clean-prod'], function (cb) {

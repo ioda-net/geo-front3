@@ -8,7 +8,7 @@ var utils = require('./utils');
 function load(src, dest, config) {
   // Cache partials so they can be used in karma
   gulp.task('app-whitespace.js', ['js-files'], function () {
-    var jsFiles = utils.getJsFiles();
+    var jsFiles = utils.getJsFiles(src);
     var cmd = utils.formatCmd([
       'java -jar node_modules/google-closure-compiler/compiler.jar',
       jsFiles,
@@ -27,7 +27,7 @@ function load(src, dest, config) {
 
 
   gulp.task('closure-compiler', ['js-files'], function () {
-    var jsFiles = utils.getJsFiles();
+    var jsFiles = utils.getJsFiles(src);
     var cmd = utils.formatCmd([
       'java -jar node_modules/google-closure-compiler/compiler.jar',
       jsFiles,
@@ -38,20 +38,20 @@ function load(src, dest, config) {
       '--externs externs/ol.js',
       '--externs externs/ol3-cesium.js',
       '--externs externs/Cesium.externs.js',
-      '--js_output_file /tmp/geo-front3/closure-compiler'
+      '--js_output_file ' + dest.closure
     ]);
 
     return run(cmd, {
       verbosity: 0
     }).exec()
-            .pipe(gulp.dest('/tmp/geo-front3'));
+            .pipe(gulp.dest(dest.tmp));
   });
 
 
   gulp.task('js-files', ['annotate'], function () {
     var closurebuilder = utils.formatCmd([
       'python node_modules/google-closure-library/closure/bin/build/closurebuilder.py',
-      '--root=/tmp/geo-front3/annotated',
+      '--root=' + dest.annotated,
       '--root=node_modules/google-closure-library',
       '--namespace="ga"',
       '--namespace="__ga_template_cache__"',
@@ -73,7 +73,7 @@ function load(src, dest, config) {
             .pipe(run(formatFile, {silent: true}))
             .pipe(run(appendJsFirstFile, {silent: true}))
             .pipe(rename('js-files'))
-            .pipe(gulp.dest('/tmp/geo-front3/'));
+            .pipe(gulp.dest(dest.tmp));
   });
 
 

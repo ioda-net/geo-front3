@@ -15,6 +15,10 @@ var knownCliOptions = {
 };
 var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var config = utils.loadConf(process.argv[2], cliOptions);
+var tempDir;
+if (config.prod || process.argv[2].indexOf('test') > -1) {
+  tempDir = utils.createTmpDir();
+}
 
 var src = {
   js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
@@ -29,13 +33,17 @@ var src = {
   watchLess: 'src/**/*.less',
   index: 'src/*.nunjucks.html',
   config: 'config/' + cliOptions.portal + '-dev.toml',
-  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js']
+  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js'],
+  js_files: '{temp}/js-files'.replace('{temp}', tempDir)
 };
 
 var dest = {
+  annotated: '{temp}/annotated'.replace('{temp}', tempDir),
   prod: 'prod/' + cliOptions.portal,
   dev: 'dev/' + cliOptions.portal,
-  pluginsFile: 'src/js'
+  pluginsFile: 'src/js',
+  tmp:tempDir,
+  closure: tempDir + '/closure-compiler'
 };
 
 

@@ -12,13 +12,13 @@ var testConfig = null;
 function load(src, dest, config) {
   gulp.task('test', function (cb) {
     testConfig = 'test/karma-conf.dev.js';
-    runSequence('plugins', 'launch-test', cb);
+    runSequence('plugins', 'launch-test', 'clean-tmp', cb);
   }).help = 'Launch tests with karma.';
 
 
   gulp.task('test-prod', ['prod'], function (cb) {
     testConfig = 'test/karma-conf.prod.js';
-    runSequence('plugins', 'launch-test', cb);
+    runSequence('plugins', 'launch-test', 'clean-tmp', cb);
   }).help = 'Lanuch test against prod with karma';
 
 
