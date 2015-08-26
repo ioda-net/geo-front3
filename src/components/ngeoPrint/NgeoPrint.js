@@ -787,9 +787,8 @@ ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
   var textYOffset = -yOffset / 12;
   overlays.forEach(function(overlay) {
     var elt = overlay.getElement();
-    // We print only overlay added by the MarkerOverlayService
-    // or by crosshair permalink
-    if ($(elt).hasClass('popover')) {
+    // We print only overlay for measure
+    if ($(elt).hasClass('popover') || $(elt).hasClass('marker')) {
       return;
     }
     var center = overlay.getPosition();
