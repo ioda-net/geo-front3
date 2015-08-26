@@ -184,7 +184,20 @@ goog.require('ga_map_service');
 
     var cellTemplates = {
       grudis: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="_blank" href="{{COL_FIELD}}">[G]</a></div>',
+          '<a target="grudis" href="{{COL_FIELD}}">[G]</a></div>',
+
+      hinni: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
+      '<a target="hinni" href="{{COL_FIELD}}">'+
+      '<img src="img/dbh.png" style="width:18px;height:18px" /></a></div>',
+
+      photo: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
+      '<a target="photo" href="{{COL_FIELD}}">'+
+      '<img src="img/camera.png" style="width:18px;height:18px" /></a></div>',
+
+      protocol: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
+      '<a target="protocol" href="{{COL_FIELD}}">'+
+      '<img src="img/acroread16.png" style="width:18px;height:18px" /></a></div>',
+
       url: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
           '<a target="_blank" href="{{COL_FIELD}}">' +
           '{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
