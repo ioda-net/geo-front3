@@ -19,17 +19,33 @@
        ng-if="drawingSave == 'custom'"
        >
     <div ng-if="webdav.open">
-      <label translate>webdav</label>
-      <input type="url" ng-model="webdav.url" placeholder="{{webdav.urlPlaceholder | translate}}" />
-      <label translate>file</label>
-      <input type="text" ng-model="webdav.file" placeholder="{{webdav.filePlaceholder | translate}}" />
-      <label translate>username</label>
-      <input type="text" ng-model="webdav.user" placeholder="{{webdav.userPlaceholder | translate}}" />
-      <label translate>password</label>
-      <input type="password" ng-model="webdav.password" placeholder="{{webdav.passwordPlaceholder | translate}}" />
+      <form id="draw-webdav-connect"
+            autocomplete="on"
+            name="webdav-connect"
+            ng-submit="webdavLoad()">
+        <label translate>webdav</label>
+        <input type="url"
+               name="url"
+               placeholder="{{webdav.urlPlaceholder | translate}}"
+               ng-model="webdav.url" />
+        <label translate>file</label>
+        <input type="text"
+               name="file"
+               ng-model="webdav.file"
+               placeholder="{{webdav.filePlaceholder | translate}}" />
+        <label translate>username</label>
+        <input type="text"
+               name="username"
+               ng-model="webdav.user"
+               placeholder="{{webdav.userPlaceholder | translate}}" />
+        <label translate>password</label>
+        <input type="password"
+               name="password"
+               ng-model="webdav.password"
+               placeholder="{{webdav.passwordPlaceholder | translate}}" />
+        <button class="btn btn-default">{{ webdav.loadInfo | translate}}</button>
+      </form>
       <p>{{webdav.info | translate }}</p>
-      <button class="btn btn-default"
-              ng-click="webdavLoad()">{{ webdav.loadInfo | translate}}</button>
       <div>{{userMessage}}</div>
     </div>
   </div>
