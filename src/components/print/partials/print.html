@@ -23,16 +23,16 @@
       <select class="form-control" ng-model="dpi" ng-options="l for l in layout.dpis"></select>
     </div>
   </div>
-  <div class="form-group">
-    <div class="col-xs-4 ga-checkboxes">
-      <div class="checkbox">
+  <div class="form-group" ng-if="options.grid || options.legend">
+    <div class="col-xs-4 ga-checkboxes" nf-if="options.legend">
+      <div class="checkbox" >
         <label class="ga-checkbox">
           <input ng-model="options.legend" type="checkbox"/>
           <span translate>legend</span>
         </label>
       </div>
     </div>
-    <div class="col-xs-8">
+    <div class="col-xs-8" ng-if="options.grid">
       <div class="checkbox">
         <label class="ga-checkbox" >
           <input ng-model="options.grid" type="checkbox"/>
