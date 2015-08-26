@@ -54,6 +54,7 @@ goog.require('ga_waitcursor_service');
 goog.require('ga_features');
 goog.require('ga_features_controller');
 goog.require('ga_draw_controller');
+goog.require('ga_webdav');
 (function() {
 
 
@@ -110,7 +111,8 @@ goog.require('ga_draw_controller');
     'ga_seo_controller',
     'ga_timeselector_controller',
     'ga_draw_controller',
-    'ga_features_controller'
+    'ga_features_controller',
+    'ga_webdav'
   ]);
 
 })();

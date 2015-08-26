@@ -5,6 +5,7 @@ goog.require('ga_file_storage_service');
 goog.require('ga_map_service');
 goog.require('ga_measure_service');
 goog.require('ga_permalink');
+goog.require('ga_webdav_service');
 (function() {
 
   var module = angular.module('ga_draw_directive', [
@@ -13,6 +14,7 @@ goog.require('ga_permalink');
     'ga_map_service',
     'ga_measure_service',
     'ga_permalink',
+    'ga_webdav_service',
     'pascalprecht.translate'
   ]);
 
@@ -31,7 +33,7 @@ goog.require('ga_permalink');
     function($timeout, $translate, $window, $rootScope, gaBrowserSniffer,
         gaDefinePropertiesForLayer, gaDebounce, gaFileStorage, gaLayerFilters,
         gaExportKml, gaMapUtils, gaPermalink, gaUrlUtils,
-        $document, gaMeasure) {
+        $document, gaMeasure, gaWebdav, $http, $q) {
 
       var createDefaultLayer = function(map, useTemporaryLayer) {
         var dfltLayer = new ol.layer.Vector({
@@ -174,6 +176,39 @@ goog.require('ga_permalink');
           scope.isMeasureActive = false;
           scope.options.isProfileActive = false;
           scope.statusMsgId = '';
+          scope.layers = scope.map.getLayers().getArray();
+          scope.layerFilter = gaLayerFilters.selected;
+          scope.webdav = {
+            open: true,
+            urlPlaceholder: 'draw_webdav_url_help',
+            filePlaceholder: 'draw_webdav_file_help',
+            userPlaceholder: 'draw_webdav_user_help',
+            passwordPlaceholder: 'draw_webdav_password_help',
+            info: 'draw_webdav_info',
+            loadInfo: 'draw_webdav_load',
+            canOverrideFile: false
+          };
+          scope.drawingSave = "server";
+
+          // If the URL or the file change, we cannot assume we can override the
+          // file
+          scope.$watch('webdav.url', function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+              scope.webdav.canOverrideFile = false;
+            }
+          });
+          scope.$watch('webdav.file', function(newVal, oldVal) {
+            if (newVal !== oldVal) {
+              scope.webdav.canOverrideFile = false;
+            }
+          });
+
+          // If we switch from server to no save, delete the saved drawing
+          scope.$watch('drawingSave', function(newVal, oldVal) {
+            if (newVal === 'no' && oldVal === 'server') {
+              deleteServer();
+            }
+          });
 
           // Add select interaction
           var select = new ol.interaction.Select({
@@ -246,7 +281,9 @@ goog.require('ga_permalink');
               // If there is a layer loaded from public.admin.ch, we use it for
               // modification.
               map.getLayers().forEach(function(item) {
-                if (gaMapUtils.isStoredKmlLayer(item)) {
+                var isWebdavLayer = gaWebdav.isWebdavStoredKmlLayer(item,
+                  scope.webdav.url, scope.webdav.file);
+                if (gaMapUtils.isStoredKmlLayer(item) || isWebdavLayer) {
                   layer = item;
                 }
               });
@@ -259,7 +296,6 @@ goog.require('ga_permalink');
                 source.on('changefeature', saveDebounced),
                 source.on('removefeature', saveDebounced)
               ];
-
             }
 
             // Attach the snap interaction to the new layer's source
@@ -294,8 +330,11 @@ goog.require('ga_permalink');
             // DnD ...) and the currentlayer has no features, we define a
             // new layer.
             unLayerAdd = map.getLayers().on('add', function(evt) {
-              if (gaMapUtils.isStoredKmlLayer(evt.element) &&
-                  layer.getSource().getFeatures().length == 0 &&
+              var added = evt.element;
+              var isWebdavLayer = gaWebdav.isWebdavStoredKmlLayer(added,
+                scope.webdav.url, scope.webdav.file);
+              if ((gaMapUtils.isStoredKmlLayer(added) || isWebdavLayer) &&
+                  layer.getSource().getFeatures().length === 0 &&
                   !useTemporaryLayer) {
                 defineLayerToModify();
               }
@@ -595,15 +634,35 @@ goog.require('ga_permalink');
               select.getFeatures().clear();
               layer.getSource().clear();
               if (layer.adminId) {
-                scope.statusMsgId = '';
-                gaFileStorage.del(layer.adminId).then(function() {
-                  layer.adminId = undefined;
-                  layer.url = undefined;
-                  scope.adminShortenUrl = undefined;
-                  scope.userShortenUrl = undefined;
-                });
+                deleteServer();
               }
               map.removeLayer(layer);
+              deleteWebdav();
+            }
+          };
+
+          var deleteServer = function() {
+            scope.statusMsgId = '';
+            gaFileStorage.del(layer.adminId).then(function() {
+              layer.adminId = undefined;
+              layer.url = undefined;
+              scope.adminShortenUrl = undefined;
+              scope.userShortenUrl = undefined;
+            });
+          };
+
+          var deleteWebdav = function() {
+            if (scope.drawingSave === 'custom') {
+              var req = gaWebdav.delete(layer, map, scope.webdav.url,
+                scope.webdav.file, scope.webdav.user, scope.webdav.password);
+              if (req) {
+                req.success(function() {
+                  scope.statusMsgId = $translate.instant('draw_delete_success');
+                }).error(function(data, status) {
+                  scope.statusMsgId = gaWebdav.getWebdavErrorMessage(
+                    $translate.instant('draw_delete_error'), status);
+                });
+              }
             }
           };
 
@@ -770,16 +829,35 @@ goog.require('ga_permalink');
 
 
           ////////////////////////////////////
-          // create/update the file on s3
+          // create/update the file
           ////////////////////////////////////
-          var save = function(evt) {
-            if (layer.getSource().getFeatures().length == 0) {
+          var save = function() {
+            if (layer.getSource().getFeatures().length === 0) {
               //if no features to save do nothing
               return;
             }
             scope.statusMsgId = 'draw_file_saving';
-            var kmlString = gaExportKml.create(layer,
-                map.getView().getProjection());
+            switch (scope.drawingSave) {
+              case 'server':
+                saveServer();
+                break;
+              case 'custom':
+                if (scope.webdav.url) {
+                  saveWebdav();
+                } else {
+                  scope.statusMsgId = $translate.instant('draw_give_url');
+                }
+                break;
+              case 'no':
+              default:
+                scope.statusMsgId = '';
+                break;
+            }
+          };
+          var saveDebounced = gaDebounce.debounce(save, 133, false, false);
+
+          var saveServer = function() {
+            var kmlString = gaWebdav.getKmlString(layer, map);
             var id = layer.adminId ||
                 gaFileStorage.getFileIdFromFileUrl(layer.url);
             gaFileStorage.save(id, kmlString,
@@ -798,13 +876,58 @@ goog.require('ga_permalink');
               }
             });
           };
-          var saveDebounced = gaDebounce.debounce(save, 2000, false, false);
+
+          var saveWebdav = function() {
+            if (scope.webdav.canOverrideFile) {
+              performWebdavSave();
+            } else {
+              gaWebdav.exists(scope.webdav.url, scope.webdav.file, scope.webdav.user, scope.webdav.password)
+              .success(function() {
+                scope.webdav.canOverrideFile = confirm($translate.instant('draw_webdav_can_override_file'));
+                if (scope.webdav.canOverrideFile) {
+                  performWebdavSave();
+                }
+              })
+              .error(function(data, status) {
+                scope.webdav.canOverrideFile = true;
+                performWebdavSave();
+              });
+            }
+          };
+
+          var performWebdavSave = function() {
+            gaWebdav.save(layer, map, scope.webdav.url, scope.webdav.file,
+              scope.webdav.user, scope.webdav.password)
+            .success(function() {
+              scope.statusMsgId = 'draw_file_saved';
+            }).error(function(data, status) {
+              scope.statusMsgId = gaWebdav.getErrorMessage(
+                $translate.instant('draw_save_error'), status);
+            });
+          };
 
           $rootScope.$on('$translateChangeEnd', function() {
             if (layer) {
               layer.label = $translate.instant('draw');
             }
           });
+
+          scope.webdav.load = function () {
+            if (scope.webdav.url) {
+              scope.statusMsgId = $translate.instant('draw_webdav_loading');
+              var def = $q.defer();
+              gaWebdav.load(def, scope.map, scope.webdav.url, scope.webdav.file,
+                scope.webdav.user, scope.webdav.password);
+
+              def.promise.then(function(resp) {
+                scope.statusMsgId = resp.message;
+                // If the user load the KML, we can override it
+                scope.webdav.canOverrideFile = resp.success;
+              });
+            } else {
+              scope.statusMsgId = $translate.instant('draw_give_url');
+            }
+          };
 
 
 
