@@ -19,8 +19,7 @@ goog.provide('ga_webdav_directive');
       templateUrl: 'components/webdav/partials/webdavconnect.html',
       scope: {
         drawingSave: '=gaDrawingSave',
-        webdav: '=gaWebdav',
-        userMessage: '=gaWebdavUserMessage'
+        webdav: '=gaWebdav'
       }
     };
   });

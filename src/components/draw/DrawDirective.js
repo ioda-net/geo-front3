@@ -627,9 +627,9 @@ goog.require('ga_webdav_service');
                 scope.webdav.file, scope.webdav.user, scope.webdav.password);
               if (req) {
                 req.success(function() {
-                  scope.userMessage = $translate.instant('draw_delete_success');
+                  scope.statusMsgId = $translate.instant('draw_delete_success');
                 }).error(function(data, status) {
-                  scope.userMessage = gaWebdav.getWebdavErrorMessage(
+                  scope.statusMsgId = gaWebdav.getWebdavErrorMessage(
                     $translate.instant('draw_delete_error'), status);
                 });
               }
@@ -817,13 +817,12 @@ goog.require('ga_webdav_service');
                     scope.webdav.user, scope.webdav.password)
                   .success(function() {
                     scope.statusMsgId = 'draw_file_saved';
-                    scope.userMessage = '';
                   }).error(function(data, status) {
-                    scope.userMessage = gaWebdav.getErrorMessage(
+                    scope.statusMsgId = gaWebdav.getErrorMessage(
                       $translate.instant('draw_save_error'), status);
                   });
                 } else {
-                  scope.userMessage = $translate.instant('draw_give_url');
+                  scope.statusMsgId = $translate.instant('draw_give_url');
                 }
                 break;
               case 'no':
@@ -863,16 +862,16 @@ goog.require('ga_webdav_service');
 
           scope.webdav.load = function () {
             if (scope.webdav.url) {
-              scope.userMessage = $translate.instant('draw_webdav_loading');
+              scope.statusMsgId = $translate.instant('draw_webdav_loading');
               var def = $q.defer();
               gaWebdav.load(def, layer, scope.map, scope.webdav.url, scope.webdav.file,
                 scope.webdav.user, scope.webdav.password);
 
               def.promise.then(function(message) {
-                scope.userMessage = message;
+                scope.statusMsgId = message;
               });
             } else {
-              scope.userMessage = $translate.instant('draw_give_url');
+              scope.statusMsgId = $translate.instant('draw_give_url');
             }
           };
 
