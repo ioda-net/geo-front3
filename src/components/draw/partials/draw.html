@@ -27,10 +27,9 @@
       <input type="text" ng-model="webdav.user" placeholder="{{webdav.userPlaceholder | translate}}" />
       <label translate>password</label>
       <input type="password" ng-model="webdav.password" placeholder="{{webdav.passwordPlaceholder | translate}}" />
-      <p>Your drawing will automatically be saved at the given url</p>
+      <p>{{webdav.info | translate }}</p>
       <button class="btn btn-default"
-              ng-click="webdavLoad()"
-              translate>Load</button>
+              ng-click="webdavLoad()">{{ webdav.loadInfo | translate}}</button>
       <div>{{userMessage}}</div>
     </div>
   </div>

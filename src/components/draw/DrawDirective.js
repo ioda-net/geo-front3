@@ -181,7 +181,9 @@ goog.require('ga_permalink');
             urlPlaceholder: 'draw_webdav_url_help',
             filePlaceholder: 'draw_webdav_file_help',
             userPlaceholder: 'draw_webdav_user_help',
-            passwordPlaceholder: 'draw_webdav_password_help'
+            passwordPlaceholder: 'draw_webdav_password_help',
+            info: 'draw_webdav_info',
+            loadInfo: 'draw_webdav_load'
           };
           scope.drawingSave = "server";
 
@@ -946,6 +948,7 @@ goog.require('ga_permalink');
 
           scope.webdavLoad = function() {
             if (scope.webdav.url) {
+              scope.userMessage = $translate.instant('draw_webdav_loading');
               var req = getWebdavRequest('GET');
 
               $http(req).success(function(data, status, headers) {
@@ -963,6 +966,8 @@ goog.require('ga_permalink');
                 scope.userMessage = getWebdavErrorMessage(
                   $translate.instant('draw_load_error'), status);
               });
+            } else {
+              scope.userMessage = $translate.instant('draw_give_url');
             }
           };
 
