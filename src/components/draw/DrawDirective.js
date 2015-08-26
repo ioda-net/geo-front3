@@ -203,6 +203,13 @@ goog.require('ga_webdav_service');
             }
           });
 
+          // If we switch from server to no save, delete the saved drawing
+          scope.$watch('drawingSave', function(newVal, oldVal) {
+            if (newVal === 'no' && oldVal === 'server') {
+              deleteServer();
+            }
+          });
+
           // Add select interaction
           var select = new ol.interaction.Select({
             layers: function(item) {
@@ -627,16 +634,25 @@ goog.require('ga_webdav_service');
               select.getFeatures().clear();
               layer.getSource().clear();
               if (layer.adminId) {
-                scope.statusMsgId = '';
-                gaFileStorage.del(layer.adminId).then(function() {
-                  layer.adminId = undefined;
-                  layer.url = undefined;
-                  scope.adminShortenUrl = undefined;
-                  scope.userShortenUrl = undefined;
-                });
+                deleteServer();
               }
               map.removeLayer(layer);
+              deleteWebdav();
+            }
+          };
 
+          var deleteServer = function() {
+            scope.statusMsgId = '';
+            gaFileStorage.del(layer.adminId).then(function() {
+              layer.adminId = undefined;
+              layer.url = undefined;
+              scope.adminShortenUrl = undefined;
+              scope.userShortenUrl = undefined;
+            });
+          };
+
+          var deleteWebdav = function() {
+            if (scope.drawingSave === 'custom') {
               var req = gaWebdav.delete(layer, map, scope.webdav.url,
                 scope.webdav.file, scope.webdav.user, scope.webdav.password);
               if (req) {
