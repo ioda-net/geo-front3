@@ -20,13 +20,13 @@
        >
     <div ng-if="webdav.open">
       <label translate>webdav</label>
-      <input type="url" ng-model="webdav.url" />
+      <input type="url" ng-model="webdav.url" placeholder="{{webdav.urlPlaceholder | translate}}" />
       <label translate>file</label>
-      <input type="text" ng-model="webdav.file" />
+      <input type="text" ng-model="webdav.file" placeholder="{{webdav.filePlaceholder | translate}}" />
       <label translate>username</label>
-      <input type="text" ng-model="webdav.user" />
+      <input type="text" ng-model="webdav.user" placeholder="{{webdav.userPlaceholder | translate}}" />
       <label translate>password</label>
-      <input type="password" ng-model="webdav.password" />
+      <input type="password" ng-model="webdav.password" placeholder="{{webdav.passwordPlaceholder | translate}}" />
       <p>Your drawing will automatically be saved at the given url</p>
       <button class="btn btn-default"
               ng-click="webdavLoad()"

@@ -176,7 +176,13 @@ goog.require('ga_permalink');
           scope.statusMsgId = '';
           scope.layers = scope.map.getLayers().getArray();
           scope.layerFilter = gaLayerFilters.selected;
-          scope.webdav = {open: true};
+          scope.webdav = {
+            open: true,
+            urlPlaceholder: 'draw_webdav_url_help',
+            filePlaceholder: 'draw_webdav_file_help',
+            userPlaceholder: 'draw_webdav_user_help',
+            passwordPlaceholder: 'draw_webdav_password_help'
+          };
           scope.drawingSave = "server";
 
           // Add select interaction
