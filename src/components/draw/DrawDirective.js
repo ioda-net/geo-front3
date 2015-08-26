@@ -956,7 +956,7 @@ goog.require('ga_permalink');
                 if (gaKml.isValidFileContent(data) &&
                   gaKml.isValidFileSize(fileSize)) {
                   gaKml.addKmlToMap(map, data, {
-                    url: scope.webdav.url,
+                    url: getWebdavUrl(scope.webdav.url, scope.webdav.file),
                     useImageVector: gaKml.useImageVector(fileSize),
                     zoomToExtent: true
                   });
