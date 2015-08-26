@@ -3,16 +3,26 @@
 </div>
 <div class="ga-draw-buttons">
   <label>
-    <input type="radio" name="drawingSave" value="no" ng-model="drawingSave">
-    Disable auto-save on server
+    <input type="radio"
+           name="drawingSave"
+           value="no"
+           ng-model="drawingSave">
+    <span translate>draw_save_disable</span>
   </label>
   <label>
-    <input type="radio" name="drawingSave" value="server" ng-model="drawingSave" checked>
-    Save automatically on our server (default)
+    <input type="radio"
+           name="drawingSave"
+           value="server"
+           ng-model="drawingSave"
+           checked>
+    <span translate>draw_save_server</span>
   </label>
   <label>
-    <input type="radio" name="drawingSave" value="custom" ng-model="drawingSave">
-    Save automatically on a custom sever
+    <input type="radio"
+           name="drawingSave"
+           value="custom"
+           ng-model="drawingSave">
+    <span translate>draw_save_webdav</span>
   </label>
   <div class="panel-collapse collapse in panel panel-default"
        aria-expanded="true"
