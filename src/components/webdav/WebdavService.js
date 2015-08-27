@@ -92,7 +92,7 @@ goog.require('ga_map_service');
           message += $translate.instant('Cannot save KML here');
           break;
         case 0: // Browser OPTIONS requests failed
-          message += 'draw_webdav_options_failed';
+          message += $translate.instant('draw_webdav_options_failed');
       }
 
       return message;
