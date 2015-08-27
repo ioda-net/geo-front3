@@ -157,7 +157,7 @@ goog.require('ga_map_service');
     }
   });
 
-  module.factory('gaFeaturesGrid', function($window, gaPreviewFeatures) {
+  module.factory('gaFeaturesGrid', function($window, gaPreviewFeatures, gaGlobalOptions) {
     var parser = new ol.format.GeoJSON();
     var globalGridOptions = {
       enableGridMenu: true,
@@ -195,7 +195,7 @@ goog.require('ga_map_service');
       '<img src="img/camera.png" style="width:18px;height:18px" /></a></div>',
 
       protocol: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-      '<a target="protocol" href="{{COL_FIELD}}">'+
+      '<a target="protocol" href="{{\'{api}\' + COL_FIELD}}">'+
       '<img src="img/acroread16.png" style="width:18px;height:18px" /></a></div>',
 
       url: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
@@ -248,6 +248,9 @@ goog.require('ga_map_service');
           cellTemplate = cellTemplates.url.replace('{name}', name);
         } else {
           cellTemplate = cellTemplates[name];
+        }
+        if (name === 'protocol') {
+          cellTemplate = cellTemplate.replace('{api}', gaGlobalOptions.apiUrl);
         }
         layerGridOptions.columnDefs.push({
           field: name,
