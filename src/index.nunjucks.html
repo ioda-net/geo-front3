@@ -748,6 +748,14 @@ itemscope itemtype="http://schema.org/WebApplication"
 
       })();
 
+      <!-- Load and configure Ioda-Net modules -->
+      (function() {
+        var module = angular.module('in');
+        module.constant('inGlobalOptions', {
+          allowWebdav: ${in.allow_webdav}
+        });
+      })();
+
 {% if device == 'mobile' %}
 {#
 ## Workaround for iOS 6.x bug: content shifted after orientation change

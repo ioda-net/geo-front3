@@ -1,14 +1,19 @@
 goog.provide('ga_webdav_directive');
 
-(function() {
-  var module = angular.module('ga_webdav_directive', []);
+goog.require('in');
 
-  module.directive('gaWebdavSaveSelect', function() {
+(function() {
+  var module = angular.module('ga_webdav_directive', ['in']);
+
+  module.directive('gaWebdavSaveSelect', function(inGlobalOptions) {
     return {
       restrict: 'A',
       templateUrl: 'components/webdav/partials/webdavsaveselect.html',
       scope: {
         drawingSave: '=gaDrawingSave'
+      },
+      link: function(scope) {
+        scope.allowWebdav = inGlobalOptions.allowWebdav;
       }
     };
   });
