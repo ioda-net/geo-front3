@@ -1,9 +1,9 @@
 goog.provide('ga_webdav_directive');
 
-goog.require('in');
+goog.require('IN');
 
 (function() {
-  var module = angular.module('ga_webdav_directive', ['in']);
+  var module = angular.module('ga_webdav_directive', ['IN']);
 
   module.directive('gaWebdavSaveSelect', function(inGlobalOptions) {
     return {

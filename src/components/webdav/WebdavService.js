@@ -14,7 +14,7 @@ goog.require('ga_map_service');
     return {
       load: load,
       getErrorMessage: getErrorMessage,
-      delete: webdavDelete,
+      'delete': webdavDelete,
       save: save,
       getKmlString: getKmlString,
       exists: exists,

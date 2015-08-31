@@ -1,5 +1,5 @@
-goog.provide('in');
+goog.provide('IN');
 
 (function() {
-  var module = angular.module('in', []);
+  var module = angular.module('IN', []);
 })();
