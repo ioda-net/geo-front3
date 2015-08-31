@@ -7,7 +7,8 @@ goog.require('ga_map_service');
   var module = angular.module('ga_layermanager_directive', [
     'pascalprecht.translate',
     'ga_layer_metadata_popup_service',
-    'ga_map_service'
+    'ga_map_service',
+    'in'
   ]);
 
   /**
@@ -53,7 +54,7 @@ goog.require('ga_map_service');
 
   module.directive('gaLayermanager', function($compile, $document, $timeout,
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
-      gaLayerMetadataPopup, gaLayers) {
+      gaLayerMetadataPopup, gaLayers, inGlobalOptions) {
 
     // Test if all layers have the same time property value.
     var hasLayersSameTime = function(olLayers) {
@@ -183,6 +184,7 @@ goog.require('ga_map_service');
         scope.layers = map.getLayers().getArray();
         scope.layerFilter = gaLayerFilters.selected;
         scope.mobile = gaBrowserSniffer.mobile;
+        scope.allowInfobox = inGlobalOptions.allowInfobox;
 
         // On mobile we use a classic select box, on desktop a popover
         if (!scope.mobile) {

@@ -2,6 +2,7 @@
 
 - Add configuration section for Ioda-Net
 - Can use allowWebdav to activate/deactivate webdav save for drawings
+- Can allowInfobox to activate/deactivate info boxes
 
 
 # 2015-08-26

@@ -6,7 +6,8 @@ goog.require('ga_layer_metadata_popup_service');
 
   var module = angular.module('ga_catalogitem_directive', [
     'ga_catalogtree_directive',
-    'ga_layer_metadata_popup_service'
+    'ga_layer_metadata_popup_service',
+    'in'
   ]);
 
   /**
@@ -14,7 +15,8 @@ goog.require('ga_layer_metadata_popup_service');
    */
   module.directive('gaCatalogitem',
       function($compile, gaCatalogtreeMapUtils, gaMapUtils,
-          gaLayerMetadataPopup, gaBrowserSniffer, gaPreviewLayers) {
+          gaLayerMetadataPopup, gaBrowserSniffer, gaPreviewLayers,
+          inGlobalOptions) {
 
         // Don't add preview layer if the layer is already on the map
         var addPreviewLayer = function(map, item) {
@@ -39,6 +41,7 @@ goog.require('ga_layer_metadata_popup_service');
             options: '=gaCatalogitemOptions'
           },
           controller: function($scope) {
+            $scope.allowInfobox = inGlobalOptions.allowInfobox;
 
             $scope.toggleLayer = function() {
               removePreviewLayer($scope.map);

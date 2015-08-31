@@ -39,4 +39,5 @@ feedback_recipient = 'support@sigeom.ch'
 
 # Ioda-Net specific configuration
 [in]
+allow_infobox = false
 allow_webdav = false
