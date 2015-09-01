@@ -793,7 +793,6 @@ ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
       (27 / ngeo.PrintUtils.DOTS_PER_INCH_ /
         ngeo.PrintUtils.INCHES_PER_METER_ * scale);
   var bubbleYOffset = yOffset / 2.7;
-  var textYOffset = -yOffset / 12;
   overlays.forEach(function(overlay) {
     var elt = overlay.getElement();
     // We print only overlay for measure
@@ -812,15 +811,14 @@ ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
                 type: 'Text',
                 label: $(elt).text(),
                 labelAlign: 'center',
-                labelXOffset: 0,
-                labelYOffset: textYOffset,
                 fontColor: '#ffffff',
                 fontSize: 7,
                 fontWeight: 'bold',
                 fontFamily: 'Helvetica'
               }, {
                 type: 'Point',
-                externalGraphic: apiUrl + '/img/bubble.png'
+                externalGraphic: apiUrl + '/img/bubble.png',
+                graphicWidth: $(elt).width() / 5
               }]
           }
         },
