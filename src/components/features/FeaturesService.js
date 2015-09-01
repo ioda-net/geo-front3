@@ -244,7 +244,7 @@ goog.require('ga_map_service');
       layerGridOptions.columnDefs = [];
       Object.keys(feature.properties).forEach(function(name) {
         var cellTemplate;
-        if (name.endsWith('_url')) {
+        if (goog.string.endsWith(name, '_url')) {
           cellTemplate = cellTemplates.url.replace('{name}', name);
         } else {
           cellTemplate = cellTemplates[name];

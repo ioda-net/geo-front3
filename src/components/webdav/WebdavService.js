@@ -70,7 +70,7 @@ goog.require('ga_map_service');
     }
 
     function getWebdavUrl(url, file) {
-      if (!url.endsWith('/')) {
+      if (!goog.string.endsWith(url, '/')) {
         url += '/';
       }
 
