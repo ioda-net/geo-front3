@@ -421,6 +421,12 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
 
   for (var i = 0, ii = features.length; i < ii; ++i) {
     var feature = features[i];
+    // Skip features that must not be printed
+    if ('properties' in feature && 'print' in feature.properties &&
+        !feature.properties.print) {
+      continue;
+    }
+
     var geometry = feature.getGeometry();
 
     // no need to encode features with no geometry

@@ -314,7 +314,8 @@ goog.require('ga_styles_service');
                 name: value.get('name'),
                 description: value.get('description'),
                 type: value.get('type'),
-                label: value.get('featureId')
+                label: value.get('featureId'),
+                print: false
               };
               gaPreviewFeatures.add(map, feature);
               showPopup(feature);
@@ -351,6 +352,12 @@ goog.require('ga_styles_service');
                 var features = parser.readFeatures(value);
                 for (var i = 0, ii = features.length; i < ii; ++i) {
                   features[i].set('layerId', value.layerBodId);
+                  if (!features[i].properties) {
+                    features[i].properties = {};
+                  }
+                  angular.extend(features[i].properties, {
+                    print: false
+                  });
                   gaPreviewFeatures.add(map, features[i]);
                 }
               }
