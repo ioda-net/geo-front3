@@ -383,8 +383,17 @@ goog.require('ga_styles_service');
                 close: close
               });
               scope.popupToggle = true;
-              scope.options.currentTab = feature.layerId;
-              gaFeaturesGrid.setSize();
+              var done = false;
+              // On IE, if we try to display a grid before the grid container
+              // has the proper size, the size of the columns are too small:
+              // they are designed fit into the container before it has the good
+              // size.
+              gaFeaturesGrid.setSize(function() {
+                if (!done) {
+                  scope.options.currentTab = feature.layerId;
+                  done = true;
+                }
+              });
             }
 
             function initFeaturesForLayer(feature) {

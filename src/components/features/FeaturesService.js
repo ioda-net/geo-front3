@@ -266,7 +266,7 @@ goog.require('ga_map_service');
       return layerGridOptions;
     }
 
-    function setSize() {
+    function setSize(cb) {
       var popup = getPopup();
 
       $window.addEventListener('resize', function() {
@@ -274,6 +274,7 @@ goog.require('ga_map_service');
       });
       popup.on('DOMSubtreeModified', function(evt) {
         correctTableSize(popup, true);
+        cb();
       });
     }
 
@@ -288,7 +289,7 @@ goog.require('ga_map_service');
 
     function correctWith(popup) {
       // max-width on features container to always view buttons
-      var table = $('.ga-features-popup .grid');
+      var table = $('.ga-features-popup .grid-container');
       if (table.length > 0) {
         var popupContent = popup.find('.ga-popup-content');
         var newWidth = $window.innerWidth -
@@ -302,7 +303,7 @@ goog.require('ga_map_service');
       // max-height on features container to scroll vertically
       // We must take into account the size of the title bar which may
       // be inserted in the DOM after this function is called.
-      var table = $('.ga-features-popup .grid');
+      var table = $('.ga-features-popup .grid-container');
       var popupTitle = popup.find('.popover-title');
       var heightTitle = parseInt(
               popupTitle.outerHeight(), 10);

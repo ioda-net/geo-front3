@@ -13,15 +13,17 @@
         </li>
       </ul>
 
-      <div class="grid"
-           ng-repeat="(layerId, properties) in options.gridsOptions"
-           ng-if="options.currentTab === layerId"
-           ui-grid="options.gridsOptions[layerId]"
-           ui-grid-exporter
-           ui-grid-selection
-           ui-grid-move-columns
-           ui-grid-resize-columns
-           ui-i18n></div>
+      <div class="grid-container">
+        <div class="grid"
+             ng-repeat="(layerId, properties) in options.gridsOptions"
+             ng-if="options.currentTab === layerId"
+             ui-grid="options.gridsOptions[layerId]"
+             ui-grid-exporter
+             ui-grid-selection
+             ui-grid-move-columns
+             ui-grid-resize-columns
+             ui-i18n></div>
+      </div>
     </div>
   </div>
 </div>
