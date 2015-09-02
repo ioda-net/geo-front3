@@ -179,7 +179,12 @@ goog.require('ga_map_service');
               'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
               'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
               'ui-grid-cell="">' +
-              '</div></div>'
+              '</div></div>',
+      onRegisterApi: function(gridApi) {
+        gridApi.core.on.renderingComplete(null, function() {
+          $('.ga-features-popup').trigger('resize');
+        });
+      }
     };
 
     var cellTemplates = {
@@ -272,6 +277,9 @@ goog.require('ga_map_service');
       $window.addEventListener('resize', function() {
         correctTableSize(popup);
       });
+      popup.on('resize', function() {
+        correctTableSize(popup);
+      });
       popup.on('DOMSubtreeModified', function(evt) {
         correctTableSize(popup);
         cb();
@@ -326,6 +334,7 @@ goog.require('ga_map_service');
     function close() {
       var popup = getPopup();
       popup.off('DOMSubtreeModified');
+      popup.off('resize');
     }
   });
 })();
