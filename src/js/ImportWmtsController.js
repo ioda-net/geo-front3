@@ -10,7 +10,7 @@ goog.provide('ga_importwmts_controller');
       defaultGetCapParams: '',
       wmtsVersion: '1.0.0',
       wmtsCap: 'WMTSCapabilities.xml',
-      defaultWMSList: ['http://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml']
+      defaultWMSList: ['https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml']
     };
   });
 })();
