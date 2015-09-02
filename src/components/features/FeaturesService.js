@@ -205,7 +205,8 @@ goog.require('ga_map_service');
 
     return {
       getLayerOptions: getLayerOptions,
-      setSize: setSize
+      setSize: setSize,
+      close: close
     };
 
     function getLayerOptions(feature, featuresToDisplay, featuresIdToIndex,
@@ -266,7 +267,7 @@ goog.require('ga_map_service');
     }
 
     function setSize() {
-      var popup = $('.ga-features-popup').parent().parent();
+      var popup = getPopup();
 
       $window.addEventListener('resize', function() {
         correctTableSize(popup, false);
@@ -276,14 +277,13 @@ goog.require('ga_map_service');
       });
     }
 
+    function getPopup() {
+      return $('.ga-features-popup').parent().parent();
+    }
+
     function correctTableSize(popup, domEvent) {
       correctWith(popup);
       correctHeight(popup);
-      // We must only react to DOM events on the creation of the popup. We can
-      // safely deactivate afterwards.
-      if (domEvent) {
-        popup.off('DOMSubtreeModified', correctTableSize);
-      }
     }
 
     function correctWith(popup) {
@@ -316,6 +316,11 @@ goog.require('ga_map_service');
                 parseInt(popupContent.css('padding-bottom'), 10);
         table.css('height', newHeight);
       }
+    }
+
+    function close() {
+      var popup = getPopup();
+      popup.off('DOMSubtreeModified');
     }
   });
 })();

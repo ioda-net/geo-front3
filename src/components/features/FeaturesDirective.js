@@ -401,6 +401,7 @@ goog.require('ga_styles_service');
             function close() {
               gaPreviewFeatures.clear(map);
               dragBox.hide();
+              gaFeaturesGrid.close();
             }
           }
         };
