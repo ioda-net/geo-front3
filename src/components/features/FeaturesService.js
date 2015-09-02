@@ -270,10 +270,10 @@ goog.require('ga_map_service');
       var popup = getPopup();
 
       $window.addEventListener('resize', function() {
-        correctTableSize(popup, false);
+        correctTableSize(popup);
       });
       popup.on('DOMSubtreeModified', function(evt) {
-        correctTableSize(popup, true);
+        correctTableSize(popup);
         cb();
       });
     }
@@ -282,12 +282,12 @@ goog.require('ga_map_service');
       return $('.ga-features-popup').parent().parent();
     }
 
-    function correctTableSize(popup, domEvent) {
-      correctWith(popup);
+    function correctTableSize(popup) {
+      correctWidth(popup);
       correctHeight(popup);
     }
 
-    function correctWith(popup) {
+    function correctWidth(popup) {
       // max-width on features container to always view buttons
       var table = $('.ga-features-popup .grid-container');
       if (table.length > 0) {
@@ -303,7 +303,8 @@ goog.require('ga_map_service');
       // max-height on features container to scroll vertically
       // We must take into account the size of the title bar which may
       // be inserted in the DOM after this function is called.
-      var table = $('.ga-features-popup .grid-container');
+      var tableContainer = $('.ga-features-popup .grid-container');
+      var table = $('.ga-features-popup .grid');
       var popupTitle = popup.find('.popover-title');
       var heightTitle = parseInt(
               popupTitle.outerHeight(), 10);
@@ -311,11 +312,14 @@ goog.require('ga_map_service');
       // multiple times and the CSS may not have been applied yet.
       if (popupTitle.length > 0 && heightTitle !== 0 && table.length > 0) {
         var popupContent = popup.find('.ga-popup-content');
-        var newHeight = parseInt(popup.css('height'), 10) -
+        var popupNav = popupContent.find('.nav');
+        var newHeight = parseInt(popup.height(), 10) -
                 heightTitle -
                 parseInt(popupContent.css('padding-top'), 10) -
-                parseInt(popupContent.css('padding-bottom'), 10);
+                parseInt(popupContent.css('padding-bottom'), 10)-
+                parseInt(popupNav.height(), 10);
         table.css('height', newHeight);
+        tableContainer.css('height', newHeight);
       }
     }
 
