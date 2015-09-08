@@ -14,7 +14,7 @@
            title="{{cleanLabel(res.attrs)}}">
       </div>
       <button class="ga-btn ga-icon icon-info-sign"
-         ng-if="type === 'layers'"
+         ng-if="type === 'layers' && allowInfobox"
          ng-click="getLegend($event, res.attrs.layer)">
       </button>
     </div>
