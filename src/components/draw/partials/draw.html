@@ -2,10 +2,14 @@
   <span class="ga-success" translate="{{statusMsgId}}"></span>
 </div>
 <div class="ga-draw-buttons">
-  <div ga-webdav-save-select ga-drawing-save="drawingSave"></div>
+  <div ga-webdav-save-select
+       ga-drawing-save="drawingSave"
+       ng-if="!feedbackPopupShown">
+  </div>
   <div ga-webdav-connect
        ga-webdav="webdav"
-       ga-drawing-save="drawingSave"></div>
+       ga-drawing-save="drawingSave"
+       ng-if="!feedbackPopupShown"></div>
   <button ng-repeat="tool in options.tools"
           ng-click="toggleTool($event, tool)"
           ng-class="{

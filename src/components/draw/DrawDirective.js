@@ -161,7 +161,8 @@ goog.require('ga_webdav_service');
         scope: {
           map: '=gaDrawMap',
           options: '=gaDrawOptions',
-          isActive: '=gaDrawActive'
+          isActive: '=gaDrawActive',
+          feedbackPopupShown: '=gaFeedbackPopupShown'
         },
         link: function(scope, element, attrs, controller) {
           var layer, draw, lastActiveTool, snap;
