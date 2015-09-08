@@ -29,9 +29,9 @@ function load(src, dest, config) {
       'src/lib/angular-load.js',
       'src/lib/angular-translate.js',
       'src/lib/angular-translate-loader-static-files.js',
-      'src/lib/fastclick.min.js',
-      'src/lib/localforage.min.js',
-      'src/lib/filesaver.min.js',
+      'src/lib/fastclick.js',
+      'src/lib/localforage.js',
+      'src/lib/filesaver.js',
       dest.closure
     ])
             .pipe(uglify())
