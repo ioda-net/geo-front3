@@ -130,7 +130,7 @@ goog.require('sigeom_plugins');
                   params: {
                     easting: coord21781[0],
                     northing: coord21781[1],
-                    elevation_model: gaGlobalOptions.defaultElevationModel
+                    elevationModel: gaGlobalOptions.defaultElevationModel
                   }
                 }).success(function(response) {
                   scope.altitude = parseFloat(response.height);

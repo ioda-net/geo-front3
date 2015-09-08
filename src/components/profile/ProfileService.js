@@ -138,11 +138,11 @@ goog.require('ga_urlutils_service');
           if (!isIE || gaBrowserSniffer.msie > 9) {
             formData = new FormData();
             formData.append('geom', wkt);
-            formData.append('elevation_models', elevationModel);
+            formData.append('elevationModels', elevationModel);
           } else {
             formData = {
               geom: wkt,
-              elevation_models: elevationModel
+              elevationModels: elevationModel
             };
             formData = $.param(formData);
           }
