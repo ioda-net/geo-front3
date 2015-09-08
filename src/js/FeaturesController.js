@@ -20,7 +20,7 @@ goog.provide('ga_features_controller');
             container: 'body',
             position: 'bottom-left',
             showPrint: true,
-            draggable: true,
+            draggable: false,
             print: print
           }
         };
