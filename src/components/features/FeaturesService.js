@@ -250,6 +250,9 @@ goog.require('ga_map_service');
       layerGridOptions.columnDefs = [];
       Object.keys(feature.properties).forEach(function(name) {
         var cellTemplate;
+        var isHiddenRegexp = /_hidden$/;
+        var visible = name !== 'label' && !isHiddenRegexp.test(name);
+        name = name.replace(isHiddenRegexp, '');
         if (goog.string.endsWith(name, '_url')) {
           cellTemplate = cellTemplates.url.replace('{name}', name);
         } else {
@@ -262,7 +265,7 @@ goog.require('ga_map_service');
           field: name,
           name: name,
           displayName: name,
-          visible: name !== 'label',
+          visible: visible,
           headerCellFilter: 'translate',
           cellFilter: 'translate',
           cellTemplate: cellTemplate
