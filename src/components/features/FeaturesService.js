@@ -224,7 +224,6 @@ goog.require('ga_map_service');
         exporterPdfHeader: {
           text: feature.layerId
         },
-        onRegisterApi: onRegisterApi,
         appScopeProvider: {
           highlight: function(row) {
             var geometry;
@@ -245,6 +244,13 @@ goog.require('ga_map_service');
         }
       };
       angular.merge(layerGridOptions, globalGridOptions);
+      // To be able to print, we must execute the onRegisterApi function from
+      // passed as argument. For the size of the feature table to be correct on
+      // Internet Explorer, we must call globalGridOptions.onRegisterApi.
+      layerGridOptions.onRegisterApi = function(gridApi) {
+        onRegisterApi(gridApi);
+        globalGridOptions.onRegisterApi(gridApi);
+      };
 
       // Must initialize all columns to translate them.
       layerGridOptions.columnDefs = [];
