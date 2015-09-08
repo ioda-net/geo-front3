@@ -10,9 +10,9 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta http-equiv="X-UA-Compatible" content="IE=9,IE=10,IE=edge,chrome=1"/>
     <![endif]-->
 {% if device == 'index' %}
-    <title translate="page_title">map.geo.admin.ch</title>
+    <title translate="page_title">${portal_name}</title>
 {% else %}
-    <title>geo.admin.ch</title>
+    <title>${portal_name}</title>
 {% endif %}
     <meta charset="utf-8"/>
     <!-- verification for google webmaster tools -->
@@ -27,7 +27,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimal-ui"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
-    <meta name="application-name" content="map.geo.admin.ch"/>
+    <meta name="application-name" content="${portal_name}"/>
     <meta name="msapplication-TileImage" content="${versionslashed}img/touch-icon-bund-144x144.png"/>
     <meta name="msapplication-TileColor" content="#ffffff"/>
     <meta name="msapplication-square70x70logo" content="${versionslashed}img/touch-icon-bund-70x70.png"/>
@@ -648,7 +648,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <script>
       window.addEventListener('load', function() {
         if (window.name !== "embed" && window.location == window.parent.location) {
-          document.body.innerHTML = "The map.geo.admin.ch embed page must be used in an iframe."
+          document.body.innerHTML = "The ${portal_name} embed page must be used in an iframe."
         }
       }, false);
     </script>
