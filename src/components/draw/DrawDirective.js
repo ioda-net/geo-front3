@@ -189,7 +189,9 @@ goog.require('ga_webdav_service');
             loadInfo: 'draw_webdav_load',
             canOverrideFile: false
           };
-          scope.drawingSave = "server";
+          // In order for two way data binding to work with webdav-save-select
+          // drawingSave must be an object.
+          scope.drawingSave = {value: 'server'};
 
           // If the URL or the file change, we cannot assume we can override the
           // file
@@ -205,7 +207,7 @@ goog.require('ga_webdav_service');
           });
 
           // If we switch from server to no save, delete the saved drawing
-          scope.$watch('drawingSave', function(newVal, oldVal) {
+          scope.$watch('drawingSave.value', function(newVal, oldVal) {
             if (newVal === 'no' && oldVal === 'server') {
               deleteServer();
             }
@@ -653,7 +655,7 @@ goog.require('ga_webdav_service');
           };
 
           var deleteWebdav = function() {
-            if (scope.drawingSave === 'custom') {
+            if (scope.drawingSave.value === 'custom') {
               var req = gaWebdav.delete(layer, map, scope.webdav.url,
                 scope.webdav.file, scope.webdav.user, scope.webdav.password);
               if (req) {
@@ -838,7 +840,7 @@ goog.require('ga_webdav_service');
               return;
             }
             scope.statusMsgId = 'draw_file_saving';
-            switch (scope.drawingSave) {
+            switch (scope.drawingSave.value) {
               case 'server':
                 saveServer();
                 break;

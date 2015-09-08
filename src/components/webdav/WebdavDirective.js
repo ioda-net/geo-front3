@@ -10,7 +10,7 @@ goog.require('IN');
       restrict: 'A',
       templateUrl: 'components/webdav/partials/webdavsaveselect.html',
       scope: {
-        drawingSave: '=gaDrawingSave'
+        drawingSave: '=?gaDrawingSave'
       },
       link: function(scope) {
         scope.allowWebdav = inGlobalOptions.allowWebdav;
