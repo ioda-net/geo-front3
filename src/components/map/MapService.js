@@ -430,6 +430,9 @@ goog.require('ga_urlutils_service');
           var source = new ol.source.WMTS({
             attributions: attributions,
             dimensions: options.dimensions,
+            layer: '',
+            matrixSet: '21781',
+            format: options.format,
             projection: 'EPSG:21781',
             requestEncoding: 'REST',
             tileGrid: gaTileGrid.get(),
@@ -468,7 +471,8 @@ goog.require('ga_urlutils_service');
             label: getCapLayer.Title,
             extent: gaMapUtils.intersectWithDefaultExtent(getCapLayer.extent),
             attribution: getCapLayer.owsUrl,
-            dimensions: getCapLayer.dimensions
+            dimensions: getCapLayer.dimensions,
+            format: getCapLayer.Format[0]
           };
           return createWmtsLayer(wmtsOptions);
         };
@@ -1819,12 +1823,15 @@ goog.require('ga_urlutils_service');
               try {
                 var dimensions = gaWmts.importDimensions(infos[2]);
 
+                var wmtsOptions = {
+                  dimensions: dimensions,
+                  templateUrl: infos[3],
+                  label: infos[1]
+                };
+                wmtsOptions.format = /\.png$/.test(wmtsOptions.templateUrl) ?
+                      'image/png' : 'image/jpeg';
                 gaWmts.addWmtsToMap(map,
-                  {
-                    dimensions: dimensions,
-                    templateUrl: infos[3],
-                    label: infos[1]
-                  }, index + 1);
+                  wmtsOptions, index + 1);
               } catch (e) {
                 // Adding external WMTS layer failed
                 console.error('Loading of external WMTS layer ' + layerSpec +
