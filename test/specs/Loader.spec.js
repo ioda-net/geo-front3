@@ -43,6 +43,11 @@ beforeEach(function() {
       publicUrlRegexp: /^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*/,
       adminUrlRegexp: /^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)/
     });
+
+    $provide.constant('inGlobalOptions', {
+      allowWebdav: true,
+      allowInfobox: true
+    });
   });
 
   module('ga');
