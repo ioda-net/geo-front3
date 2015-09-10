@@ -13,6 +13,7 @@ gulp
 /prod
 /dev
 /.build-artefacts
+/.build
 /apache/app.conf
 /test/karma-conf.dev.js
 /test/karma-conf.prod.js

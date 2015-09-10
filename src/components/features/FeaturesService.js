@@ -11,10 +11,17 @@ goog.require('ga_map_service');
         var dragBox, boxOverlay;
         var dragBoxStyle = gaStyleFactory.getStyle('selectrectangle');
         var boxFeature = new ol.Feature();
-        var boxOverlay = new ol.FeatureOverlay({
+
+        var collection = new ol.Collection();
+        var boxOverlay = new ol.layer.Vector({
+          map: map,
+          source: new ol.source.Vector({
+            features: collection,
+            useSpatialIndex: false
+          }),
           style: dragBoxStyle
         });
-        boxOverlay.addFeature(boxFeature);
+        boxOverlay.getSource().addFeature(boxFeature);
 
         dragBox = new ol.interaction.DragBox({
           condition: function(evt) {
