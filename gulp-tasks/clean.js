@@ -9,7 +9,6 @@ function load(src, dest, config) {
 
   gulp.task('clean', ['clean-prod'], function (cb) {
     del([
-      'src/style/app.css',
       'src/js/SigeomPlugins.js',
       'test/app-whitespace.js',
       'test/karma-conf.dev.js',
@@ -20,7 +19,7 @@ function load(src, dest, config) {
 
 
   gulp.task('clean-prod', function(cb) {
-    del(['prod/' + config.portal_name]);
+    del(['prod/' + config.portal_name], cb);
   });
 
 

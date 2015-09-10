@@ -13,14 +13,35 @@ goog.require('ga_permalink');
     'ga_permalink'
   ]);
 
-  module.directive('gaMap',
-      function($window, $parse, $rootScope, $timeout, gaPermalink,
-          gaBrowserSniffer, gaLayers, gaDebounce, gaOffline, gaGlobalOptions) {
+  module.directive('gaCesiumInspector', function($rootScope) {
+    return {
+      restrict: 'A',
+      scope: {
+        ol3d: '=gaCesiumInspectorOl3d'
+      },
+      link: function(scope, element, attrs) {
+        var inspector;
+        scope.$watch('::ol3d', function(ol3d) {
+          if (ol3d && !inspector) {
+            var scene = ol3d.getCesiumScene();
+            inspector = new Cesium.CesiumInspector(element[0], scene);
+            scene.postRender.addEventListener(function() {
+              inspector.viewModel.update();
+            });
+          }
+        });
+      }
+    };
+  });
 
+  module.directive('gaMap',
+      function($window, $rootScope, $timeout, gaPermalink,
+          gaBrowserSniffer, gaLayers, gaDebounce, gaOffline) {
         return {
           restrict: 'A',
           scope: {
-            map: '=gaMapMap'
+            map: '=gaMapMap',
+            ol3d: '=gaMapOl3d'
           },
           link: function(scope, element, attrs) {
             var map = scope.map;
@@ -64,21 +85,74 @@ goog.require('ga_permalink');
 
             // Update permalink based on view states.
             var updatePermalink = function() {
-              var center = view.getCenter();
-              var zoom = view.getZoom();
-              // when the directive is instantiated the view may not
-              // be defined yet.
-              if (center && zoom !== undefined) {
-                var x = center[1].toFixed(2);
-                var y = center[0].toFixed(2);
-                gaPermalink.updateParams({X: x, Y: y, zoom: zoom});
+              // only update the permalink in 2d mode
+              if (!scope.ol3d || !scope.ol3d.getEnabled()) {
+                // remove 3d params
+                gaPermalink.deleteParam('lon');
+                gaPermalink.deleteParam('lat');
+                gaPermalink.deleteParam('elevation');
+                gaPermalink.deleteParam('heading');
+                gaPermalink.deleteParam('pitch');
+                var center = view.getCenter();
+                var zoom = view.getZoom();
+                // when the directive is instantiated the view may not
+                // be defined yet.
+                if (center && zoom !== undefined) {
+                  var x = center[1].toFixed(2);
+                  var y = center[0].toFixed(2);
+                  gaPermalink.updateParams({X: x, Y: y, zoom: zoom});
+                }
               }
             };
             view.on('propertychange', gaDebounce.debounce(updatePermalink,
                 1000, false));
-            updatePermalink();
 
             map.setTarget(element[0]);
+
+            scope.$watch('::ol3d', function(ol3d) {
+              if (ol3d) {
+                var camera = ol3d.getCesiumScene().camera;
+                var params = gaPermalink.getParams();
+
+                // initial location based on query params
+                var position, heading, pitch;
+                if (params.lon && params.lat && params.elevation) {
+                  var lon = Cesium.Math.toRadians(parseFloat(params.lon));
+                  var lat = Cesium.Math.toRadians(parseFloat(params.lat));
+                  var elevation = parseFloat(params.elevation);
+                  position = new Cesium.Cartographic(lon, lat, elevation);
+                }
+                if (params.heading) {
+                  heading = Cesium.Math.toRadians(parseFloat(params.heading));
+                }
+                if (params.pitch) {
+                  pitch = Cesium.Math.toRadians(parseFloat(params.pitch));
+                }
+                camera.setView({
+                  positionCartographic: position,
+                  heading: heading,
+                  pitch: pitch,
+                  roll: 0.0
+                });
+
+                // update permalink
+                camera.moveEnd.addEventListener(gaDebounce.debounce(function() {
+                  // remove 2d params
+                  gaPermalink.deleteParam('X');
+                  gaPermalink.deleteParam('Y');
+                  gaPermalink.deleteParam('zoom');
+
+                  var position = camera.positionCartographic;
+                  gaPermalink.updateParams({
+                    lon: Cesium.Math.toDegrees(position.longitude).toFixed(5),
+                    lat: Cesium.Math.toDegrees(position.latitude).toFixed(5),
+                    elevation: position.height.toFixed(0),
+                    heading: Cesium.Math.toDegrees(camera.heading).toFixed(3),
+                    pitch: Cesium.Math.toDegrees(camera.pitch).toFixed(3)
+                  });
+                }, 1000, false));
+              }
+            });
 
             // Often when we use embed map the size of the map is fixed, so we
             // don't need to resize the map for printing (use case: print an
@@ -123,6 +197,60 @@ goog.require('ga_permalink');
                 gaOffline.showExtent(map);
               } else {
                 gaOffline.hideExtent();
+              }
+            });
+
+            var savedTimeStr = {};
+            scope.$on('gaTimeChange', function(evt, time, oldTime) {
+              var switchTimeActive = (!oldTime && time);
+              var switchTimeDeactive = (oldTime && !time);
+              var olLayers = scope.map.getLayers().getArray();
+              var singleModif = false;
+
+              // Detection the time change has been triggered by a layer's
+              // 'propertychange' event.
+              // (ex: using layermanager)
+              if (switchTimeDeactive) {
+                for (var i = 0, ii = olLayers.length; i < ii; i++) {
+                  var olLayer = olLayers[i];
+                  // We update only time enabled bod layers
+                  if (olLayer.bodId && olLayer.timeEnabled &&
+                      angular.isDefined(olLayer.time) &&
+                      olLayer.time.substr(0, 4) != oldTime) {
+                    singleModif = true;
+                    break;
+                  }
+                }
+              }
+
+              // In case the time change event has been triggered by a layer's
+              // 'propertychange' event, we do nothing more.
+              // (ex: using the layer manager)
+              if (singleModif) {
+                savedTimeStr = {};
+                return;
+              }
+
+              // In case the user has done a global modification.
+              // (ex: using the time selector toggle)
+              for (var i = 0, ii = olLayers.length; i < ii; i++) {
+                var olLayer = olLayers[i];
+                // We update only time enabled bod layers
+                if (olLayer.bodId && olLayer.timeEnabled && olLayer.visible) {
+                  var layerTimeStr =
+                      gaLayers.getLayerTimestampFromYear(olLayer.bodId, time);
+                  if (switchTimeActive) {
+                    // We save the current value after a global deactivation.
+                    // (ex: using the time selector toggle)
+                    savedTimeStr[olLayer.id] = olLayer.time;
+                  } else if (switchTimeDeactive && savedTimeStr[olLayer.id]) {
+                    // We apply the saved values after a global deactivation.
+                    // (ex: using the time selector toggle)
+                    layerTimeStr = savedTimeStr[olLayer.id];
+                    savedTimeStr[olLayer.id] = undefined;
+                  }
+                  olLayer.time = layerTimeStr;
+                }
               }
             });
           }

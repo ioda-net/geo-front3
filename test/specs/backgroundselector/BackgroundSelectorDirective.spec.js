@@ -1,8 +1,7 @@
 describe('ga_backgroundselector_directive', function() {
 
   describe('Background layer insertion', function () {
-    var element, map, layer1, layer2, $rootScope, $compile, def, globalOptions,
-      gaBackground;
+    var element, map, layer1, layer2, $rootScope, $compile, def, gaBackground;
     beforeEach(function() {
 
       map = new ol.Map({});
@@ -54,12 +53,10 @@ describe('ga_backgroundselector_directive', function() {
         });
       });
 
-      inject(function(_$rootScope_, _$compile_, $q, gaGlobalOptions,
-          _gaBackground_) {
+      inject(function(_$rootScope_, _$compile_, $q, _gaBackground_) {
         $compile = _$compile_;
         $rootScope = _$rootScope_;
         def = $q.defer();
-        globalOptions = gaGlobalOptions;
         gaBackground = _gaBackground_;
       });
 
@@ -75,11 +72,38 @@ describe('ga_backgroundselector_directive', function() {
       def.resolve();
       $rootScope.$digest();
     });
+
+    describe('toggle activation', function() {
+      it('shows and hides bgselectors div', function() {
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer')).to.be(true);
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer-0')).to.be(false);
+
+        element.find('.ga-bg-layer-bt').click();
+        $rootScope.$digest();
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer-0')).to.be(true);
+
+        element.find('.ga-bg-layer-bt').click();
+        $rootScope.$digest();
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer')).to.be(true);
+
+        element.find('.ga-bg-layer-bt').click();
+        $rootScope.$digest();
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer-0')).to.be(true);
+
+        element.find('.ga-swissimage').click();
+        $rootScope.$digest();
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer')).to.be(true);
+      });
+
+      it('creates 4 layer bgselectors div', function() {
+        var divsBg = element.find('.ga-bg-layer');
+        expect(divsBg.length).to.equal(4);
+      });
+    });
   });
 
   describe('void layer insertion', function() {
-    var element, map, layer1, layer2, $rootScope, $compile, def, globalOptions,
-      gaBackground;
+    var element, map, layer1, layer2, $rootScope, $compile, def, gaBackground;
     beforeEach(function() {
       layer1 = new ol.layer.Tile();
       layer2 = new ol.layer.Tile();
@@ -131,11 +155,9 @@ describe('ga_backgroundselector_directive', function() {
         });
       });
 
-      inject(function(_$rootScope_, _$compile_, $q, gaGlobalOptions,
-          _gaBackground_) {
+      inject(function(_$rootScope_, _$compile_, $q, _gaBackground_) {
         $rootScope = _$rootScope_;
         $compile = _$compile_;
-        globalOptions = gaGlobalOptions;
         def = $q.defer();
         gaBackground = _gaBackground_;
       });
@@ -155,12 +177,7 @@ describe('ga_backgroundselector_directive', function() {
 
     it('voidLayer is only added once', function() {
       var divsBg = element.find('.ga-bg-layer');
-      if (globalOptions.dev3d) {
-        expect(divsBg.length).to.equal(5);
-      } else {
-        // to be removed once 3d goes live
-        expect(divsBg.length).to.equal(4);
-      }
+      expect(divsBg.length).to.equal(4);
       expect(divsBg[1].className).to.contain('ga-voidLayer');
     });
   });

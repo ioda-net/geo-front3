@@ -400,7 +400,7 @@ goog.require('ga_urlutils_service');
       }
 
       if (extent) {
-        view.fitExtent(extent, mapSize);
+        view.fit(extent, mapSize);
       }
     };
 

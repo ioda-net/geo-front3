@@ -8,6 +8,7 @@ goog.require('ga_catalogtree_controller');
 goog.require('ga_collapsible_directive');
 goog.require('ga_contextpopup');
 goog.require('ga_contextpopup_controller');
+goog.require('ga_controls3d');
 goog.require('ga_draggable_directive');
 goog.require('ga_draw');
 goog.require('ga_draw_controller');
@@ -44,6 +45,7 @@ goog.require('ga_share');
 goog.require('ga_share_controller');
 goog.require('ga_styles_from_literals_service');
 goog.require('ga_swipe');
+goog.require('ga_tilt3d');
 goog.require('ga_timeselector');
 goog.require('ga_timeselector_controller');
 goog.require('ga_timestamp_control');
@@ -59,6 +61,7 @@ goog.require('ga_webdav');
 
 
   var module = angular.module('ga', [
+    'ga_controls3d',
     'ga_attribution',
     'ga_catalogtree',
     'ga_contextpopup',
@@ -112,7 +115,8 @@ goog.require('ga_webdav');
     'ga_timeselector_controller',
     'ga_draw_controller',
     'ga_features_controller',
-    'ga_webdav'
+    'ga_webdav',
+    'ga_tilt3d'
   ]);
 
 })();

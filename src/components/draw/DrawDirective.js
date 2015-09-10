@@ -213,13 +213,20 @@ goog.require('ga_webdav_service');
             }
           });
 
+          // Filters functions
+          var layerFilter = function(itemLayer) {
+           return (itemLayer === layer);
+          };
+          var featureFilter = function(itemFeature, itemLayer) {
+            // Filter out unmanaged layers
+            if (layerFilter(itemLayer)) {
+              return itemFeature;
+            }
+          };
           // Add select interaction
           var select = new ol.interaction.Select({
-            layers: function(item) {
-              if (item === layer) {
-                return true;
-              }
-            },
+            layers: layerFilter,
+            filter: featureFilter,
             style: scope.options.selectStyleFunction
           });
           // Activate/Deactivate select interaction
@@ -408,6 +415,11 @@ goog.require('ga_webdav_service');
             }
             unSourceEvents = [];
 
+            // Remove the layer if no features added
+            if (layer && layer.getSource().getFeatures().length == 0) {
+              map.removeLayer(layer);
+              layer = null;
+            }
           };
 
           // Set the draw interaction with the good geometry
@@ -940,11 +952,7 @@ goog.require('ga_webdav_service');
           // Change cursor style on mouse move, only on desktop
           var updateCursorStyle = function(evt) {
             var featureFound = map.forEachFeatureAtPixel(evt.pixel,
-                function(feature, olLayer) {
-              return feature;
-            }, this, function(olLayer) {
-              return (layer == olLayer);
-            });
+                featureFilter, this, layerFilter);
             var isSketchFeature = !!featureFound && !featureFound.getStyle();
             map.getTarget().style.cursor = (featureFound) ?
                 ((isSketchFeature) ? 'move' : 'pointer') : '';

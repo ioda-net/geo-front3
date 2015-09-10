@@ -22,7 +22,7 @@ goog.require('ga_storage_service');
       $translate, $window, $document, gaBrowserSniffer, gaHistory,
       gaFeaturesPermalinkManager, gaLayersPermalinkManager, gaMapUtils,
       gaRealtimeLayersManager, gaNetworkStatus, gaPermalink, gaStorage,
-      gaGlobalOptions, gaBackground) {
+      gaGlobalOptions, gaBackground, gaTime, gaLayers) {
 
     var createMap = function() {
       var toolbar = $('#zoomButtons')[0];
@@ -77,24 +77,47 @@ goog.require('ga_storage_service');
     // Create the cesium viewer with basic layers
     var loadCesiumViewer = function(map, enabled) {
       var cesiumViewer = new olcs.OLCesium({
-        map: map
+        map: map,
+        createSynchronizers: function(map, scene) {
+           return [
+             new ga.GaRasterSynchronizer(map, scene),
+             new olcs.VectorSynchronizer(map, scene)
+           ];
+        }
       });
       cesiumViewer.setEnabled(enabled);
-      var terrainProvider = new Cesium.CesiumTerrainProvider({
-        url: 'https://3d.geo.admin.ch' +
-          '/1.0.0/ch.swisstopo.terrain.3d/default/20151231/4326',
-        credit: 'Swisstopo terrain'
-      });
       var scene = cesiumViewer.getCesiumScene();
       scene.globe.depthTestAgainstTerrain = true;
-      scene.terrainProvider = terrainProvider;
-      var ip = new Cesium.WebMapServiceImageryProvider({
-        url: '//api3.geo.admin.ch/mapproxy/service',
-        layers: 'ch.swisstopo.swisstlm3d-karte-farbe'
-      });
-      var layer = scene.imageryLayers.addImageryProvider(ip);
-      layer.show = true;
+      scene.terrainProvider =
+          gaLayers.getCesiumTerrainProviderById(gaGlobalOptions.defaultTerrain);
       return cesiumViewer;
+    };
+
+    var enableOl3d = function(ol3d, enable) {
+      var scene = ol3d.getCesiumScene();
+      var camera = scene.camera;
+      var bottom = olcs.core.pickBottomPoint(scene);
+      var transform = Cesium.Matrix4.fromTranslation(bottom);
+      if (enable) {
+        // 2d -> 3d transition
+        ol3d.setEnabled(true);
+        var angle = Cesium.Math.toRadians(50);
+        olcs.core.rotateAroundAxis(camera, -angle, camera.right, transform);
+      } else {
+        // 3d -> 2d transition
+        var angle = olcs.core.computeAngleToZenith(scene, bottom);
+        olcs.core.rotateAroundAxis(camera, -angle, camera.right, transform, {
+          callback: function() {
+            ol3d.setEnabled(false);
+            var view = ol3d.getOlMap().getView();
+            var resolution = view.getResolution();
+            var rotation = view.getRotation();
+
+            view.setResolution(view.constrainResolution(resolution));
+            view.setRotation(view.constrainRotation(rotation));
+          }
+        });
+      }
     };
 
     // Determines if the window has a height <= 550
@@ -110,9 +133,6 @@ goog.require('ga_storage_service');
     $scope.map = createMap();
 
     if (gaGlobalOptions.dev3d && gaBrowserSniffer.webgl) {
-      $rootScope.$on('gaBgChange', function(evt, newBg) {
-        $scope.globals.is3dActive = !!newBg.is3d;
-      });
       $scope.map.on('change:target', function(event) {
         if (!!$scope.map.getTargetElement()) {
           $scope.$watch('globals.is3dActive', function(active) {
@@ -127,7 +147,7 @@ goog.require('ga_storage_service');
                 $scope.ol3d = loadCesiumViewer($scope.map, active);
               }
             } else if ($scope.ol3d) {
-              $scope.ol3d.setEnabled(active);
+              enableOl3d($scope.ol3d, active);
             }
           });
         }
@@ -138,11 +158,15 @@ goog.require('ga_storage_service');
     // specify a condition
     var keyboardPan = new ol.interaction.KeyboardPan({
       condition: function() {
-        return (!$scope.time);
+        return (!gaTime.get());
       }
     });
     $scope.map.addInteraction(keyboardPan);
     $scope.map.addInteraction(new ol.interaction.KeyboardZoom());
+
+    // Start managing global time parameter, when all permalink layers are
+    // added.
+    gaTime.init($scope.map);
 
     // Load the background if the "bgLayer" parameter exist.
     gaBackground.init($scope.map);
@@ -198,8 +222,9 @@ goog.require('ga_storage_service');
       $('meta[name="application-name"]').attr('content', title);
     });
 
-    $rootScope.$on('gaTimeSelectorChange', function(event, year) {
-      $scope.time = year;
+    $scope.time = gaTime.get();
+    $rootScope.$on('gaTimeChange', function(event, time) {
+      $scope.time = time; // Used in embed page
     });
 
     // Create switch device url
@@ -214,7 +239,7 @@ goog.require('ga_storage_service');
 
     $scope.globals = {
       dev3d: gaGlobalOptions.dev3d,
-      searchFocused: false,
+      searchFocused: !gaBrowserSniffer.mobile,
       homescreen: false,
       tablet: gaBrowserSniffer.mobile && !gaBrowserSniffer.phone,
       touch: gaBrowserSniffer.touchDevice,

@@ -57,42 +57,6 @@ goog.require('IN');
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
       gaLayerMetadataPopup, gaLayers, inGlobalOptions) {
 
-    // Test if all layers have the same time property value.
-    var hasLayersSameTime = function(olLayers) {
-      if (olLayers.length == 0) {
-        return false;
-      }
-      var year;
-      for (var i = 0, ii = olLayers.length; i < ii; i++) {
-        if (!olLayers[i].timeEnabled || !olLayers[i].time) {
-          continue;
-        }
-
-        if (!year) {
-          year = parseInt(olLayers[i].time.substr(0, 4));
-        }
-
-        if (year > new Date().getFullYear()) {
-          return false;
-        }
-
-        if (year != parseInt(olLayers[i].time.substr(0, 4))) {
-          return false;
-        }
-      }
-      return year;
-    };
-
-    // Save the current time values of layers
-    var savedTime = {};
-    var setSavedTime = function(olLayers) {
-      olLayers.forEach(function(olLayer) {
-        if (olLayer.timeEnabled) {
-          savedTime[olLayer.id] = olLayer.time;
-        }
-      });
-    };
-
     // Timestamps list template
     var tpl =
       '<div class="ga-layer-timestamps">' +
@@ -158,12 +122,6 @@ goog.require('IN');
         $document.unbind('click', callback);
         win.unbind('resize', callback);
       }
-    };
-
-    var updateTimeSelectorStatus = function(layers, element) {
-      var year = hasLayersSameTime(layers);
-      $rootScope.$broadcast('gaTimeSelectorToggle', !!(year), year);
-      destroyPopover(null, element);
     };
 
     return {
@@ -258,8 +216,7 @@ goog.require('IN');
           if (angular.isDefined(time)) {
             layer.time = time;
           }
-          setSavedTime(scope.layers);
-          updateTimeSelectorStatus(scope.layers, element);
+          destroyPopover(null, element);
         };
 
         scope.useRange = (!gaBrowserSniffer.mobile && (!gaBrowserSniffer.msie ||
@@ -338,30 +295,6 @@ goog.require('IN');
               olLayer.label = gaLayers.getLayerProperty(olLayer.bodId, 'label');
             }
           });
-        });
-
-        // Callbacks used to save/retrieve user time values defined before
-        // activation/deactivation of TimeSelector.
-        scope.$on('gaTimeSelectorToggle', function(evt, active) {
-          if (active) {
-            setSavedTime(map.getLayers());
-          }
-        });
-        scope.$on('gaTimeSelectorChange', function(evt, year) {
-          // year=undefined means TimeSelector is deactivated
-          if (!angular.isDefined(year)) {
-            map.getLayers().forEach(function(olLayer, opt) {
-              if (olLayer.timeEnabled && savedTime[olLayer.id]) {
-                olLayer.time = savedTime[olLayer.id];
-              }
-            });
-            savedTime = {};
-          }
-        });
-
-        scope.$watchCollection('layers | filter:layerFilter',
-            function(olLayers) {
-          updateTimeSelectorStatus(olLayers, element);
         });
       }
     };

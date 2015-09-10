@@ -20,7 +20,7 @@ GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat 
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= v3.6.0
+OL3_VERSION ?= master
 OL3_CESIUM_VERSION ?= master
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
@@ -31,7 +31,7 @@ RESOLUTIONS ?= '[650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 2.0, 1.
 DEFAULT_EPSG ?= EPSG:21781
 DEFAULT_EPSG_EXTEND ?= '[420000, 30000, 900000, 350000]'
 DEFAULT_ELEVATION_MODEL ?= COMB
-
+DEFAULT_TERRAIN ?= ch.swisstopo.terrain.3d
 
 ## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd
@@ -167,11 +167,13 @@ ol: OL_JS = ol.js ol-debug.js
 ol: scripts/ol-geoadmin.json .build-artefacts/ol3
 	cd .build-artefacts/ol3; \
 	git reset HEAD --hard; \
+	git fetch -a; \
 	git checkout $(OL3_VERSION); \
 	git show; \
 	cat ../../scripts/ga-ol3-style.exports >> src/ol/style/style.js; \
 	cat ../../scripts/ga-ol3-tilegrid.exports >> src/ol/tilegrid/tilegrid.js; \
 	cat ../../scripts/ga-ol3-tilerange.exports >> src/ol/tilerange.js; \
+	cat ../../scripts/ga-ol3-view.exports >> src/ol/view.js; \
 	npm install; \
 	node tasks/build.js config/ol-debug.json build/ol-debug.js; \
 	node tasks/build.js ../../scripts/ol-geoadmin.json build/ol.js; \
@@ -182,13 +184,17 @@ ol: scripts/ol-geoadmin.json .build-artefacts/ol3
 ol3cesium: .build-artefacts/ol3-cesium
 	cd .build-artefacts/ol3-cesium; \
 	git reset HEAD --hard; \
+	git fetch -a; \
 	git checkout $(OL3_CESIUM_VERSION); \
+	git submodule update --recursive --init --force; \
 	git show; \
+	ln -T -f -s ../../../../ol3-cesium-plugin/ src/plugins/geoadmin; \
 	make dist; \
 	node build/build.js ../../scripts/ol3cesium-debug-geoadmin.json dist/ol3cesium-debug.js;  \
 	cp dist/ol3cesium-debug.js ../../src/lib/; \
-	cp -r dist/Cesium ../../src/lib/; \
-	cat dist/Cesium/Cesium.js dist/ol3cesium.js > ../../src/lib/ol3cesium.js;
+	make cesium/Build/Cesium/Cesium.js; \
+	cp -r cesium/Build/Cesium ../../src/lib/; \
+	cat ../../src/lib/Cesium/Cesium.js dist/ol3cesium.js > ../../src/lib/ol3cesium.js;
 
 .PHONY: fastclick
 fastclick: .build-artefacts/fastclick .build-artefacts/closure-compiler/compiler.jar
@@ -303,6 +309,7 @@ define buildpage
 		--var "resolutions"="$(RESOLUTIONS)" \
 		--var "public_url=$(PUBLIC_URL)" \
 		--var "default_elevation_model=${DEFAULT_ELEVATION_MODEL}" \
+		--var "default_terrain=$(DEFAULT_TERRAIN)" \
 		--var "admin_url_regexp=$(ADMIN_URL_REGEXP)" \
 		--var "public_url_regexp=$(PUBLIC_URL_REGEXP)" \
 		--var "default_epsg"="$(DEFAULT_EPSG)" \
@@ -479,7 +486,7 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	cp scripts/cmd.py .build-artefacts/python-venv/local/lib/python2.7/site-packages/mako/cmd.py
 
 .build-artefacts/python-venv/bin/htmlmin: .build-artefacts/python-venv
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin"
+	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin==0.1.6"
 	touch $@
 
 .build-artefacts/translate-requirements-installation.timestamp: .build-artefacts/python-venv
@@ -585,7 +592,7 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 
 .build-artefacts/externs/angular.js:
 	mkdir -p $(dir $@)
-	wget -O $@ https://raw.githubusercontent.com/google/closure-compiler/master/contrib/externs/angular-1.3.js
+	wget -O $@ https://raw.githubusercontent.com/google/closure-compiler/master/contrib/externs/angular-1.4.js
 	touch $@
 
 # Closure's contrib dir doesn't include externs for jQuery 2, but the jQuery

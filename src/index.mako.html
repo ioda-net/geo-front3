@@ -159,7 +159,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   % endif
       </div>
   % if device == 'desktop':
-      <div id="toptools" class="hidden-xs">
+      <div id="toptools">
         <div ga-fullscreen ga-fullscreen-map="map"></div>&nbsp;&nbsp;
         <a href="" ng-click="globals.feedbackPopupShown = !globals.feedbackPopupShown">
           <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
@@ -187,7 +187,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 
 % endif
     <div id="loader"></div>
-    <div tabindex="1" ga-map ga-map-map="map">
+    <div tabindex="1" ga-map ga-map-map="map" ga-map-ol3d="::ol3d">
       <div ng-cloak translate-cloak id="copyrightsdata">
         <div>
           <span >&copy;&nbsp;</span>
@@ -217,6 +217,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   % if device == 'mobile':
         <div ga-offline-bt></div>
   % endif
+        <div ga-tilt3d ng-if="globals.dev3d"></div>
       </div>
       <div ga-swipe
            ga-swipe-map="map"
@@ -224,15 +225,21 @@ itemscope itemtype="http://schema.org/WebApplication"
            style="display:none;">
       </div>
     </div> <!-- #map -->
+    <div ng-cloak ng-show="globals.is3dActive"
+         ga-cesium-inspector
+         ga-cesium-inspector-ol3d="::ol3d"></div>
 % if device == 'mobile':
     <div ga-offline-selector
          ga-offline-selector-map="map">
     </div>
 % endif
 
+    <div ga-controls3d ga-controls3d-ol3d="::ol3d" ng-if="ol3d" ng-show="globals.is3dActive"></div>
+
 % if device != 'embed':
     <div ng-cloak ga-background-selector
-         ga-background-selector-map="map"
+         ga-background-selector-map="map",
+         ga-background-selector-ol3d="::ol3d"
          ng-hide="globals.offline">
     </div>
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
@@ -264,11 +271,13 @@ itemscope itemtype="http://schema.org/WebApplication"
 
     <div ga-timestamp-control ga-timestamp-control-map="map"></div>
 
+% if device != 'embed':
     <div ng-controller="GaTimeSelectorController">
       <div ga-time-selector ga-time-selector-map="map"
            ga-time-selector-options="options">
       </div>
     </div>
+% endif
 
     <div ng-controller="GaTooltipController">
       <div ga-tooltip
@@ -700,6 +709,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           defaultEpsg: '${default_epsg}',
           defaultEpsgExtent: JSON.parse(${default_epsg_extend}),
           defaultElevationModel: '${default_elevation_model}',
+          defaultTerrain: '${default_terrain}',
           languages: JSON.parse(${languages})
         });
 
@@ -716,9 +726,14 @@ itemscope itemtype="http://schema.org/WebApplication"
         });
 
         module.config(function(gaLayersProvider, gaGlobalOptions) {
-          gaLayersProvider.wmtsGetTileUrlTemplate =
-              '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
+          gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
+          
+          gaLayersProvider.wmtsMapProxyGetTileUrlTemplate = '//mf-chsdi3.dev.bgdi.ch/mom_fix_1594/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}';
+          
+          gaLayersProvider.terrainTileUrlTemplate = '//3d.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
 
+          gaLayersProvider.wmsMapProxyUrl = '//api3.geo.admin.ch/mapproxy/service?';
+          
           gaLayersProvider.layersConfigUrlTemplate =
               gaGlobalOptions.resourceUrl + 'layersConfig?lang={Lang}';
 

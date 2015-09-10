@@ -2,6 +2,7 @@
 @import "font-awesome-3.2.1/less/font-awesome.less";
 @import "bootstrap-datetimepicker.less";
 @import "../components/map/style/map.less";
+@import "../components/map/style/cesiuminspector.less";
 @import "../components/geolocation/style/geolocation.less";
 @import "../components/rotate/style/rotate.less";
 @import "../components/print/style/print.less";
@@ -29,6 +30,8 @@
 @import "../components/offline/style/offline.less";
 @import "../components/timestampcontrol/style/timestampcontrol.less";
 @import "../components/translation/style/translation.less";
+@import "../components/tilt3d/style/tilt3d.less";
+@import "../components/controls3d/style/controls3d.less";
 
 
 @header-height: 89;
@@ -485,6 +488,12 @@ input[type=text][readonly] {
   }
   a {
     font-size: 80%;
+  }
+  @media (max-width: @screen-tablet) and (min-width: 560px) {
+    width: ~"calc(100% - 350px)";
+  }
+  @media (max-width: 559px) {
+    display: none;
   }
 }
 
@@ -1492,18 +1501,21 @@ body:not(.embed) {
 }
 
 #feedback-popup {
-  max-height: 800px;
-  min-width: 240px;
-  max-width: 350px;
+  max-height: 480px !important;
+  width: 350px;
 
-  @media (max-width: @screen-tablet){
-    max-width: none;
+  @media (max-width: @screen-tablet) and (min-width: @screen-phone) {
+    bottom: auto;
   }
-   
+
+  @media (max-width: @screen-phone){
+    width: auto;
+    top: auto !important;
+  }
+
   .ga-popup-content {
-    max-height: 740px;
+    max-height: none;
   }
-
 }
 
 .embed, .ga-full-screen {

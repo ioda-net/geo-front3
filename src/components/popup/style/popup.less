@@ -10,7 +10,7 @@
   min-height: 100px;
   max-height: @ga-popup-max-height;
   z-index: 2000;
- 
+
  &.ga-popup-bottom-left {
     max-width: none;
     max-height: none;
@@ -19,11 +19,11 @@
     border-radius: 0;
     background-clip: initial;
     height: 240px;
-    
+
     .ga-popup-content {
       max-height: inherit;
     }
-    
+
     @media (max-width: @screen-tablet) {
       left: 0 !important;
       right: 0 !important;
@@ -111,6 +111,7 @@
       top: 36px;
       bottom: 10px;
       width: 100%;
+      height: ~"calc(100% - 36px)";
       max-height: none;
       overflow-x: hidden;
       overflow-y: auto;
@@ -175,4 +176,3 @@
     }
   }
 }
-
