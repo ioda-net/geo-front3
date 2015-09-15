@@ -307,10 +307,11 @@ goog.require('ga_urlutils_service');
          };
 
          var getDimensions = function(getCapLayer) {
-          if (getCapLayer.Dimension && getCapLayer.Dimension.Identifier) {
+          if (getCapLayer.Dimension && getCapLayer.Dimension.length > 0 &&
+                  getCapLayer.Dimension[0].Identifier) {
             var dimensions = {};
-            dimensions[getCapLayer.Dimension.Identifier] =
-              getCapLayer.Dimension.Default;
+            dimensions[getCapLayer.Dimension[0].Identifier] =
+              getCapLayer.Dimension[0].Default;
             return dimensions;
           }
         };
