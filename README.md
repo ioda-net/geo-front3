@@ -20,7 +20,57 @@ You must use `gulp prod --portal <portalname>` to build the specified portal for
 production. The output will be produced in `prod/protalname`.
 
 
-# How to update Open Layer
+
+# Update from map.geo.admin.ch
+
+1. Go the the `master` branch and update it with the code of swisstopo.
+   Typically this is done by:
+   1. `git checkout master`
+   2. `git fetch upstream master`
+   3. `git rebase upstream/master`
+2. Go to the branch `sigeom`: `git checkout sigeom`
+3. Merge `master` into `sigeom`: `git merge master`
+4. Slove the merge conflicts (See below for some tips)
+5. Update Open Layers (See below for the how to and why you must do this update)
+5. Commit the result
+6. Push the result. **If the push fails because you have unpulled changes, do
+   not try a rebase**: a rebase will cancel your merge commit (and will loose
+   your merge work, unless you do a `git rebase --abort`) and you will have to
+   handle conflict for each commit from swisstopo you are merging into the
+   current branch. So if that happens, do:
+   1. `git fetch origin sigeom` to get the changes
+   2. `git merge origin/sigeom` to merge them with a merge commit into your
+      branch
+
+
+## Some tips to resolve merge conflicts
+
+### Components removed
+
+You can safely remove any files related to these components.
+
+- tooltip
+- query
+
+
+### Components rewritten
+
+You can safely checkout any files that belong to these components
+
+- print
+- wmsimport (rewritten into owsimport)
+
+
+### New components
+
+Normally, they should be in the merge conflicts:
+
+- features
+- importows
+- webdav
+
+
+## How to update Open Layer
 
 We currently need a [custom patch](https://github.com/openlayers/ol3/pull/4045)
 in Open Layer for WMTS import to work correctly. So if swisstopo updates Open
@@ -29,21 +79,7 @@ Open Layers for production `scripts/ol-geoadmin.json` doesn't export
 `ol.format.WMTSCapabilities` nor `ol.format.WMTSCapabilities#*` so we also need
 to patch this.
 
-HOWTO:
-
-- Go in mf-geoadmin3
-- Do a hard reset on mf-geoadmin3 and `.build-artefacts/ol3` with `git reset
-  --hard`
-- Apply `ol-prod-build-script-wmts-import.patch` (in owncloud)
-- Go to `.build-artefacts/ol3`
-- Apply `wmts-import.patch` (in owncloud)
-- Run `node tasks/build.js ../../scripts/ol-geoadmin.json build/ol.js` to build
-  for production
-- Copy `build/ol.js` to `geo-front3/src/lib/`
-- Go to `.build-artefacts/ol3-cesium`
-- Run `make dist`
-- Run `node build/build.js ../../scripts/ol3cesium-debug-geoadmin.json
-  dist/ol3cesium-debug.js`
-- Copy `ol3cesium-debug.js` to `geo-front3/src/lib`
-
-TODO: Improve this, see #71.
+So we need to build our own version of ol.js. In order to do this, we have a
+scrip called `update-open-layers.sh`. Before commiting the merge result, please
+launch it (you must be in the root folder of geo-front3):
+`./scripts/update-open-layers.sh`. The script will do everything for you.
