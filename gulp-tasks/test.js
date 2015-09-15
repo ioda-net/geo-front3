@@ -2,7 +2,7 @@ var gulp = require('gulp');
 var extReplace = require('gulp-ext-replace');
 var gulpif = require('gulp-if');
 var data = require('gulp-data');
-var karma = require('karma').server;
+var KarmaServer = require('karma').Server;
 var nunjucksRender = require('./nunjucks');
 var runSequence = require('run-sequence');
 
@@ -26,10 +26,11 @@ function load(src, dest, config) {
     'build-karma-conf-from-template',
     'app-whitespace.js'
   ], function (cb) {
-    karma.start({
+    karma = new KarmaServer({
       configFile: testConfig,
       singleRun: true
     }, cb);
+    karma.start();
   });
 
 
