@@ -108,6 +108,7 @@
     "ol.proj.getTransform",
     "ol.proj.transform",
     "ol.proj.transformExtent",
+    "ol.size.toSize",
     "ol.style.Circle",
     "ol.style.Circle#*",
     "ol.style.Fill",
