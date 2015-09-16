@@ -4,7 +4,6 @@ var extReplace = require('gulp-ext-replace');
 var data = require('gulp-data');
 var ngAnnotate = require('gulp-ng-annotate');  // Add annotation to angular files so they can be minified.
 var uglify = require('gulp-uglify');
-var merge = require('merge-stream'); // Used to avoid temporary files
 var nunjucksRender = require('./nunjucks');
 var path = require('path');
 var utils = require('./utils');
@@ -40,7 +39,16 @@ function load(src, dest, config) {
   });
 
 
-  gulp.task('annotate', function () {
+  gulp.task('annotate', ['build-template-cache'], function () {
+    return gulp.src(['src/TemplateCacheModule.js', 'src/components/**/*.js', 'src/js/**/*.js'], {base: './'})
+            .pipe(ngAnnotate({
+              add: true
+            }))
+            .pipe(gulp.dest(dest.annotated));
+  });
+
+
+  gulp.task('build-template-cache', function() {
     // We must build the template cache before annotating the files.
     // In order to build this cache, we must map each file content to its file name. The content of
     // the file is minified with htmlMin. The templateCacheConfig will contain the mapping in its
@@ -56,18 +64,13 @@ function load(src, dest, config) {
 
     templateCacheConfig.partials = utils.getPartials(partialsGlob, htmlMinConf);
 
-    var templateCache = gulp.src('src/TemplateCacheModule.nunjucks.js', {base: './'})
+    return gulp.src('src/TemplateCacheModule.nunjucks.js', {base: './'})
             .pipe(data(function () {
               return templateCacheConfig;
             }))
             .pipe(nunjucksRender())
-            .pipe(extReplace('.js', '.nunjucks.html'));
-
-    return merge(templateCache, gulp.src(['src/components/**/*.js', 'src/js/**/*.js'], {base: './'}))
-            .pipe(ngAnnotate({
-              add: true
-            }))
-            .pipe(gulp.dest(dest.annotated));
+            .pipe(extReplace('.js', '.nunjucks.html'))
+            .pipe(gulp.dest('.'));
   });
 }
 

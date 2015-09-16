@@ -10,7 +10,8 @@ function load(src, dest, config) {
   gulp.task('clean', ['clean-prod'], function (cb) {
     del([
       'src/js/SigeomPlugins.js',
-      'test/app-whitespace.js',
+      'src/TemplateCacheModule.js',
+      'test/deps',
       'test/karma-conf.dev.js',
       'test/karma-conf.prod.js',
       'dev/' + config.portal_name

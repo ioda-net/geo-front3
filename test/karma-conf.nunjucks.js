@@ -16,11 +16,11 @@ module.exports = function(config) {
 	    {% else %}
 	       'lib/jquery-2.1.4.js',
 	       'lib/angular.js',
-               'lib/angular-load.js',
+           'lib/angular-load.js',
 	       'lib/angular-translate.js',
 	       'lib/angular-translate-loader-static-files.js',
-               'lib/csv.js',
-               'lib/ui-grid.js',
+           'lib/csv.js',
+           'lib/ui-grid.js',
 	       'lib/bootstrap-3.3.1.js',
 	       'lib/typeahead-0.9.3.js',
 	       'lib/proj4js-compressed.js',
@@ -28,9 +28,10 @@ module.exports = function(config) {
 	       'lib/EPSG2056.js',
 	       'lib/EPSG32631.js',
 	       'lib/EPSG32632.js',
-               'lib/ol.js',
-	       '../test/closure-loader-globals.js',
-	       '../test/app-whitespace.js',
+           'lib/ol.js',
+           {% for jsFile in jsFiles -%}
+              ${jsFile}
+           {% endfor %}
 	    {% endif %}
 	       '../test/angular/angular-mocks.js',
 	       '../test/expect-0.2.0/expect.js',
@@ -51,7 +52,16 @@ module.exports = function(config) {
 	    // need to use Karma's html2js preprocessor, and cache partials in
 	    // tests using ngMock's "module" function.
 	    //'components/**/*.html': 'html2js'
+        'js/*.js': ['coverage'],
+        'components/**/*.js': ['coverage']
 	},
+
+
+    // optionally, configure the reporter
+    coverageReporter: {
+      type : 'html',
+      dir : '../coverage/'
+    },
 
 
 	// list of files to exclude
@@ -61,7 +71,7 @@ module.exports = function(config) {
 
 	// test results reporter to use
 	// possible values: 'dots', 'progress', 'junit'
-	reporters: ['progress'],
+	reporters: ['progress', 'coverage'],
 
 
 	// web server port

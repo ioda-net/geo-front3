@@ -11,12 +11,16 @@ var utils = require('./gulp-tasks/utils');
 // Define global variables
 var knownCliOptions = {
   string: 'portal',
-  default: {portal: 'geojb'}
+  boolean: 'prod',
+  default: {
+      portal: 'geojb',
+      prod: false
+  }
 };
 var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var config = utils.loadConf(process.argv[2], cliOptions);
 var tempDir;
-if (config.prod || process.argv[2].indexOf('test') > -1) {
+if (config.prod) {
   tempDir = utils.createTmpDir();
 }
 
@@ -42,7 +46,7 @@ var dest = {
   prod: 'prod/' + cliOptions.portal,
   dev: 'dev/' + cliOptions.portal,
   pluginsFile: 'src/js',
-  tmp:tempDir,
+  tmp: tempDir,
   closure: tempDir + '/closure-compiler'
 };
 

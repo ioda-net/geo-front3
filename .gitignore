@@ -1,6 +1,7 @@
 *.kdev4
 gulp
 /node_modules
+/coverage
 /src/deps.js
 /src/js/SigeomPlugins.js
 /src/style/app.css
@@ -47,3 +48,4 @@ rc_branch
 /nbproject/private/
 /test/app-whitespace.js
 /re3-translations.json
+/test/deps
