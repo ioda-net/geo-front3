@@ -12,20 +12,20 @@ function load(src, dest, config) {
 
   gulp.task('copy-cesium', ['copy-cesium-folder'], function() {
     return gulp.src(src.ol3cesium)
-        .pipe(gulp.dest(dest.prod + '/lib'));
+        .pipe(gulp.dest(dest.lib));
   });
 
 
   gulp.task('copy-cesium-folder', function() {
     return gulp.src(src.cesium)
-        .pipe(gulp.dest(dest.prod + '/lib/Cesium'));
+        .pipe(gulp.dest(dest.lib_cesium));
   });
 
 
   gulp.task('copy-pdfmake-prod', function () {
     return gulp.src(src.pdfmakeProd)
             .pipe(uglify())
-            .pipe(gulp.dest(dest.prod + '/lib'));
+            .pipe(gulp.dest(dest.lib));
   });
 
 
@@ -63,7 +63,7 @@ function load(src, dest, config) {
     return gulp.src('src/lib/IE/*.js')
             .pipe(uglify())
             .pipe(extReplace('.min.js', '.js'))
-            .pipe(gulp.dest(dest.prod + '/lib/IE'));
+            .pipe(gulp.dest(dest.lib_ie));
   });
 }
 

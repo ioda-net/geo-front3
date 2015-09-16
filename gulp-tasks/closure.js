@@ -6,26 +6,6 @@ var utils = require('./utils');
 
 
 function load(src, dest, config) {
-  // Cache partials so they can be used in karma
-  gulp.task('app-whitespace.js', ['js-files'], function () {
-    var jsFiles = utils.getJsFiles(src);
-    var cmd = utils.formatCmd([
-      'java -jar node_modules/google-closure-compiler/compiler.jar',
-      jsFiles,
-      '--jscomp_error checkVars',
-      '--compilation_level WHITESPACE_ONLY',
-      '--formatting PRETTY_PRINT',
-      '--js_output_file',
-      'test/app-whitespace.js'
-    ]);
-
-    return run(cmd,
-            {
-              verbosity: 0
-            }).exec();
-  });
-
-
   gulp.task('closure-compiler', ['js-files'], function () {
     var jsFiles = utils.getJsFiles(src);
     var cmd = utils.formatCmd([

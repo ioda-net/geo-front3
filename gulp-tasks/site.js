@@ -55,7 +55,7 @@ function load (src, dest, config) {
     var appcacheConfig = extend({}, config);
     config.version = new Date().getTime();
 
-    return gulp.src('src/*.nunjucks.appcache')
+    return gulp.src(src.appcache)
             .pipe(data(function () {
               return appcacheConfig;
             }))

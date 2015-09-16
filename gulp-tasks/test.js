@@ -14,10 +14,10 @@ var testConfig = null;
 function load(src, dest, config) {
   gulp.task('test', function (cb) {
     if (config.prod) {
-      testConfig = 'test/karma-conf.prod.js';
+      testConfig = src.karma_prod_conf;
       runSequence('prod', 'launch-test', cb);
     } else {
-      testConfig = 'test/karma-conf.dev.js';
+      testConfig = src.karma_dev_conf;
       runSequence('plugins', 'launch-test', cb);
     }
   }).help = 'Launch tests with karma.';
@@ -33,7 +33,7 @@ function load(src, dest, config) {
 
 
   gulp.task('build-karma-conf', function() {
-    return run('scripts/build-js-components-deps-from-js-files.sh').exec();
+    return run(src.build_karma_conf_script).exec();
   });
 
 
@@ -41,10 +41,10 @@ function load(src, dest, config) {
     var karmaConf = {
       prod: config.prod
     };
-    karmaConf.jsFiles = fs.readFileSync('test/deps').toString()
+    karmaConf.jsFiles = fs.readFileSync(src.test_deps).toString()
             .split('\n');
 
-    return gulp.src('test/karma-conf.nunjucks.js')
+    return gulp.src(src.karma_conf_template)
             .pipe(data(function () {
               return karmaConf;
             }))
@@ -53,7 +53,7 @@ function load(src, dest, config) {
                     extReplace('prod.js', '.nunjucks.html'),
                     extReplace('dev.js', '.nunjucks.html')
                     ))
-            .pipe(gulp.dest('test'));
+            .pipe(gulp.dest(dest.test));
   });
 }
 

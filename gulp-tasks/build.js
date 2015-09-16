@@ -40,7 +40,7 @@ function load(src, dest, config) {
 
 
   gulp.task('annotate', ['build-template-cache'], function () {
-    return gulp.src(['src/TemplateCacheModule.js', 'src/components/**/*.js', 'src/js/**/*.js'], {base: './'})
+    return gulp.src([src.template_cache_module, src.components, src.src_js], {base: './'})
             .pipe(ngAnnotate({
               add: true
             }))
@@ -60,7 +60,7 @@ function load(src, dest, config) {
       preserveLineBreaks: false,
       removeComments: true
     };
-    var partialsGlob = path.join('src/components/**/partials/**/*.html');
+    var partialsGlob = path.join(src.partials);
 
     templateCacheConfig.partials = utils.getPartials(partialsGlob, htmlMinConf);
 

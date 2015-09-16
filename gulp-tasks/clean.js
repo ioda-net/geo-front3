@@ -7,14 +7,15 @@ function load(src, dest, config) {
     del([dest.tmp], {force: true}, cb);
   });
 
+
   gulp.task('clean', ['clean-prod'], function (cb) {
     del([
-      'src/js/SigeomPlugins.js',
-      'src/TemplateCacheModule.js',
-      'test/deps',
-      'test/karma-conf.dev.js',
-      'test/karma-conf.prod.js',
-      'dev/' + config.portal_name
+      dest.sgPlugins,
+      src.template_cache_module,
+      src.test_deps,
+      src.karma_dev_conf,
+      src.karma_prod_conf,
+      dest.dev
     ], cb);
   }).help = 'remove generated files.';
 

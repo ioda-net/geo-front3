@@ -10,7 +10,12 @@ if [[ ! -e 'test/deps' ]]; then
     tmp=$(mktemp -d)
     cp -r --parent src/js/*.js src/components/**/*.js src/components/*.js src/TemplateCacheModule.js "${tmp}/"
 
-    python node_modules/google-closure-library/closure/bin/build/closurebuilder.py --root="${tmp}" --root=node_modules/google-closure-library --namespace="ga" --namespace="__ga_template_cache__" --output_mode=list |
+    python node_modules/google-closure-library/closure/bin/build/closurebuilder.py \
+            --root="${tmp}" \
+            --root=node_modules/google-closure-library \
+            --namespace="ga" \
+            --namespace="__ga_template_cache__" \
+            --output_mode=list |
         tr ' ' '\n' |
         grep -v '\-\-js' |
         sed "s#${tmp}/src/##" |
