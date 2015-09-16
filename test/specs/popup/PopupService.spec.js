@@ -1,19 +1,28 @@
 describe('ga_popup_service', function() {
-  var popup, rootScope, gaPopup, $timeout;
+  var popup, rootScope, gaPopup, $timeout, htmlPrintoutSpy;
 
-  beforeEach(inject(function($rootScope, _$timeout_) {
-    inject(function($injector) {
-      gaPopup = $injector.get('gaPopup');
+  beforeEach(function() {
+    module(function($provide) {
+      htmlPrintoutSpy = sinon.spy();
+
+      $provide.value('gaPrintService', {
+        htmlPrintout: htmlPrintoutSpy
+      });
     });
-    
-    popup = gaPopup.create({
-      className: 'custom-class',
-      content: '<div> content </div>'
-    });
-    rootScope = $rootScope;
-    rootScope.$digest();
-    $timeout = _$timeout_;
-  }));
+
+    inject(function($injector, $rootScope, _$timeout_) {
+        gaPopup = $injector.get('gaPopup');
+        rootScope = $rootScope;
+        $timeout = _$timeout_;
+      });
+
+      popup = gaPopup.create({
+        className: 'custom-class',
+        content: '<div> content </div>'
+      });
+
+      rootScope.$digest();
+  });
   
   it('creates a popup with a content', function() {
     expect(popup.scope).not.to.be(null);
@@ -67,6 +76,7 @@ describe('ga_popup_service', function() {
       rootScope.$digest();
       popup.print();
       $timeout.flush();
+      sinon.assert.calledOnce(htmlPrintoutSpy);
     });
 
     it('custom print', function () {
