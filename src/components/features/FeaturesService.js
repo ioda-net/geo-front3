@@ -164,7 +164,8 @@ goog.require('ga_map_service');
     }
   });
 
-  module.factory('gaFeaturesGrid', function($window, gaPreviewFeatures, gaGlobalOptions) {
+  module.factory('gaFeaturesGrid', function($window, gaPreviewFeatures,
+      gaGlobalOptions) {
     var parser = new ol.format.GeoJSON();
     var globalGridOptions = {
       enableGridMenu: true,
@@ -199,16 +200,18 @@ goog.require('ga_map_service');
           '<a target="grudis" href="{{COL_FIELD}}">[G]</a></div>',
 
       hinni: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-      '<a target="hinni" href="{{COL_FIELD}}">'+
-      '<img src="img/dbh.png" style="width:18px;height:18px" /></a></div>',
+          '<a target="hinni" href="{{COL_FIELD}}">' +
+          '<img src="img/dbh.png" style="width:18px;height:18px" /></a></div>',
 
       photo: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-      '<a target="photo" href="{{COL_FIELD}}">'+
-      '<img src="img/camera.png" style="width:18px;height:18px" /></a></div>',
+          '<a target="photo" href="{{COL_FIELD}}">' +
+          '<img src="img/camera.png" style="width:18px;height:18px"/>' +
+          '</a></div>',
 
       protocol: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-      '<a target="protocol" href="{{\'{api}\' + COL_FIELD}}">'+
-      '<img src="img/acroread16.png" style="width:18px;height:18px" /></a></div>',
+          '<a target="protocol" href="{{\'{api}\' + COL_FIELD}}">' +
+          '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
+          '</a></div>',
 
       url: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
           '<a target="_blank" href="{{COL_FIELD}}">' +
@@ -340,7 +343,7 @@ goog.require('ga_map_service');
         var newHeight = parseInt(popup.height(), 10) -
                 heightTitle -
                 parseInt(popupContent.css('padding-top'), 10) -
-                parseInt(popupContent.css('padding-bottom'), 10)-
+                parseInt(popupContent.css('padding-bottom'), 10) -
                 parseInt(popupNav.height(), 10);
         table.css('height', newHeight);
         tableContainer.css('height', newHeight);

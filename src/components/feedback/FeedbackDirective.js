@@ -20,7 +20,8 @@ goog.require('ga_permalink');
    * "response" scope property to "success" or "error".
    */
   module.directive('gaFeedback',
-      function($http, $translate, gaPermalink, gaBrowserSniffer, gaExportKml, gaGlobalOptions) {
+      function($http, $translate, gaPermalink, gaBrowserSniffer, gaExportKml,
+              gaGlobalOptions) {
           return {
             restrict: 'A',
             replace: true,
@@ -62,7 +63,8 @@ goog.require('ga_permalink');
                     .replace(/T/gi, '')
                     .replace(/Z/gi, '');
                 var subject =
-                    '[feedback-' + gaGlobalOptions.portalName + '-' + id + '] ' + scope.subject;
+                    '[feedback-' + gaGlobalOptions.portalName + '-' + id +
+                        '] ' + scope.subject;
 
                 if (!scope.isIE || gaBrowserSniffer.msie > 9) {
                     formData = new FormData();

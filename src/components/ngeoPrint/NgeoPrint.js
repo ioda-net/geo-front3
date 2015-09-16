@@ -362,8 +362,8 @@ ngeo.Print.prototype.encodeTileWmtsLayer_ = function(arr, layer) {
     }));
   }
 
-  // Dimensions must be capitalized in dimensionParams but only the first letter must
-  // be capitalized in dimensions.
+  // Dimensions must be capitalized in dimensionParams but only the first letter
+  // must be capitalized in dimensions.
   var dimensions = {};
   var sourceDimensions = source.getDimensions();
   for (var dimension in sourceDimensions) {

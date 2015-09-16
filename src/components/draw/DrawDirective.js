@@ -896,9 +896,12 @@ goog.require('ga_webdav_service');
             if (scope.webdav.canOverrideFile) {
               performWebdavSave();
             } else {
-              gaWebdav.exists(scope.webdav.url, scope.webdav.file, scope.webdav.user, scope.webdav.password)
+              gaWebdav.exists(scope.webdav.url, scope.webdav.file,
+                  scope.webdav.user, scope.webdav.password)
               .success(function() {
-                scope.webdav.canOverrideFile = confirm($translate.instant('draw_webdav_can_override_file'));
+                var message =
+                    $translate.instant('draw_webdav_can_override_file');
+                scope.webdav.canOverrideFile = confirm(message);
                 if (scope.webdav.canOverrideFile) {
                   performWebdavSave();
                 }
@@ -927,7 +930,7 @@ goog.require('ga_webdav_service');
             }
           });
 
-          scope.webdav.load = function () {
+          scope.webdav.load = function() {
             if (scope.webdav.url) {
               scope.statusMsgId = $translate.instant('draw_webdav_loading');
               var def = $q.defer();

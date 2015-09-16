@@ -332,11 +332,12 @@ goog.require('ga_styles_service');
               if (!(feature.layerId in featuresToDisplay)) {
                 initFeaturesForLayer(feature);
               }
-              // Multiple layers may request the same feature table. If both layers are active, a
-              // features can be return two times. We check if the Ids is know. If it is, we don't
-              // add the feature again.
+              // Multiple layers may request the same feature table. If both
+              // layers are active, a features can be return two times. We check
+              // if the Ids is know. If it is, we don't add the feature again.
               var featureId = feature.featureId.toString();
-              var addedFeaturesIds = Object.keys(featuresIdToIndex[feature.layerId]);
+              var addedFeaturesIds =
+                  Object.keys(featuresIdToIndex[feature.layerId]);
               if (addedFeaturesIds.indexOf(featureId) === -1) {
                 featuresIdToIndex[feature.layerId][feature.featureId] =
                   featuresToDisplay[feature.layerId].length;
