@@ -1,9 +1,9 @@
 describe('ga_popup_directive', function() {
-  var element;
+  var element, html;
 
   beforeEach(function() {
-    element = angular.element(
-        '<div ga-popup="popupShown" ga-popup-options="{title:\'Title popup\'}"></div>');
+    html = '<div ga-popup="popupShown" ga-popup-options="{title:\'Title popup\'}"></div>';
+    element = angular.element(html);
     inject(function($rootScope, $compile) {
       $compile(element)($rootScope);
       $rootScope.$digest();
@@ -82,8 +82,48 @@ describe('ga_popup_directive', function() {
     expect(newestZIndex > newZIndex).to.be(true);
   }));
 
-  it('displays the title available in options', inject(function($rootScope) {
+  it('displays the title available in options', inject(function() {
     expect(element.find('.ga-popup-title').html()).to.be('Title popup');
+  }));
+
+  it('reduces the popup', inject(function() {
+    var scope = element.isolateScope();
+
+    expect(scope.isReduced).to.be(false);
+    expect(element.hasClass('ga-popup-reduced')).to.be(false);
+
+    // Minify
+    element.find('.icon-minus').click();
+    expect(scope.isReduced).to.be(true);
+    expect(element.hasClass('ga-popup-reduced')).to.be(true);
+    expect(element.hasClass('ga-draggable-zone')).to.be(false);
+
+    // Maximise
+    element.find('.popover-title').click();
+    expect(scope.isReduced).to.be(false);
+    expect(element.hasClass('ga-popup-reduced')).to.be(false);
+  }));
+
+  it('sets x and y on desktop if not set', inject(function(gaBrowserSniffer, $rootScope, $compile) {
+    gaBrowserSniffer.mobile = false;
+    var element2 = angular.element(html);
+    $compile(element2)($rootScope);
+    $rootScope.$digest();
+
+    var scope = element2.isolateScope();
+    expect(scope.x).not.to.be.undefined;
+    expect(scope.y).not.to.be.undefined;
+  }));
+
+  it('doen\t set x and y on mobile if not set', inject(function(gaBrowserSniffer, $rootScope, $compile) {
+    gaBrowserSniffer.mobile = true;
+    var element2 = angular.element(html);
+    $compile(element2)($rootScope);
+    $rootScope.$digest();
+
+    var scope = element2.isolateScope();
+    expect(scope.x).to.be.undefined;
+    expect(scope.y).to.be.undefined;
   }));
 });
 

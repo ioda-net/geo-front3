@@ -25,6 +25,7 @@ goog.require('ga_topic_service');
 
       // Verify if a language is supported by the current topic
       var isLangSupportedByTopic = function(lang, topic) {
+        /* istanbul ignore else */
         if (!topic && gaGlobalOptions.languages.indexOf(lang) > -1) {
           return true;
         } else if (!topic) {
@@ -43,6 +44,8 @@ goog.require('ga_topic_service');
           lang = newLang;
           $translate.use(lang).then(angular.noop, function() {
             // failed to load lang from server, fallback to default code.
+            // This should never happen
+            /* istanbul ignore next */
             loadTranslations(gaGlobalOptions.translationFallbackCode);
           })['finally'](function() {
             gaPermalink.updateParams({lang: lang});
