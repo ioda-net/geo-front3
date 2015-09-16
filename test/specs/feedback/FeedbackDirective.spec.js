@@ -87,7 +87,7 @@ describe('ga_feedback_directive', function() {
     $httpBackend.whenPOST(expectedUrl).respond('success');
     var button = element.find('button[type=submit]');
     expect(button.attr('type')).to.be('submit');
-    button.click();
+    button.submit();
     $httpBackend.flush();
   });
 

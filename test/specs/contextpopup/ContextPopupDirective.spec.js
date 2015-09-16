@@ -146,7 +146,11 @@ describe('ga_contextpopup_directive', function() {
         $timeout.verifyNoPendingTasks();
 
         var popover = element.find('.popover');
-        expect(popover.css('display')).to.be('');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
       });
 
       it('touchmove prevents handler from being called', function() {
@@ -161,14 +165,22 @@ describe('ga_contextpopup_directive', function() {
         $timeout.verifyNoPendingTasks();
 
         var popover = element.find('.popover');
-        expect(popover.css('display')).to.be('');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
       });
     });
 
     describe('hides correctly', function () {
       it('when user click on cross', function () {
         var popover = element.find('.popover');
-        expect(popover.css('display')).to.be('');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
 
         element.find('.icon-remove').click();
 
