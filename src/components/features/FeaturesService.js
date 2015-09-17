@@ -148,7 +148,7 @@ goog.require('ga_map_service');
     }
 
     function hasNameOrDescription(feature) {
-      return feature.get('name') || feature.get('description');
+      return !!feature.get('name') || !!feature.get('description');
     }
 
     function getCoords(geometry) {
