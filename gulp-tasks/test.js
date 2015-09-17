@@ -55,6 +55,47 @@ function load(src, dest, config) {
                     ))
             .pipe(gulp.dest(dest.test));
   });
+
+
+  gulp.task('testintegration', function (cb) {
+    dest.dev = 'dev/coverage';
+    runSequence([
+      'index.html',
+      'app.css',
+      'copy-js',
+      'copy-css',
+      'deps.js'
+    ],
+    'istanbul-instrument',
+    'launch-integration-tests',
+    cb);
+  }).help = 'Launch integartion tests with protractor';
+
+
+  gulp.task('istanbul-instrument', function() {
+    var cmd = './node_modules/istanbul/lib/cli.js instrument ' +
+        '-o dev/coverage ' +
+        '-x \'*.nunjucks.*\' ' +
+        '-x \'*.mako*\' ' +
+        '-x \'lib/*\' ' +
+        '--variable \'__coverage__\' ' +
+        'src';
+
+    return run(cmd).exec();
+  });
+
+
+  gulp.task('launch-integration-tests', function() {
+    var testConfig;
+    if (config.prod) {
+      testConfig = src.protractor_prod_conf;
+    } else {
+      testConfig = src.protractor_dev_conf;
+    }
+    var cmd = 'protractor ' + testConfig;
+
+    return run(cmd).exec();
+  });
 }
 
 

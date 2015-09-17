@@ -44,6 +44,8 @@ var src = {
   pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js'],
   plugins: 'src/plugins/*.js',
   pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
+  protractor_prod_conf: 'test/protractor-conf.prod.js',
+  protractor_dev_conf: 'test/protractor-conf.dev.js',
   src_js: 'src/js/**/*.js',
   template_cache_module: 'src/TemplateCacheModule.js',  // used in build-js-components-deps-from-js-files.sh
   test_deps: 'test/deps',  // used in build-js-components-deps-from-js-files.sh

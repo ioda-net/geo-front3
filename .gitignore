@@ -49,3 +49,5 @@ rc_branch
 /test/app-whitespace.js
 /re3-translations.json
 /test/deps
+/test/protractor-conf.dev.js
+/test/protractor-conf.prod.js
