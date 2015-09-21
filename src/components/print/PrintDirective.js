@@ -133,6 +133,12 @@ goog.require('sigeom_plugins');
             commune: commune
         });
 
+        spec.attributes.map.layers.forEach(function(layer) {
+          if (layer.customParams) {
+            layer.customParams['MAP.RESOLUTION'] = $scope.dpi;
+          }
+        });
+
         getGrid(spec);
 
         canceler = $q.defer();
