@@ -29,11 +29,11 @@ if [[ ! -e 'test/deps' ]]; then
 fi
 
 
-if [[ ! -e 'test/karma-conf.dev.js' ]]; then
-    gulp build-karma-conf-from-template
+if [[ ! -e 'test/karma-conf.dev.js' ]] || [[ ! -e 'test/protractor-conf.dev.js' ]]; then
+    gulp build-test-conf-from-template
 fi
 
 
-if [[ ! -e 'test/karma-conf.prod.js' ]]; then
-    gulp build-karma-conf-from-template --prod
+if [[ ! -e 'test/karma-conf.prod.js' ]] || [[ ! -e 'test/protractor-conf.prod.js' ]]; then
+    gulp build-test-conf-from-template --prod
 fi

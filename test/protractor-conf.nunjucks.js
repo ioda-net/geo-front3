@@ -4,10 +4,12 @@ var reporter;
 var waitPlugin = require('./waitPlugin');
 
 function report() {
-  reporter.add('json');
-  reporter.write(collector, true, function () {
-    console.log('Coverage report successfully written');
-  });
+  if (reporter) {
+    reporter.add('json');
+    reporter.write(collector, true, function () {
+      console.log('Coverage report successfully written');
+    });
+  }
 }
 
 exports.config = {
@@ -15,7 +17,7 @@ exports.config = {
     '../test/integration/*.spec.js',
     '../test/selenium/*_test.js'
   ],
-  seleniumAddress: 'http://localhost:4444/wd/hub',
+  seleniumAddress: '${seleniumAddress}',
   maxSessions: 1,
   multiCapabilities: [
     {browserName: 'firefox', shardTestFiles: true, maxInstances: 1}
@@ -26,8 +28,9 @@ exports.config = {
     var jasmineEnv = jasmine.getEnv();
     waitPlugin.setOnComplete(report);
     browser.driver.manage().window().maximize();
-    browser.get('http://cov.geojb/');
+    browser.get('${testPortalAddress}');
 
+    {% if generateCoverageReport %}
     jasmineEnv.addReporter(new function () {
       this.specDone = function (spec) {
         if (spec.status !== 'failed') {
@@ -42,5 +45,6 @@ exports.config = {
         }
       };
     });
+    {% endif %}
   }
 };

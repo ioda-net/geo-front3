@@ -15,6 +15,8 @@ function load(src, dest, config) {
       src.test_deps,
       src.karma_dev_conf,
       src.karma_prod_conf,
+      src.protractor_dev_conf,
+      src.protractor_prod_conf,
       dest.dev
     ], cb);
   }).help = 'remove generated files.';

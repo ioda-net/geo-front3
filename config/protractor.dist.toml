@@ -1,0 +1,10 @@
+[dev]
+seleniumAddress = 'http://localhost:4444/wd/hub'
+testPortalAddress = 'http://cov.geojb'
+generateCoverageReport = true
+
+
+[prod]
+seleniumAddress = 'http://localhost:4444/wd/hub'
+testPortalAddress = 'http://geojb'
+generateCoverageReport = false
