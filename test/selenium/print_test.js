@@ -1,8 +1,4 @@
-// Print test using browserstack
-
-var webdriver = require('browserstack-webdriver');
-
-var runTest = function(cap, driver, target) {
+describe('print', function() {
   //We maximize our window to be sure to be in full resolution
   driver.manage().window().maximize();
   // Goto the travis deployed site.
@@ -36,6 +32,4 @@ var runTest = function(cap, driver, target) {
   driver.findElement(webdriver.By.xpath("//button[contains(text(), 'Erstelle PDF')]")).click();
   // Did it succeed?
   driver.findElement(webdriver.By.xpath("//span[@ng-if='options.printsuccess']"));
-}
-
-module.exports.runTest = runTest;
+});
