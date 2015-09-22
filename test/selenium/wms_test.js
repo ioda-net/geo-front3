@@ -1,63 +1,60 @@
-// WMS test using browserstack
-
-var webdriver = require('browserstack-webdriver');
-var assert = require('assert');
+/* global browser, $$ */
 
 var QUERYSTRING_WMS = "WMS%7C%7CAGNES%7C%7Chttp:%2F%2Fwms.geo.admin.ch%2F%7C%7Cch.swisstopo.fixpunkte-agnes";
 
-var runTest = function(cap, driver, target) {
-  //We maximize our window to be sure to be in full resolution
-  driver.manage().window().maximize();
-  // Goto the travis deployed site.
-  driver.get(target + '/?lang=de');
-  //wait until topics related stuff is loaded. We know this when catalog is there
-  driver.findElement(webdriver.By.xpath("//a[contains(text(), 'Grundlagen und Planung')]"));
+describe('wms', function () {
+  it('imports wms with popup', function () {
+    // Click on "Werkzeuge"
+    $("#toolsHeading").click().then(function () {
+      // Click on "WMS Import"
+      return $("#tools [data-original-title*='WMS'").click();
+    }).then(function () {
+      // Write URL of the chosen WMS
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] input[placeholder*='URL']")
+          .sendKeys('http://wms.geo.admin.ch/');
+    }).then(function () {
+      // Click on "Verbinden"
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.ga-import-ows-connect").click();
+    }).then(function () {
+      // Click on "AGNES"
+      return $$("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] div.ga-import-ows-content li div.ga-header-group").get(0).click();
+    }).then(function () {
+      // Click on "Layer hinzufügen"
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.ga-import-ows-add").click();
+    }).then(function () {
+      return browser.sleep(2000);
+    }).then(function () {
+      return browser.driver.switchTo().alert();
+    }).then(function (alert) {
+      return alert.accept();
+    }).then(function () {
+      // Check if the WMS was correctly parsed
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] div.ga-message").getText();
+    }).then(function (text) {
+      expect(text).toBe('Couche WMS chargée avec succès');
 
-  // Click on "Werkzeuge"
-  driver.findElement(webdriver.By.xpath("//a[@id='toolsHeading']")).click();
-  // Click on "WMS Import"
-  driver.findElement(webdriver.By.xpath("//*[contains(text(), 'WMS Import')]")).click();
-  // Click on the URL input field
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//input[@placeholder='URL']")).click();
-  // Write URL of the chosen WMS
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//input[@placeholder='URL']")).sendKeys('http://wms.geo.admin.ch/');
-  // Click on "Verbinden"
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//button[contains(text(),'Verbinden')]")).click();
-  // Click on "AGNES"
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//div[contains(text(),'AGNES')]")).click();
-  // Click on "Layer hinzufügen"
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//button[contains(text(),'Layer hinzufügen')]")).click();
-  driver.wait(function() {
-    try {
-      driver.switchTo().alert();
-      return true;
-    }
-    catch (e) {
-    }
-  }, 2000);
-  // Accept the alert
-  driver.switchTo().alert().accept();
-  // Check if the WMS was correctly parsed
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//div[contains(text(),'WMS Layer erfolgreich geladen')]"));
-  // Close popup
-  driver.findElement(webdriver.By.xpath("//*[@id='import-wms-popup']//button[@ng-click='close($event)']")).click();
-
-  driver.findElement(webdriver.By.xpath("//*[@id='toptools']//a[contains(@href,'" + QUERYSTRING_WMS + "')]"))
-  // Was the URL in the address bar adapted?
-  if(!(cap.browser == "IE" && cap.browser_version == "9.0")) {
-    // Check if url is adapted to WMS layer
-    driver.getCurrentUrl().then(function(url) {
-      assert.ok(url.indexOf(QUERYSTRING_WMS) > -1);
+      // Close popup
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.icon-remove").click();
+    }).then(function () {
+      return $$("#toptools a").get(3).getAttribute('href');
+    }).then(function (value) {
+      expect(value).toContain(QUERYSTRING_WMS);
+    }).then(function() {
+      return $('#selectionHeading').click();
+    }).then(function() {
+      return $$("#selection label").get(0).getText();
+    }).then(function(text) {
+      expect(text).toContain('AGNES');
     });
-  }
+  });
 
-  // Go to the WMS layer page
-  driver.get(target + '/?lang=de&layers=' + QUERYSTRING_WMS);
-  // Check if the page is loaded
-  driver.findElement(webdriver.By.xpath("//a[contains(text(), 'Grundlagen und Planung')]"));
-  // Check if the WMS Layer is loaded
-  driver.findElement(webdriver.By.xpath("//*[@id='selection']//*[contains(text(), 'AGNES')]"));
-
-}
-
-module.exports.runTest = runTest;
+  it('imports WMS directly by URL', function () {
+    // Go to the WMS layer page
+    browser.get('http://cov.geojb/?layers=' + QUERYSTRING_WMS).then(function () {
+      // Check if the WMS Layer is loaded
+      return $$("#selection label").get(0).getText();
+    }).then(function(text) {
+      expect(text).toContain('AGNES');
+    });
+  });
+});
