@@ -20,10 +20,10 @@ describe('kml', function () {
       browser.ignoreSynchronization = true;
       // Load the KML
       return $("#import-kml-popup button.ga-import-kml-load").click();
-    }).then(function() {
+    }).then(function () {
       // Wait for the KML to be fetched
       return browser.sleep(3000);
-    }).then(function() {
+    }).then(function () {
       // Check that parsing is OK
       return $('#import-kml-popup .ga-import-kml-result').getText();
     }).then(function (text) {
@@ -43,10 +43,7 @@ describe('kml', function () {
   });
 
   it('imports KML directly with permalink', function () {
-    browser.get('http://cov.geojb/?layers=' + QUERYSTRING_KML);
-
-    // Check if KML has correctly been loaded
-    browser.sleep(3000)
+    browser.get('http://cov.geojb/?layers=' + QUERYSTRING_KML)
         .then(function () {
           return $$("#selection label").get(0).getText();
         })
