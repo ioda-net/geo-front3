@@ -27,6 +27,12 @@ describe('features', function () {
         })
         .then(function (visible) {
           expect(visible).toBe(true);
+
+          return $('.ga-features-popup')
+              .element(by.xpath('..'))
+              .element(by.xpath('..'))
+              .element(by.css('button.icon-remove'))
+              .click();
         });
   });
 });

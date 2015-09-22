@@ -68,6 +68,7 @@ function load(src, dest, config) {
     ],
     'istanbul-instrument',
     'launch-integration-tests',
+    'istanbul-report-html',
     cb);
   }).help = 'Launch integartion tests with protractor';
 
@@ -77,11 +78,11 @@ function load(src, dest, config) {
         '-o dev/coverage ' +
         '-x \'*.nunjucks.*\' ' +
         '-x \'*.mako*\' ' +
-        '-x \'lib/*\' ' +
+        '-x \'lib/**/*\' ' +
         '--variable \'__coverage__\' ' +
         'src';
 
-    return run(cmd).exec();
+    return run(cmd, {verbosity: 3}).exec();
   });
 
 
@@ -94,6 +95,17 @@ function load(src, dest, config) {
     }
     var cmd = 'protractor ' + testConfig;
 
+    // This must always exit with a 0 status code so that the coverage report is
+    // always written.
+    return run(cmd + '|| exit 0').exec();
+  });
+
+
+  gulp.task('istanbul-report-html', function() {
+    var cmd = "istanbul report "+
+        "--include 'coverage/integration/json/**/*.json' " +
+        "--dir 'coverage/integration' " +
+        "html";
     return run(cmd).exec();
   });
 }

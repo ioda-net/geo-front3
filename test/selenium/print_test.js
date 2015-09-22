@@ -5,7 +5,7 @@ describe('print', function() {
       // Wait for mapfish print capabilities
       return browser.sleep(5000);
     }).then(function() {
-      $('#print button[type*="submit"]').click();
+      return $('#print button[type*="submit"]').click();
     }).then(function() {
       return $('#print button[type*="submit"]').isDisplayed();
     }).then(function(printButtonDisplayed) {

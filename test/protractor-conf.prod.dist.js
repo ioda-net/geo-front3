@@ -1,11 +1,12 @@
-it_root = '../test/integration/';
-
 exports.config = {
-  specs: [it_root + '*.spec.js'],
+  specs: [
+    '../test/integration/*.spec.js',
+    '../test/selenium/*_test.js',
+  ],
   seleniumAddress: 'http://localhost:4444/wd/hub',
   maxSessions: 1,
   multiCapabilities: [
-    {browserName: 'firefox'}
+    {browserName: 'firefox', 'shardTestFiles': true, 'maxInstances': 1}
   ],
   framework: 'jasmine2',
   onPrepare: function () {
