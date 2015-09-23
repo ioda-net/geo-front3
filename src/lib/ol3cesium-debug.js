@@ -22564,6 +22564,9 @@ ol.View.createRotationConstraint_ = function(options) {
     return ol.RotationConstraint.disable;
   }
 };
+goog.exportProperty(ol.View.prototype, 'getResolutionForExtent',
+    ol.View.prototype.getResolutionForExtent);
+
 
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
 //
@@ -23228,6 +23231,45 @@ ol.TileRange.prototype.intersects = function(tileRange) {
       this.minY <= tileRange.maxY &&
       this.maxY >= tileRange.minY;
 };
+/**
+ * @return {number} Min X
+ */
+ol.TileRange.prototype.getMinX = function() {
+  return this.minX;
+}
+goog.exportProperty(ol.TileRange.prototype, 'getMinX',
+    ol.TileRange.prototype.getMinX);
+
+
+/**
+ * @return {number} Max X
+ */
+ol.TileRange.prototype.getMaxX = function() {
+  return this.maxX;
+}
+goog.exportProperty(ol.TileRange.prototype, 'getMaxX',
+    ol.TileRange.prototype.getMaxX);
+
+
+/**
+ * @return {number} Min Y
+ */
+ol.TileRange.prototype.getMinY = function() {
+  return this.minY;
+}
+goog.exportProperty(ol.TileRange.prototype, 'getMinY',
+    ol.TileRange.prototype.getMinY);
+
+
+/**
+ * @return {number} Max Y
+ */
+ol.TileRange.prototype.getMaxY = function() {
+  return this.maxY;
+}
+goog.exportProperty(ol.TileRange.prototype, 'getMaxY',
+    ol.TileRange.prototype.getMaxY);
+
 
 goog.provide('ol.Attribution');
 
@@ -33800,6 +33842,9 @@ ol.tilegrid.extentFromProjection = function(projection) {
   }
   return extent;
 };
+goog.exportProperty(ol.tilegrid.TileGrid.prototype, 'getTileRangeForExtentAndZ',
+    ol.tilegrid.TileGrid.prototype.getTileRangeForExtentAndZ);
+
 
 goog.provide('ol.source.Tile');
 goog.provide('ol.source.TileEvent');
@@ -51992,6 +52037,7 @@ ol.style.defaultGeometryFunction = function(feature) {
       'feature must not be null');
   return feature.getGeometry();
 };
+goog.exportSymbol('ol.style.defaultStyleFunction', ol.style.defaultStyleFunction);
 
 goog.provide('ol.interaction.DragZoom');
 

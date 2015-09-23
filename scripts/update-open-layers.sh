@@ -38,6 +38,12 @@ git checkout "${ol_version}"
 # See https://github.com/openlayers/ol3/pull/4045
 patch -p1 < "${patch_dir}/wmts-import.patch"
 
+# Apply patches by Swisstopo
+cat ../../scripts/ga-ol3-style.exports >> src/ol/style/style.js
+cat ../../scripts/ga-ol3-tilegrid.exports >> src/ol/tilegrid/tilegrid.js
+cat ../../scripts/ga-ol3-tilerange.exports >> src/ol/tilerange.js
+cat ../../scripts/ga-ol3-view.exports >> src/ol/view.js
+
 # Build Open Layers
 npm install
 node tasks/build.js config/ol-debug.json "${geo_front_root}/src/lib/ol-debug.js"
