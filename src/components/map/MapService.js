@@ -1145,7 +1145,9 @@ goog.require('ga_urlutils_service');
           // CORS errors.
           // Currently crossOrigin definition is only used for mouse cursor
           // detection on desktop in TooltipDirective.
-          if (gaBrowserSniffer.ios) {
+          if (gaBrowserSniffer.ios ||
+              (layer.wmsUrl &&
+                layer.wmsUrl.indexOf($window.location.host) > -1)) {
             crossOrigin = undefined;
           }
 
