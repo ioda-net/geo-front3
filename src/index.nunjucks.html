@@ -166,6 +166,9 @@ itemscope itemtype="http://schema.org/WebApplication"
           <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
         </a>&nbsp;&nbsp;
         <a target="_blank" href="//help.geo.admin.ch/?lang={{langId}}" translate>help_label</a>&nbsp;&nbsp;
+  {% if legends_url %}
+        <a target="_blank" href="${legends_url}" translate>legend_label</a>&nbsp;&nbsp;
+  {% endif %}
         <a href="{{deviceSwitcherHref}}" translate>mobile_redirect</a>&nbsp;&nbsp;
         <div ng-controller="GaTranslationController">
           <div ga-translation-selector ga-translation-selector-options="options"></div>
