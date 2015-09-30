@@ -94,6 +94,7 @@ function load(src, dest, config) {
       'copy-js',
       'copy-css',
       'copy-partials',
+      'copy-fonts',
       'deps.js'
     ],
     'istanbul-instrument',
