@@ -3,27 +3,13 @@
 var QUERYSTRING_KML = "KML%7C%7Chttp%3A%2F%2Fjenselme.perso.centrale-marseille.fr%2Fvisible%2Fmap.geo.admin.ch_KML_20150918170233.kml";
 var POSITION_TO_KML = "X=124759.52&Y=499224.22";
 
+var utils = require('../integration/utils');
+
 describe('kml', function () {
   it('imports kml by url with toolbox', function () {
-    browser.ignoreSynchronization = true;
-    $("#toolsHeading").click().then(function () {
-      // Click on "KML Import"
-      return $("#tools [data-original-title*='KML'").click();
-    }).then(function () {
-      // Click on "URL"
-      return $$("#import-kml-popup a").get(1).click();
-    }).then(function () {
-      // Write URL of the chosen KML
-      return $("#import-kml-popup input[placeholder *= 'URL']")
-          .sendKeys('http://jenselme.perso.centrale-marseille.fr/visible/map.geo.admin.ch_KML_20150918170233.kml');
-    }).then(function () {
-      browser.ignoreSynchronization = true;
-      // Load the KML
-      return $("#import-kml-popup button.ga-import-kml-load").click();
-    }).then(function () {
-      // Wait for the KML to be fetched
-      return browser.sleep(3000);
-    }).then(function () {
+    var kmlUrl = 'http://jenselme.perso.centrale-marseille.fr/visible/map.geo.admin.ch_KML_20150918170233.kml';
+    utils.importKmlFromUrl(kmlUrl).then(function () {
+      browser.ignoreSynchronization = false;
       // Check that parsing is OK
       return $('#import-kml-popup .ga-import-kml-result').getText();
     }).then(function (text) {
