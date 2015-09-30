@@ -1,6 +1,5 @@
 /* global by, element, browser, expect, $$, protractor */
 
-var fs = require('fs');
 var utils = require('./utils');
 
 describe('features', function() {
@@ -17,7 +16,7 @@ describe('features', function() {
               .mouseMove(map, {x: size.width / 2, y: size.height / 2})
               .click()
               .perform();
-          browser.sleep(2000);
+          return browser.sleep(2000);
         });
   }
 
