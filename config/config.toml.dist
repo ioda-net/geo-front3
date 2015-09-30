@@ -37,6 +37,9 @@ activatedPlugins = ["communes"]
 # Feedback
 feedback_recipient = 'support@sigeom.ch'
 
+# 3D
+default_terrain = 'ch.swisstopo.terrain.3d'
+
 
 # Ioda-Net specific configuration
 [in]
