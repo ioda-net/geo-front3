@@ -2,6 +2,8 @@
 
 var QUERYSTRING_WMS = "WMS%7C%7CAGNES%7C%7Chttp:%2F%2Fwms.geo.admin.ch%2F%7C%7Cch.swisstopo.fixpunkte-agnes";
 
+var utils = require('../integration/utils');
+
 describe('wms', function () {
   it('imports wms with popup', function () {
     // Click on "Werkzeuge"
@@ -50,7 +52,7 @@ describe('wms', function () {
 
   it('imports WMS directly by URL', function () {
     // Go to the WMS layer page
-    browser.get('http://cov.geojb/?layers=' + QUERYSTRING_WMS).then(function () {
+    browser.get( utils.config.dev.testPortalAddress + '?layers=' + QUERYSTRING_WMS).then(function () {
       // Check if the WMS Layer is loaded
       return $$("#selection label").get(0).getText();
     }).then(function(text) {

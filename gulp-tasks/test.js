@@ -26,7 +26,7 @@ function load(src, dest, config) {
 
   gulp.task('launch-test', ['build-test-conf'], function (cb) {
     karma = new KarmaServer({
-      configFile: testConfig,
+      configFile: __dirname + '/../' + testConfig,
       singleRun: true
     }, cb);
     karma.start();
@@ -65,7 +65,7 @@ function load(src, dest, config) {
 
 
   gulp.task('build-protractor-conf-from-template', function() {
-    var protractorConf = toml.parse(fs.readFileSync(src.protractor_conf));
+    var protractorConf = toml.parse(fs.readFileSync(src.test_conf))['protractor'];
     if (config.prod) {
       protractorConf = protractorConf.prod;
     } else {

@@ -29,7 +29,7 @@ describe('kml', function () {
   });
 
   it('imports KML directly with permalink', function () {
-    browser.get('http://cov.geojb/?layers=' + QUERYSTRING_KML)
+    browser.get(utils.config.dev.testPortalAddress + '?layers=' + QUERYSTRING_KML)
         .then(function () {
           return $$("#selection label").get(0).getText();
         })

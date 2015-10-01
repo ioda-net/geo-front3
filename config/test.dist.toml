@@ -1,10 +1,11 @@
-[dev]
+[protractor.dev]
 seleniumAddress = 'http://localhost:4444/wd/hub'
 testPortalAddress = 'http://cov.geojb'
 generateCoverageReport = true
 
 
-[prod]
+[protractor.prod]
 seleniumAddress = 'http://localhost:4444/wd/hub'
 testPortalAddress = 'http://geojb'
 generateCoverageReport = false
+

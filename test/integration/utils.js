@@ -1,3 +1,8 @@
+var fs = require('fs');
+var toml = require('toml');
+var config = toml.parse(fs.readFileSync('config/test.toml', 'utf-8'))['protractor'];
+
+
 function importKmlFromUrl(url, close) {
   browser.ignoreSynchronization = true;
   var kmlImportTool = $("#tools [data-original-title*='KML'");
@@ -32,3 +37,5 @@ function importKmlFromUrl(url, close) {
 
 
 module.exports.importKmlFromUrl = importKmlFromUrl;
+module.exports.config = config;
+
