@@ -8,7 +8,7 @@
   <div class="form-group">
     <label class="col-xs-4 control-label" translate>print_layout</label>
     <div class="col-xs-8">
-      <select class="form-control" ng-model="layout" ng-options="l as l.name for l in layouts"></select>
+      <select class="form-control" ng-model="layout" ng-options="l as l.name | translate for l in layouts"></select>
     </div>
   </div>
   <div class="form-group">
