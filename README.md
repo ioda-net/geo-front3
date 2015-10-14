@@ -21,6 +21,30 @@ production. The output will be produced in `prod/protalname`.
 
 
 
+# Launch test
+
+## Unit tests
+
+You can use `gulp test` to launch the unit tests. To launch tests automatically when a file is
+modify, you can use `karma start test/karma-conf.dev.js` (you may need to adapt the path to the
+karma executable).
+
+## Integration tests
+
+### setup integration tests
+
+1. You must install protractor in order for the integration tests to work with
+   `npm install -g protractor`.
+2. You must then install the webdriver with `webdriver-manager update`
+3. Copy the `config/test.dist.toml` into `config/test.toml` and update it to your needs.
+
+### Launching integration tests
+
+1. Start webdriver: `webdriver-manager start`
+2. Launch the test with `gulp testintegration`
+
+
+
 # Update from map.geo.admin.ch
 
 1. Go the the `master` branch and update it with the code of swisstopo.
