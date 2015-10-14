@@ -74,7 +74,7 @@ var formatArgvOpts = function (options) {
 
 var loadConf = function (taskName, cliOptions) {
   var prod = false;
-  if (taskName === 'prod') {
+  if (taskName === 'prod' || cliOptions.prod) {
     prod = true;
   }
   var type = prod ? 'prod' : 'dev';

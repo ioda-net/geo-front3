@@ -1,8 +1,8 @@
 goog.provide('ga_catalogitem_directive');
 
+goog.require('IN');
 goog.require('ga_catalogtree_directive');
 goog.require('ga_layer_metadata_popup_service');
-goog.require('IN');
 (function() {
 
   var module = angular.module('ga_catalogitem_directive', [

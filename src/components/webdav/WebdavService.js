@@ -63,7 +63,8 @@ goog.require('ga_map_service');
           withCredentials: true,
           headers: {
             Authorization: 'Basic ' + btoa(user + ':' + password),
-            'Content-Type': 'application/vnd.google-earth.kml+xml; charset=utf-8'
+            'Content-Type':
+                'application/vnd.google-earth.kml+xml; charset=utf-8'
           },
           data: data
         };

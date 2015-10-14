@@ -44,6 +44,7 @@ goog.require('ga_permalink');
           var defaultTopic = getTopicById(gaGlobalOptions.defaultTopicId,
               false);
           // If the default topic doesn't exist we load the first one
+          /* istanbul ignore next */
           if (!defaultTopic) {
             return topics[0];
           }

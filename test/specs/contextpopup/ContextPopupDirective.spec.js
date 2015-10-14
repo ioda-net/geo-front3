@@ -1,5 +1,5 @@
 describe('ga_contextpopup_directive', function() {
-  var element, handlers = {}, viewport, map, originalEvt;
+  var element, handlers = {}, viewport, map, originalEvt, mapEvt;
 
   var expectedHeightUrl = '//api.geo.admin.ch/height' +
       '?easting=661473&elevationModel=COMB' +
@@ -30,6 +30,12 @@ describe('ga_contextpopup_directive', function() {
         '<div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options"></div>' +
         '<div id="map"></div>' +
       '</div>');
+    mapEvt = {
+      stopPropagation: function () {},
+      preventDefault: function () {},
+      pixel: [25, 50],
+      coordinate: [661473, 188192]
+    };
 
     inject(function($rootScope, $compile) {
       map = new ol.Map({});
@@ -100,15 +106,7 @@ describe('ga_contextpopup_directive', function() {
     });
 
     describe('On device without contextmenu event', function() {
-      var mapEvt;
-
       beforeEach(inject(function($rootScope, $compile, gaBrowserSniffer) {
-        mapEvt = {
-           stopPropagation: function() {},
-           preventDefault: function() {},
-           pixel: [25, 50],
-           coordinate: [661473, 188192]
-        };
         gaBrowserSniffer.touchDevice = true;
         gaBrowserSniffer.msie = false;
         gaBrowserSniffer.events.menu = undefined;
@@ -148,7 +146,11 @@ describe('ga_contextpopup_directive', function() {
         $timeout.verifyNoPendingTasks();
 
         var popover = element.find('.popover');
-        expect(popover.css('display')).to.be('');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
       });
 
       it('touchmove prevents handler from being called', function() {
@@ -163,7 +165,26 @@ describe('ga_contextpopup_directive', function() {
         $timeout.verifyNoPendingTasks();
 
         var popover = element.find('.popover');
-        expect(popover.css('display')).to.be('');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
+      });
+    });
+
+    describe('hides correctly', function () {
+      it('when user click on cross', function () {
+        var popover = element.find('.popover');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
+
+        element.find('.icon-remove').click();
+
+        expect(popover.css('display')).to.be('none');
       });
     });
   });

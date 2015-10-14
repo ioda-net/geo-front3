@@ -20,7 +20,7 @@ goog.require('ga_urlutils_service');
             doc.mozFullScreen || doc.webkitIsFullScreen);
       };
       return {
-        pushState: function(data, title, url) {
+        pushState: /* istanbul ignore next */ function(data, title, url) {
           if ($sniffer.history) {
             $window.history.pushState(data, title, url);
           }
@@ -63,11 +63,8 @@ goog.require('ga_urlutils_service');
             return base + '?' + gaUrlUtils.toKeyValue(newParams);
           };
 
-          this.getEmbedHref = function(p) {
+          this.getEmbedHref = function() {
             var newParams = angular.extend({}, params);
-            if (angular.isDefined(p)) {
-              angular.extend(newParams, p);
-            }
             if (angular.isDefined(newParams.mobile)) {
               delete newParams.mobile;
             }
@@ -84,8 +81,8 @@ goog.require('ga_urlutils_service');
 
           // The main href is the embed permalink but without the name of
           // the html page.
-          this.getMainHref = function(p) {
-            return this.getEmbedHref(p).replace(/\/embed\.html\?/, '/?');
+          this.getMainHref = function() {
+            return this.getEmbedHref().replace(/\/embed\.html\?/, '/?');
           };
 
           this.getParams = function() {
@@ -100,6 +97,7 @@ goog.require('ga_urlutils_service');
              delete params[key];
           };
 
+          /* istanbul ignore next */
           this.refresh = function() {
              gaHistory.replaceState(null, '', this.getHref());
           };

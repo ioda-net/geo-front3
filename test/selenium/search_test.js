@@ -1,23 +1,47 @@
-// Search test using browserstack
+var QUERYSTRING_OF_MOUTIER = "X=236219.67&Y=593440.84";
 
-var webdriver = require('browserstack-webdriver');
-var assert = require('assert');
+describe('search', function() {
+  it('searches locations', function() {
+    // Send "Moutier" to the searchbar
+    $("#search-container span.ga-search-input-container input")
+        .sendKeys('Moutier').then(function() {
+      var locationSearchContainer = $$('#search-container div.ga-search-results').get(0);
+      var locationSearchResults = locationSearchContainer.$$('div.ga-search-result');
+      expect(locationSearchResults.count()).toBe(50);
 
-var QUERYSTRING_OF_BERN = "X=200393.28&Y=596671.16";
-
-var runTest = function(cap, driver, target){
-  // Send "Bern" to the searchbar
-  driver.findElement(webdriver.By.xpath("//*[@type='search']")).sendKeys('Bern');
-  // Click on the field "Bern (BE)"
-  driver.findElement(webdriver.By.xpath("//*[contains(text(), 'Bern')]")).click();
-  // Specifically search if href of links is updated
-  driver.findElement(webdriver.By.xpath("//*[@id='toptools']//a[contains(@href,'" + QUERYSTRING_OF_BERN + "')]"))
-  // Was the URL in the address bar adapted?
-  if(!(cap.browser == "IE" && cap.browser_version == "9.0")) {
-    driver.getCurrentUrl().then(function(url) {
-      assert.ok(url.indexOf(QUERYSTRING_OF_BERN) > -1);
+      return locationSearchResults.get(0).click();
+    }).then(function() {
+      return browser.getCurrentUrl();
+    }).then(function(url) {
+      expect(url).toContain(QUERYSTRING_OF_MOUTIER);
     });
-  }
-}
+  });
 
-module.exports.runTest = runTest;
+  it('cleans the search input field', function() {
+    $('#search-container button.icon-remove-sign').click().then(function() {
+      return $("#search-container span.ga-search-input-container input").getText();
+    }).then(function(text) {
+      expect(text).toBe('');
+
+      return $$('#search-container div.ga-search-results').get(0).getInnerHtml();
+    }).then(function(innerHtml) {
+      expect(innerHtml.trim()).toBe('<!-- ngRepeat: (i, res) in results -->');
+    });
+  });
+
+  it('searches layers', function() {
+    // Send "bâtiment" to the searchbar
+    $("#search-container span.ga-search-input-container input")
+        .sendKeys('bâtiments').then(function() {
+      var locationSearchContainer = $$('#search-container div.ga-search-results').get(2);
+      var locationSearchResults = locationSearchContainer.$$('div.ga-search-result');
+      expect(locationSearchResults.count()).toBe(1);
+
+      return locationSearchResults.get(0).click();
+    }).then(function() {
+      return browser.getCurrentUrl();
+    }).then(function(url) {
+      expect(url).toContain('BATIMENTS');
+    });
+  });
+});

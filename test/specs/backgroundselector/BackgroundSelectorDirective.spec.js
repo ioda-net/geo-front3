@@ -1,7 +1,8 @@
 describe('ga_backgroundselector_directive', function() {
 
   describe('Background layer insertion', function () {
-    var element, map, layer1, layer2, $rootScope, $compile, def, gaBackground;
+    var element, map, layer1, layer2, $rootScope, $compile, def, html,
+        gaBackground, gaBrowserSniffer;
     beforeEach(function() {
 
       map = new ol.Map({});
@@ -53,20 +54,22 @@ describe('ga_backgroundselector_directive', function() {
         });
       });
 
-      inject(function(_$rootScope_, _$compile_, $q, _gaBackground_) {
+      inject(function(_$rootScope_, _$compile_, $q, _gaBackground_,
+          _gaBrowserSniffer_) {
         $compile = _$compile_;
         $rootScope = _$rootScope_;
         def = $q.defer();
         gaBackground = _gaBackground_;
+        gaBrowserSniffer = _gaBrowserSniffer_;
       });
 
       $rootScope.map = map;
-      element = angular.element(
-        '<div>' +
-            '<div ga-background-selector ' +
-                'ga-background-selector-map="map">' +
-            '</div>' +
-        '</div>');
+      html = '<div>' +
+          '<div ga-background-selector ' +
+          'ga-background-selector-map="map">' +
+          '</div>' +
+          '</div>';
+      element = angular.element(html);
       gaBackground.init(map);
       $compile(element)($rootScope);
       def.resolve();
@@ -98,6 +101,28 @@ describe('ga_backgroundselector_directive', function() {
       it('creates 4 layer bgselectors div', function() {
         var divsBg = element.find('.ga-bg-layer');
         expect(divsBg.length).to.equal(4);
+      });
+
+      it('has correct class on desktop', function() {
+        gaBrowserSniffer.mobile = false;
+        var element2 = angular.element(html);
+        $compile(element2)($rootScope);
+        $rootScope.$digest();
+
+        var content = element2.find('.ng-isolate-scope');
+        expect(content.hasClass('ga-bg-desktop')).to.be(true);
+        expect(content.hasClass('ga-bg-mobile')).to.be(false);
+      });
+
+      it('has correct class on mobile', function() {
+        gaBrowserSniffer.mobile = true;
+        var element2 = angular.element(html);
+        $compile(element2)($rootScope);
+        $rootScope.$digest();
+
+        var content = element2.find('.ng-isolate-scope');
+        expect(content.hasClass('ga-bg-desktop')).to.be(false);
+        expect(content.hasClass('ga-bg-mobile')).to.be(true);
       });
     });
   });

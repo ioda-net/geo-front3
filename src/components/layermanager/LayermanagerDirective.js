@@ -1,8 +1,8 @@
 goog.provide('ga_layermanager_directive');
 
+goog.require('IN');
 goog.require('ga_layer_metadata_popup_service');
 goog.require('ga_map_service');
-goog.require('IN');
 (function() {
 
   var module = angular.module('ga_layermanager_directive', [

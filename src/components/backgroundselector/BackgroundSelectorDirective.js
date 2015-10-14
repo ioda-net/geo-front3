@@ -41,6 +41,7 @@ goog.require('ga_topic_service');
           });
 
           scope.activateBackgroundLayer = function(bgLayer) {
+            /* istanbul ignore if */
             if (scope.isBackgroundSelectorClosed) {
               scope.isBackgroundSelectorClosed = false;
             } else {
@@ -72,12 +73,14 @@ goog.require('ga_topic_service');
             }
           };
 
+          /* istanbul ignore next */
           scope.$on('gaBgChange', function(evt, newBg) {
             if (!scope.currentLayer || newBg.id != scope.currentLayer.id) {
               scope.currentLayer = newBg;
             }
           });
 
+          /* istanbul ignore next */
           scope.$on('gaPermalinkChange', function(evt, newBg) {
             if (!scope.isBackgroundSelectorClosed) {
               scope.isBackgroundSelectorClosed = true;

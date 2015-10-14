@@ -51,13 +51,6 @@ goog.require('ga_print_service');
               gaBrowserSniffer.mobile) {
             scope.options.showReduce = true;
           }
-          // Bring thre popup to front on click on it.
-          element.find('.popover-content').click(function(evt) {
-            if (!scope.isReduced && scope.toggle &&
-                element.css('z-index') != zIndex) {
-              bringUpFront(element);
-            }
-          });
 
           // Set default x and y values on non mobile device if not defined
           if (!gaBrowserSniffer.mobile && !scope.options.x &&
@@ -109,12 +102,6 @@ goog.require('ga_print_service');
               // so we make  a test if the popup is displayed or not
               if (newVal != oldVal ||
                 (newVal != (element.css('display') == 'block'))) {
-
-                if (scope.isReduced) {
-                  scope.isReduced = false;
-                  scope.toggle = true;
-                  return;
-                }
 
                 element.toggle(newVal);
 

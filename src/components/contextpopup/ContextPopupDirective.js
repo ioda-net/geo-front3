@@ -72,6 +72,7 @@ goog.require('sigeom_plugins');
               //with selectByRectangle feature (in featuretree
               //directive). So we bail out here if
               //ctrlKey is pressed
+              /* istanbul ignore next */
               if (event.ctrlKey) {
                 return;
               }
@@ -88,6 +89,7 @@ goog.require('sigeom_plugins');
                   'EPSG:21781', 'EPSG:2056');
 
               // recenter on phones
+              /* istanbul ignore next */
               if (gaBrowserSniffer.phone) {
                 var pan = ol.animation.pan({
                   duration: 200,
@@ -100,6 +102,7 @@ goog.require('sigeom_plugins');
               scope.coord21781 = formatCoordinates(coord21781, 1);
               scope.coord4326 = formatCoordinates(coord4326, 5, true);
               scope.coord2056 = formatCoordinates(coord2056, 1) + ' *';
+              /* istanbul ignore next */
               if (coord4326[0] < 6 && coord4326[0] >= 0) {
                 var utm_31t = ol.proj.transform(coord4326,
                     'EPSG:4326', 'EPSG:32631');
@@ -157,6 +160,7 @@ goog.require('sigeom_plugins');
 
               updatePopupLinks();
 
+              /* istanbul ignore next: didn't find out a way to test this. */
               view.once('change:center', function() {
                 hidePopover();
               });
@@ -168,6 +172,7 @@ goog.require('sigeom_plugins');
 
             if (!gaBrowserSniffer.mobile && gaBrowserSniffer.events.menu) {
               $(map.getViewport()).on(gaBrowserSniffer.events.menu, handler);
+              /* istanbul ignore next */
               element.on(gaBrowserSniffer.events.menu, 'a', function(e) {
                 e.stopPropagation();
               });
@@ -200,11 +205,13 @@ goog.require('sigeom_plugins');
               });
             }
 
+            /* istanbul ignore next */
             $rootScope.$on('$translateChangeEnd', function() {
               scope.titleClose = $translate.instant('close');
             });
 
             // Listen to permalink change events from the scope.
+            /* istanbul ignore next */
             scope.$on('gaPermalinkChange', function(event) {
               if (angular.isDefined(coord21781) && popoverShown) {
                 updatePopupLinks();
@@ -212,6 +219,7 @@ goog.require('sigeom_plugins');
             });
 
             scope.hidePopover = function(evt) {
+              /* istanbul ignore next */
               if (evt) {
                 evt.stopPropagation();
               }

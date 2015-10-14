@@ -1,20 +1,28 @@
 describe('ga_popup_service', function() {
-  var popup, rootScope;
+  var popup, rootScope, gaPopup, $timeout, htmlPrintoutSpy;
 
-  beforeEach(inject(function($rootScope) {
-    var gaPopup;
+  beforeEach(function() {
+    module(function($provide) {
+      htmlPrintoutSpy = sinon.spy();
 
-    inject(function($injector) {
-      gaPopup = $injector.get('gaPopup');
+      $provide.value('gaPrintService', {
+        htmlPrintout: htmlPrintoutSpy
+      });
     });
-    
-    popup = gaPopup.create({
-      className: 'custom-class',
-      content: '<div> content </div>'
-    });
-    rootScope = $rootScope;
-    rootScope.$digest();
-  }));
+
+    inject(function($injector, $rootScope, _$timeout_) {
+        gaPopup = $injector.get('gaPopup');
+        rootScope = $rootScope;
+        $timeout = _$timeout_;
+      });
+
+      popup = gaPopup.create({
+        className: 'custom-class',
+        content: '<div> content </div>'
+      });
+
+      rootScope.$digest();
+  });
   
   it('creates a popup with a content', function() {
     expect(popup.scope).not.to.be(null);
@@ -44,6 +52,48 @@ describe('ga_popup_service', function() {
     popup.destroy();
     expect(popup.scope).to.be(null);
     expect(popup.element).to.be(null);
+  });
+
+  it('call onCloseCallback when closing', function() {
+    var spy = sinon.spy();
+
+    popup = gaPopup.create({
+      className: 'custom-class',
+      content: '<div> content </div>',
+      onCloseCallback: spy
+    });
+    popup.open();
+    rootScope.$digest();
+    popup.close();
+    rootScope.$digest();
+
+    sinon.assert.calledOnce(spy);
+  });
+
+  describe('print', function() {
+    it('default print', function() {
+      popup.open();
+      rootScope.$digest();
+      popup.print();
+      $timeout.flush();
+      sinon.assert.calledOnce(htmlPrintoutSpy);
+    });
+
+    it('custom print', function () {
+      var spy = sinon.spy();
+
+      popup = gaPopup.create({
+        className: 'custom-class',
+        content: '<div> content </div>',
+        print: spy
+      });
+      popup.open();
+      rootScope.$digest();
+      popup.print();
+      $timeout.flush();
+
+      sinon.assert.calledOnce(spy);
+    });
   });
 });
 

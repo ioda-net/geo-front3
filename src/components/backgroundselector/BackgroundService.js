@@ -89,12 +89,14 @@ goog.require('ga_permalink');
               initBg = getBgByTopic(gaTopic.get());
             }
             that.set(map, initBg);
+            /* istanbul ignore next */
             $rootScope.$on('gaTopicChange', function(evt, newTopic) {
               updateDefaultBgOrder(newTopic.backgroundLayers);
               that.set(map, getBgByTopic(newTopic));
               isOfflineToOnline = false;
             });
             // We must know when the app goes from offline to online.
+            /* istanbul ignore next */
             $rootScope.$on('gaNetworkStatusChange', function(evt, offline) {
               isOfflineToOnline = !offline;
             });

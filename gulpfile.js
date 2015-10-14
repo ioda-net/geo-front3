@@ -11,39 +11,61 @@ var utils = require('./gulp-tasks/utils');
 // Define global variables
 var knownCliOptions = {
   string: 'portal',
-  default: {portal: 'geojb'}
+  boolean: 'prod',
+  default: {
+      portal: 'geojb',
+      prod: false
+  }
 };
 var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
 var config = utils.loadConf(process.argv[2], cliOptions);
 var tempDir;
-if (config.prod || process.argv[2].indexOf('test') > -1) {
+if (config.prod) {
   tempDir = utils.createTmpDir();
 }
 
 var src = {
-  js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
+  appcache: 'src/*.nunjucks.appcache',
+  build_karma_conf_script: 'scripts/build-js-components-deps-from-js-files.sh',
   cesium: 'src/lib/Cesium/**/*',
-  ol3cesium: 'src/lib/ol3cesium.js',
+  components: 'src/components/**/*.js',
+  config: 'config/' + cliOptions.portal + '-dev.toml',
   css: ['src/**/*.css'],
   font: ['src/**/*.eot', 'src/**/*.otf', 'src/**/*.svg', 'src/**/*.ttf', 'src/**/*.woff'],
+  index: 'src/*.nunjucks.html',
+  js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
+  js_files: '{temp}/js-files'.replace('{temp}', tempDir),
+  karma_conf_template: 'test/karma-conf.nunjucks.js',
+  karma_dev_conf: 'test/karma-conf.dev.js',  // used in build-js-components-deps-from-js-files.sh
+  karma_prod_conf: 'test/karma-conf.prod.js',  // used in build-js-components-deps-from-js-files.sh
+  less: 'src/style/app.less',
+  ol3cesium: 'src/lib/ol3cesium.js',
+  partials: 'src/components/**/partials/**/*.html',
+  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js'],
   plugins: 'src/plugins/*.js',
   pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
-  partials: 'src/components/**/*.html',
-  less: 'src/style/app.less',
+  protractor_conf_template: 'test/protractor-conf.nunjucks.js',
+  protractor_prod_conf: 'test/protractor-conf.prod.js',  // used in build-js-components-deps-from-js-files.sh
+  protractor_dev_conf: 'test/protractor-conf.dev.js',  // used in build-js-components-deps-from-js-files.sh
+  src_js: 'src/js/**/*.js',
+  template_cache_module: 'src/TemplateCacheModule.js',  // used in build-js-components-deps-from-js-files.sh
+  test_conf: 'config/test.toml',
+  test_deps: 'test/deps',  // used in build-js-components-deps-from-js-files.sh
   watchLess: 'src/**/*.less',
-  index: 'src/*.nunjucks.html',
-  config: 'config/' + cliOptions.portal + '-dev.toml',
-  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js'],
-  js_files: '{temp}/js-files'.replace('{temp}', tempDir)
 };
 
 var dest = {
   annotated: '{temp}/annotated'.replace('{temp}', tempDir),
-  prod: 'prod/' + cliOptions.portal,
+  closure: tempDir + '/closure-compiler',
   dev: 'dev/' + cliOptions.portal,
+  lib: 'prod/{portal}'.replace('{portal}', cliOptions.portal),
+  lib_cesium: 'prod/{portal}/Cesium'.replace('{portal}', cliOptions.portal),
+  lib_ie: 'prod/{portal}/lib/IE'.replace('{portal}', cliOptions.portal),
   pluginsFile: 'src/js',
-  tmp:tempDir,
-  closure: tempDir + '/closure-compiler'
+  prod: 'prod/' + cliOptions.portal,
+  sgPlugins: 'src/js/SigeomPlugins.js',
+  test: 'test',
+  tmp: tempDir,
 };
 
 
@@ -131,8 +153,7 @@ gulp.task('prod', function (cb) {
             'copy-IE',
             'copy-pdfmake-prod',
             'appcache',
-            'build.js',
-            'app-whitespace.js'
+            'build.js'
           ],
           'clean-tmp',
           cb);
