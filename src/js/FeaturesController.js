@@ -19,7 +19,7 @@ goog.provide('ga_features_controller');
             y: 'auto',
             container: 'body',
             position: 'bottom-left',
-            showPrint: true,
+            showPrint: false,
             draggable: false,
             print: print
           }
