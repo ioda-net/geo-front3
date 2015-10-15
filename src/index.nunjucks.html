@@ -15,6 +15,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <title>${portal_name}</title>
 {% endif %}
     <meta charset="utf-8"/>
+{#
     <!-- verification for google webmaster tools -->
     <meta name="google-site-verification" content="ZAmW5d4_2X8xb5Yy_nYQbnTSe1EIeSqyhox9aXXwrws"/>
     <!-- verification for bing webmaster tools -->
@@ -23,7 +24,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta name='yandex-verification' content='4795f82c05657028'/>
     <!-- this tag enables the search bot forwarding to _escaped_fragment_= urls for SEO. It can be used instead of the ugly hasbang -->
     <meta name="fragment" content="!"/>
-
+#}
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimal-ui"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
@@ -42,10 +43,11 @@ itemscope itemtype="http://schema.org/WebApplication"
     <link rel="styleSheet" href="style/ui-grid.css"/>
 
     <!-- Description is translated 'by hand' in the MainController -->
-    <meta name="description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
-    <meta name="keywords" content="maps Switzerland, map viewer, Confederation, geodata, public platform, geographical information, geoportal, orthophotos, geolocation, geoinformation, Geodaten, Geoinformation, Bund, Plattform, Karte, Kartendienst, Kartenviewer"/>
-    <meta name="news_keywords" content="Maps of Switzerland"/>
+    <meta name="description" content=""/>
+    <meta name="keywords" content=""/>
+    <meta name="news_keywords" content=""/>
 
+{#
     <!-- Open Graph metas SMO -->
     <meta property="og:site_name" content="geo.admin.ch"/>
     <meta property="og:title" content="Swiss Geoportal"/>
@@ -69,7 +71,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta itemprop="name" content="geo.admin.ch"/>
     <meta itemprop="description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
     <meta itemprop="image" content="${versionslashed}img/logo_geoportal.png"/>
-
+#}
     <script>
       (function(){
         var w = window, l = w.location, n = w.navigator, pathname, p = '${device}',
