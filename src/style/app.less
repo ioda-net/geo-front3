@@ -65,6 +65,23 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+
+  > .popover {
+    z-index: 3000;
+  }
+}
+
+.ga-visible-3d {
+  display: none !important;
+}
+
+.ga-3d-active {
+  .ga-visible-3d {
+    display: block !important;
+  }
+  .ga-hidden-3d {
+    display: none !important;
+  }
 }
 
 input::-ms-clear {
@@ -199,8 +216,7 @@ button.ga-btn, .ol-control button {
   }
   
   &.ga-full-screen-no-inputs #search-container, 
-  #logo, #background-selection, 
-  #toptools, #pulldown, #footer {
+  #logo, #toptools, #pulldown, #footer {
     display: none;
   }
 }
@@ -256,23 +272,6 @@ button.ga-btn, .ol-control button {
   right: 0px;
   bottom: 0px;
   margin: auto;
-}
-
-#copyrightsdata {
-  font-size: 11px;
-  position: absolute;
-  right: 0px;
-  bottom: 27px;
-  z-index: 1010;
-  background: rgba(255,255,255,.7);
-  border-radius: .2em 0 0 0;
-  padding: .2em .4em;
-  & > div {
-    display: inline-block;
-  }
-  @media (max-width: @screen-tablet) {
-    bottom: 0;
-  }
 }
 
 .navbar {
@@ -906,6 +905,14 @@ a .ga-icon-separator {
     overflow-y: auto;
     max-height: 200px;
   }
+
+  .ga-more-layers {
+    width: 100%;
+    padding: 5px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
 }
 
 // ****** MODAL
@@ -1377,6 +1384,7 @@ input[type=range] {
 
 // ***** DRAGGABLE ELEMENT
 .ga-draggable {
+  touch-action: none;
   -ms-touch-action: none;
 }
 
@@ -1433,6 +1441,8 @@ input[type=range] {
     height: unit(@control-btn-size, px);
     margin-top: unit(@control-btn-space, px);
     transition: right ease 1s;
+    background-position: center center;
+    background-repeat: no-repeat;
   }
 
   > button {

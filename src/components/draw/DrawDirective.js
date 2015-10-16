@@ -668,7 +668,7 @@ goog.require('ga_webdav_service');
 
           var deleteWebdav = function() {
             if (scope.drawingSave.value === 'custom') {
-              var req = gaWebdav.delete(layer, map, scope.webdav.url,
+              var req = gaWebdav['delete'](layer, map, scope.webdav.url,
                 scope.webdav.file, scope.webdav.user, scope.webdav.password);
               if (req) {
                 req.success(function() {
@@ -730,7 +730,7 @@ goog.require('ga_webdav_service');
               // Set the correct title
               scope.options.popupOptions.title = popupTitlePrefix +
                   feature.get('type');
-              if (feature.get('type') == 'measure') {
+              if (gaMapUtils.isMeasureFeature(feature)) {
                 scope.activeTabProfile();
               } else if (feature.get('type') == 'linepolygon') {
                 scope.activeTabMeasure();
@@ -826,7 +826,7 @@ goog.require('ga_webdav_service');
           scope.showMeasureTab = function(feature) {
             var geom = feature.getGeometry();
             var isPoint = (geom instanceof ol.geom.Point);
-            return (feature.get('type') != 'measure' && !isPoint);
+            return (!gaMapUtils.isMeasureFeature(feature) && !isPoint);
           };
           scope.showProfileTab = function(feature) {
             return scope.showMeasureTab(feature);
@@ -837,7 +837,7 @@ goog.require('ga_webdav_service');
             if (isPoint) {
               scope.activeTabProps();
             }
-            return (!isPoint && feature.get('type') != 'measure');
+            return (!isPoint && !gaMapUtils.isMeasureFeature(feature));
           };
 
 

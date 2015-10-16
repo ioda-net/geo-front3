@@ -140,8 +140,8 @@ itemscope itemtype="http://schema.org/WebApplication"
         IE9Fix.call(this);
       </script>
     <![endif]-->
-    <div ng-cloak ng-if="globals.dev3d"
-         class="corner-ribbon top-left sticky red shadow">
+    <div ng-cloak
+         class="corner-ribbon top-left sticky red shadow" ng-show="globals.is3dActive">
       3D - ALPHA
     </div>
     <div ng-controller="GaSeoController">
@@ -153,7 +153,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         <div id="logo" class="pull-left ga-logo ga-logo-{{langId}}"></div>
       </a>
       <div id="search-container" ng-controller="GaSearchController">
-        <div ga-search ga-search-map="map" ga-search-options="options" ga-search-focused="globals.searchFocused"></div>
+        <div ga-search ga-search-map="map" ga-search-options="options" ga-search-focused="globals.searchFocused" ga-search-ol3d="::ol3d"></div>
   % if device == 'desktop':
         <span ga-help="24,31,25" ga-help-options="{showOnHover:true}"></span>
   % endif
@@ -188,12 +188,10 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
     <div id="loader"></div>
     <div tabindex="1" ga-map ga-map-map="map" ga-map-ol3d="::ol3d">
-      <div ng-cloak translate-cloak id="copyrightsdata">
-        <div>
-          <span >&copy;&nbsp;</span>
-          <span translate>data</span>
-        </div>
-        <div ga-attribution ga-attribution-map="map"></div>
+      <div ng-cloak translate-cloak
+           ga-attribution
+           ga-attribution-map="::map"
+           ga-attribution-ol3d="::ol3d">
       </div>
   % if device == 'embed':
       <a ng-cloak translate-cloak id="bigMapLink" target="_blank" href="{{toMainHref}}">
@@ -202,22 +200,22 @@ itemscope itemtype="http://schema.org/WebApplication"
         </div>
         <div ng-show="time">{{time}}</div>
       </a>
-      <div ga-scale-line ga-scale-line-map="map"></div>
+      <div ga-scale-line ga-scale-line-map="map" ng-show="!globals.is3dActive"></div>
   % endif
 
       <div id='buttonGroup' ng-cloak translate-cloak>
   % if device != 'embed':
-        <div ga-geolocation ga-geolocation-map="map"></div>
+        <div ga-geolocation ga-geolocation-map="::map" ga-geolocation-ol3d="::ol3d"></div>
   % endif
         <div id="zoomButtons"></div>
+        <div ga-tilt3d ng-if="globals.dev3d"></div>
   % if device != 'embed':
         <div ga-time-selector-bt ga-time-selector-bt-map="map"></div>
   % endif
-        <div ga-rotate ga-rotate-map="map"></div>
+        <div ga-rotate ga-rotate-map="map" ng-show="!globals.is3dActive"></div>
   % if device == 'mobile':
-        <div ga-offline-bt></div>
+        <div ga-offline-bt ng-show="!globals.is3dActive"></div>
   % endif
-        <div ga-tilt3d ng-if="globals.dev3d"></div>
       </div>
       <div ga-swipe
            ga-swipe-map="map"
@@ -225,9 +223,11 @@ itemscope itemtype="http://schema.org/WebApplication"
            style="display:none;">
       </div>
     </div> <!-- #map -->
+% if device != 'mobile':
     <div ng-cloak ng-show="globals.is3dActive"
          ga-cesium-inspector
          ga-cesium-inspector-ol3d="::ol3d"></div>
+% endif
 % if device == 'mobile':
     <div ga-offline-selector
          ga-offline-selector-map="map">
@@ -238,12 +238,13 @@ itemscope itemtype="http://schema.org/WebApplication"
 
 % if device != 'embed':
     <div ng-cloak ga-background-selector
-         ga-background-selector-map="map",
+         ga-background-selector-map="map"
          ga-background-selector-ol3d="::ol3d"
          ng-hide="globals.offline">
     </div>
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
-      <div  class="pull-left" ga-scale-line ga-scale-line-map="map"></div>
+      <div  class="pull-left" ga-scale-line ga-scale-line-map="map" ng-show="!globals.is3dActive"></div>
+
   % if device == 'desktop':
       <div id="mouseposition" class="pull-left hidden-xs" ng-controller="GaMousePositionController">
         <select ng-model="options.projection"
@@ -251,6 +252,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         </select>
         <div ga-mouse-position
              ga-mouse-position-map="map"
+             ga-mouse-position-ol3d="::ol3d"
              ga-mouse-position-options="options"></div>
       </div>
   % endif
@@ -259,13 +261,13 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   % if device == 'desktop':
       <div class="pull-right">
-        <a target="_blank" href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
+        <a target="_blank" translate="{{topicId + '_service_link_label'}}" translate-attr-href="{{topicId + '_service_link_href'}}"></a>
       </div>
   % endif
     </div><!-- #footer -->
 
     <div ng-controller="GaContextPopupController">
-      <div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options"></div>
+      <div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options" ga-context-popup-is3d="globals.is3dActive"></div>
     </div>
 % endif
 
@@ -274,14 +276,16 @@ itemscope itemtype="http://schema.org/WebApplication"
 % if device != 'embed':
     <div ng-controller="GaTimeSelectorController">
       <div ga-time-selector ga-time-selector-map="map"
-           ga-time-selector-options="options">
+           ga-time-selector-options="options"
+           ng-show="!globals.is3dActive">
       </div>
     </div>
 % endif
 
     <div ng-controller="GaTooltipController">
-      <div ga-tooltip
-           ga-tooltip-map="map"
+      <div ga-tooltip 
+           ga-tooltip-map="::map"
+           ga-tooltip-ol3d="::ol3d" 
            ga-tooltip-options="options"
            ga-tooltip-active="!globals.isDrawActive"></div>
     </div>
@@ -310,7 +314,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 
   % if device == 'desktop':
         <!-- Print -->
-        <div class="panel">
+        <div class="panel" ng-show="!globals.is3dActive">
           <a id="printHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#print"
              ga-collapsible-show="globals.printShown">
@@ -328,7 +332,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         </div>  <!-- .panel -->
 
         <!-- Draw -->
-        <div class="panel">
+        <div class="panel" ng-show="!globals.is3dActive">
           <a id="drawHeading" class="panel-heading accordion-toggle collapsed"
              data-toggle="collapse" data-parent="#pulldown-content" href="#draw"
              ga-collapsible-show="globals.isDrawActive" accesskey="r">
@@ -372,7 +376,7 @@ itemscope itemtype="http://schema.org/WebApplication"
                     <span ng-class="{'selected': globals.importKmlPopupShown}" translate>import_kml</span>
                   </a>
                 </li>
-                <li><!-- Compare -->
+                <li ng-show="!globals.is3dActive"><!-- Compare -->
                   <a href=""  ng-click="globals.isSwipeActive = !globals.isSwipeActive"
                      data-original-title="{{'swipe_tooltip' | translate}}"
                      class="ga-custom-tooltip" data-placement="bottom"
@@ -380,7 +384,7 @@ itemscope itemtype="http://schema.org/WebApplication"
                     <span ng-class="{'selected': globals.isSwipeActive}" translate>swipe</span>
                   </a>
                 </li>
-                <li><!-- Feature Tree -->
+                <li ng-show="!globals.is3dActive"><!-- Feature Tree -->
                   <a href=""  ng-click="globals.isFeatureTreeActive = !globals.isFeatureTreeActive"
                      data-original-title="{{'featuretree_tooltip' | translate}}"
                      class="ga-custom-tooltip" data-placement="top"
@@ -433,18 +437,27 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         <!-- Selection -->
         <div class="panel" ng-hide="globals.isDrawActive">
-          <a id="selectionHeading" class="panel-heading accordion-toggle light"
-             data-toggle="collapse" href="#selection">
+          <a id="selectionHeading" class="panel-heading accordion-toggle light collapsed"
+             data-toggle="collapse" href="#selection"
+             ga-collapsible-show="globals.selectionShown">
             <i class="icon-caret-down"></i>
-            <span translate>layer_selection</span>
+            <span translate>layers_displayed</span>
 
 % if device == 'desktop':
             <span ga-help="34,35,36" ga-help-options="{showOnHover:true}"></span>
 % endif
           </a>
-          <div id="selection" class="collapse in"
-               ga-collapsible-observe="globals.selectionShown">
+          <div id="selection" class="collapse">
             <div class="panel-body panel-body-wide" ga-layermanager ga-layermanager-map="map">
+            </div>
+            <div class="ga-more-layers"
+  % if device == 'mobile':
+                 ng-click="globals.pulldownShown = !globals.phone"
+  % endif
+            >
+              <a href="" ga-help-highlight=".ga-search-input-container input" translate>
+                help_search_data_link
+              </a>
             </div>
           </div>
         </div> <!-- .panel -->
@@ -473,7 +486,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               </div>
               <hr>
               <p>
-                <a target="_blank" href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
+                <a target="_blank" translate translate-attr-href="{{topicId + '_service_link_href'}}" >{{topicId + '_service_link_label'}}</a>
                 <br>
                 <a target="_blank" href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
               </p>
@@ -683,6 +696,11 @@ itemscope itemtype="http://schema.org/WebApplication"
 
     <script>
       (function() {
+        // Make sure ajax is using cached requests
+        $.ajaxSetup({
+          cache: true
+        });
+
         var module = angular.module('ga');
         var cacheAdd = '${version}' != '' ? '/' + '${version}' : '';
         var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
@@ -719,26 +737,21 @@ itemscope itemtype="http://schema.org/WebApplication"
             suffix: '.json'
           });
           $translateProvider.cloakClassName('ng-cloak');
-          // TODO: Use $snaitize instead in the future
+          // TODO: Use $sanitize instead in the future
           // see http://angular-translate.github.io/docs/#/guide/19_security
           $translateProvider.useSanitizeValueStrategy(null);
 
         });
 
         module.config(function(gaLayersProvider, gaGlobalOptions) {
-          gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/21781/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
-          
-          gaLayersProvider.wmtsMapProxyGetTileUrlTemplate = '//mf-chsdi3.dev.bgdi.ch/mom_fix_1594/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileCol}/{TileRow}.{Format}';
-          
+          gaLayersProvider.dfltWmsSubdomains = ['', '0', '1', '2', '3', '4'];
+          gaLayersProvider.dfltWmtsMapProxySubdomains = ['10', '11', '12', '13', '14'];
+          gaLayersProvider.wmsUrlTemplate = '//wms{s}.geo.admin.ch/';
+          gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{5-9}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.{Format}';
+          gaLayersProvider.wmtsMapProxyGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{x}/{y}.{Format}';
           gaLayersProvider.terrainTileUrlTemplate = '//3d.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
-
-          gaLayersProvider.wmsMapProxyUrl = '//api3.geo.admin.ch/mapproxy/service?';
-          
-          gaLayersProvider.layersConfigUrlTemplate =
-              gaGlobalOptions.resourceUrl + 'layersConfig?lang={Lang}';
-
-          gaLayersProvider.legendUrlTemplate =
-              gaGlobalOptions.apiUrl + '/rest/services/all/MapServer/{Layer}/legend?lang={Lang}';
+          gaLayersProvider.layersConfigUrlTemplate = gaGlobalOptions.resourceUrl + 'layersConfig?lang={Lang}';
+          gaLayersProvider.legendUrlTemplate = gaGlobalOptions.apiUrl + '/rest/services/all/MapServer/{Layer}/legend?lang={Lang}';
         });
         module.config(function(gaTopicProvider, gaGlobalOptions) {
           gaTopicProvider.topicsUrl = gaGlobalOptions.resourceUrl + 'services';

@@ -1,27 +1,21 @@
 goog.provide('ga_layermanager_directive');
 
 goog.require('IN');
+goog.require('ga_attribution_service');
 goog.require('ga_layer_metadata_popup_service');
 goog.require('ga_map_service');
+goog.require('ga_urlutils_service');
+
 (function() {
 
   var module = angular.module('ga_layermanager_directive', [
     'pascalprecht.translate',
     'ga_layer_metadata_popup_service',
     'ga_map_service',
-    'IN'
+    'IN',
+    'ga_attribution_service',
+    'ga_urlutils_service'
   ]);
-
-  /**
-   * Filter for the gaLayermanager directive's ngRepeat. The filter
-   * reverses the array of layers so layers in the layer manager UI
-   * have the same order as in the map.
-   */
-  module.filter('gaReverse', function() {
-    return function(items) {
-      return items.slice().reverse();
-    };
-  });
 
   /**
    * Filter to display a correct time label in all possible situations
@@ -55,7 +49,8 @@ goog.require('ga_map_service');
 
   module.directive('gaLayermanager', function($compile, $document, $timeout,
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
-      gaLayerMetadataPopup, gaLayers, inGlobalOptions) {
+      gaLayerMetadataPopup, gaLayers, gaAttribution, gaUrlUtils, gaMapUtils,
+      inGlobalOptions) {
 
     // Timestamps list template
     var tpl =
@@ -126,13 +121,15 @@ goog.require('ga_map_service');
 
     return {
       restrict: 'A',
-      replace: true,
       templateUrl: 'components/layermanager/partials/layermanager.html',
       scope: {
         map: '=gaLayermanagerMap'
       },
       link: function(scope, element, attrs) {
         var map = scope.map;
+        scope.mobile = gaBrowserSniffer.mobile;
+
+        // Compile the time popover template
         content = $compile(tpl)(scope);
 
         // The ngRepeat collection is the map's array of layers. ngRepeat
@@ -144,6 +141,9 @@ goog.require('ga_map_service');
         scope.layerFilter = gaLayerFilters.selected;
         scope.mobile = gaBrowserSniffer.mobile;
         scope.allowInfobox = inGlobalOptions.allowInfobox;
+        scope.$watchCollection('layers | filter:layerFilter', function(items) {
+          scope.filteredLayers = (items) ? items.slice().reverse() : [];
+        });
 
         // On mobile we use a classic select box, on desktop a popover
         if (!scope.mobile) {
@@ -196,19 +196,23 @@ goog.require('ga_map_service');
         };
 
         scope.isBodLayer = function(layer) {
-          return !!gaLayers.getLayer(layer.bodId);
+          return layer.bodId && !!gaLayers.getLayer(layer.bodId);
+        };
+
+        scope.hasMetadata = function(layer) {
+          return scope.isBodLayer(layer) ||
+              gaMapUtils.isExternalWmsLayer(layer);
         };
 
         scope.showWarning = function(layer) {
+          var url = gaUrlUtils.isValid(layer.url) ?
+              gaUrlUtils.getHostname(layer.url) : layer.url;
           $window.alert($translate.instant('external_data_warning')
-                        .replace('--URL--', layer.attribution));
+              .replace('--URL--', url));
         };
 
         scope.displayLayerMetadata = function(evt, layer) {
-          var bodId = layer.bodId;
-          if (gaLayers.getLayer(bodId)) {
-            gaLayerMetadataPopup.toggle(bodId);
-          }
+          gaLayerMetadataPopup.toggle(layer);
           evt.preventDefault();
         };
 
@@ -269,13 +273,15 @@ goog.require('ga_map_service');
           // Assemble first to not remove from the iterated over array
           var layersToRemove = [];
           scope.map.getLayers().forEach(function(olLayer) {
-            var l = gaLayers.getLayer(olLayer.bodId);
-            var regex = new RegExp('(^|,)(ech|' + topicId + ')(,|$)', 'g');
-            if (l &&
-                l.topics &&
-                !regex.test(l.topics) &&
-                !olLayer.background) {
-              layersToRemove.push(olLayer);
+            if (scope.isBodLayer(olLayer)) {
+              var l = gaLayers.getLayer(olLayer.bodId);
+              var regex = new RegExp('(^|,)(ech|' + topicId + ')(,|$)', 'g');
+              if (l &&
+                  l.topics &&
+                  !regex.test(l.topics) &&
+                  !olLayer.background) {
+                layersToRemove.push(olLayer);
+              }
             }
           });
           layersToRemove.forEach(function(olLayer) {

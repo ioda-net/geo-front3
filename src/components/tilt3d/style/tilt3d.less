@@ -1,18 +1,14 @@
 .ga-tilt3d {
-  background-color: #fff !important;
-  &.ga-unsupported, &.ga-disabled {
-    cursor: default;
-  }
-  &.ga-unsupported {
+  background-image: data-uri('icon_3d_off.png');
 
-  }
-  &.ga-disabled {
-    background-color: gray !important;
+  &.ga-unsupported,  &.ga-disabled {
+    cursor: default;
+    background-image: data-uri('icon_3d_disabled.png');
   }
 }
 
 .ga-3d-active {
   .ga-tilt3d {
-    background-color: green !important;
+    background-image: data-uri('icon_3d_on.png');
   }
 }

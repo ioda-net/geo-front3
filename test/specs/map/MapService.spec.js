@@ -137,7 +137,9 @@ describe('ga_map_service', function() {
           type: 'wmts',
           matrixSet: 'set2',
           timestamps: ['t3', 't4']
-        }
+        },
+        "ch.bfe.sachplan-geologie-tiefenlager": {},
+        "ch.vbs.patrouilledesglaciers-z_rennen": {}
       });
       $httpBackend.expectGET(expectedUrl);
       $rootScope.$digest();
@@ -160,6 +162,16 @@ describe('ga_map_service', function() {
         expect(tileGrid instanceof ol.tilegrid.WMTS).to.be.ok();
         var resolutions = tileGrid.getResolutions();
         expect(resolutions.length).to.eql(27);
+      });
+    });
+
+    describe('getMetaDataOfLayer', function() {
+      it('returns correct metadata url from a bod id', function() {
+        var expectedMdUrl = 'http://legendservice.com/all/somelayer?lang=somelang';
+        $httpBackend.whenGET(expectedMdUrl).respond({});
+        $httpBackend.expectGET(expectedMdUrl);
+        layers.getMetaDataOfLayer('somelayer');
+        $httpBackend.flush();
       });
     });
 
@@ -198,15 +210,23 @@ describe('ga_map_service', function() {
         topic, topicLoaded = {
           id: 'sometopic',
           backgroundLayers: ['bar'],
-          selectedLayers: []
+          selectedLayers: [],
+          activatedLayers: []
         }, topicLoaded2 = {
           id: 'sometopic2',
           backgroundLayers: ['bar2'],
-          selectedLayers: ['foo', 'bar']
+          selectedLayers: ['foo', 'bar'],
+          activatedLayers: []
         }, topicLoaded3 = {
           id: 'sometopic3',
           backgroundLayers: ['bar3'],
-          selectedLayers: ['foo2', 'bar2']
+          selectedLayers: ['foo2', 'bar2'],
+          activatedLayers: []
+        }, topicLoaded4 = {
+          id: 'sometopic4',
+          backgroundLayers: ['bar4'],
+          selectedLayers: [],
+          activatedLayers: ['foo3', 'bar3']
         };
 
     beforeEach(function() {
@@ -616,16 +636,6 @@ describe('ga_map_service', function() {
        expect(foundLayer).to.eql(bodLayer);
     }));
 
-    it('tests getAttribution', function() {
-      var text = '<img src="text.png"></img>@company 2015';
-      var olAttr = gaMapUtils.getAttribution(text);
-      expect(olAttr).to.be.an(ol.Attribution);
-      expect(olAttr.getHTML()).to.eql(text);
-      var olAttr2 = gaMapUtils.getAttribution(text);
-      expect(olAttr2).to.be.an(ol.Attribution);
-      expect(olAttr2).to.eql(olAttr);
-    });
-
     it('tests isKmlLayer', inject(function(gaDefinePropertiesForLayer) {
       expect(gaMapUtils.isKmlLayer(undefined)).to.eql(false);
       expect(gaMapUtils.isKmlLayer(null)).to.eql(false);
@@ -775,5 +785,59 @@ describe('ga_map_service', function() {
       expect(firstLayerAdded).to.eql(map.getLayers().getArray()[1]);
       expect(thirdLayerAdded).to.eql(map.getLayers().getArray()[0]);
     }));
+  });
+  describe('gaWms', function() {
+    var gaWms;
+
+    var getExternalWmsLayer = function(params) {
+      var layer = new ol.layer.Image({
+        source: new ol.source.ImageWMS({
+          params: params
+        })
+      });
+      layer.id = 'WMS||The wms layer||http://foo.ch/wms||' + name;
+      layer.displayInLayerManager = true;
+      layer.type = 'WMS';
+      layer.url = 'http://foo.ch/wms';
+      return layer;
+    };
+
+
+    beforeEach(function() {
+      inject(function($injector) {
+        gaWms = $injector.get('gaWms');
+      });
+    });
+
+    describe('getLegend', function() {
+      it('tests with default values', function(){
+        var wmsLayer = getExternalWmsLayer({
+          LAYERS: 'somelayer'
+        });
+        var expectedHtml = '<img src="http://foo.ch/wms?' +
+            'request=GetLegendGraphic&amp;layer=somelayer&amp;' +
+            'style=default&amp;service=WMS&amp;version=1.3.0&amp;' +
+            'format=image%2Fpng&amp;sld_version=1.1.0">';
+        gaWms.getLegend(wmsLayer).then(function(resp) {
+          var html = res.data;
+          expect(html).to.be(expectedHtml);
+        });
+      });
+      it('tests with custom values', function(){
+        var wmsLayer = getExternalWmsLayer({
+          LAYERS: 'somelayer',
+          STYLE: 'layerstyle',
+          VERSION: '1.1.1'
+        });
+        var expectedHtml = '<img src="http://foo.ch/wms?' +
+            'request=GetLegendGraphic&amp;layer=somelayer&amp;' +
+            'style=layerstyle&amp;service=WMS&amp;version=1.1.1&amp;' +
+            'format=image%2Fpng&amp;sld_version=1.1.0">';
+        gaWms.getLegend(wmsLayer).then(function(resp) {
+          var html = res.data;
+          expect(html).to.be(expectedHtml);
+        });
+      });
+    });
   });
 });

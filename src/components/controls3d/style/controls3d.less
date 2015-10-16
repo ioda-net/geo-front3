@@ -1,4 +1,5 @@
 .ga-controls3d {
+  .user-select(none);
   position: absolute;
   text-align: center;
   right: 0;
@@ -6,34 +7,111 @@
   bottom: 52px;
   margin-left: auto;
   margin-right: auto;
-  width: 150px;
+  width: 200px;
   @media (max-width: @screen-tablet) {
-    bottom: 24px;
+    bottom: 26px;
   }
   .ga-tilt, .ga-rotate {
     display: inline-block;
     text-align: center;
-    background-color: #fff;
-    border: 1px solid #bdbdbd;
-    height: 100px;
-    width: 70px;
+    background-image: data-uri('white_rounded_bckgd.png');
+    height: 105px;
+    width: 74px;
+    @media (max-width: @screen-tablet) {
+      background-image: none;
+      height: 42px;
+      width: 52px;
+    }
     .ga-indicator {
+      cursor: pointer;
       background-position: center center;
       background-repeat: no-repeat;
       height: 68px;
+      @media (max-width: @screen-tablet) {
+        height: 46px;
+      }
+      margin-top: 3px;
+    }
+    .ga-inc, .ga-dec {
+      cursor: pointer;
+      display: inline-block;
+      width: 32px;
+      height: 30px;
+      @media (max-width: @screen-tablet) {
+        display: none;
+      }
     }
     .ga-inc {
-
+      background-image: data-uri('left_arrow_red.png');
     }
     .ga-dec {
-
+      background-image: data-uri('right_arrow_red.png');
     }
   }
   .ga-tilt .ga-indicator {
-    background-image: data-uri('tilt.png');
+    background-image: data-uri('icon_left_tilt.png');
+    @media (max-width: @screen-tablet) {
+      background-image: data-uri('icon_left_tilt_mobile.png');
+    }
   }
   .ga-rotate .ga-indicator {
-    background-image: data-uri('rotate.png');
+    background-image: data-uri('icon_right_roll.png');
+    @media (max-width: @screen-tablet) {
+      background-image: data-uri('icon_right_roll_mobile.png');
+    }
   }
+  .ga-pegman-help {
+    position: fixed;
+    bottom: 30px;
+    left: 2px;
+    width: 380px;
+    font-size: 11px;
+    text-align: left;
+    padding: 7px;
+    .box-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+  }
+  .ga-pegman {
+    background-image: data-uri('pegman_standing_white.png');
+    cursor: grab;
+    cursor: -webkit-grab;
+    display: inline-block;
+    width: 27px;
+    height: 72px;
+    @media (max-width: @screen-tablet) {
+      background-image: data-uri('pegman_standing_white_mobile.png');
+      width:18px;
+      height:47px;
+    }
+    &.ga-fly-mode {
+      background-image: data-uri('super_pegman_white.png');
+      width: 78px;
+      height: 100px;
+      @media (max-width: @screen-tablet) {
+         background-image: data-uri('super_pegman_white_mobile.png');
+         width: 49px;
+         height: 65px;
+      }
+    }
+    &.ga-jet-mode {
+      background-image: data-uri('fa18.png');
+      width: 100px;
+      height: 38px;
+      @media (max-width: @screen-tablet) {
+         background-image: data-uri('fa18_mobile.png');
+         width: 66px;
+         height: 25px;
+      }
+    }
+  }
+}
 
+.ga-pegman-dragging {
+  cursor: crosshair;
+  .ga-pegman {
+    cursor: grabbing;
+    cursor: -webkit-grabbing;
+  }
 }

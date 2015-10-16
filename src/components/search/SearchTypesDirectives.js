@@ -195,6 +195,7 @@ goog.require('ga_urlutils_service');
 
       var cancel = function() {
         $scope.results = [];
+        $scope.fuzzy = '';
         if (canceler !== undefined) {
           canceler.resolve();
           canceler = undefined;
@@ -218,6 +219,9 @@ goog.require('ga_urlutils_service');
           timeout: canceler.promise
         }).success(function(data) {
           $scope.results = data.results;
+          if (data.fuzzy) {
+            $scope.fuzzy = '_fuzzy';
+          }
           $scope.options.announceResults($scope.type, data.results.length);
         }).error(function(data, statuscode) {
           // If request is canceled, statuscode is 0 and we don't announce it
@@ -289,6 +293,8 @@ goog.require('ga_urlutils_service');
         return gaSearchLabels.cleanLabel(attrs.label);
       };
 
+      $scope.fuzzy = '';
+
       $scope.$watch('options.query', function(newval) {
         //cancel old requests
         cancel();
@@ -310,7 +316,8 @@ goog.require('ga_urlutils_service');
           templateUrl: 'components/search/partials/searchtypes.html',
           scope: {
             options: '=gaSearchLocationsOptions',
-            map: '=gaSearchLocationsMap'
+            map: '=gaSearchLocationsMap',
+            ol3d: '=gaSearchLocationsOl3d'
           },
           controller: 'GaSearchTypesController',
           link: function($scope, element, attrs) {
@@ -332,13 +339,14 @@ goog.require('ga_urlutils_service');
                                    Math.abs(e[1] - e[3]) > 0.1);
 
               }
+              var ol3d = $scope.ol3d;
               if (originToZoomLevel.hasOwnProperty(res.attrs.origin) &&
                   !isGazetteerPoly) {
-                gaMapUtils.moveTo($scope.map,
-                                  originToZoomLevel[res.attrs.origin],
-                                  [res.attrs.y, res.attrs.x]);
+                gaMapUtils.moveTo($scope.map, $scope.ol3d,
+                    originToZoomLevel[res.attrs.origin],
+                    [res.attrs.y, res.attrs.x]);
               } else {
-                gaMapUtils.zoomToExtent($scope.map, e);
+                gaMapUtils.zoomToExtent($scope.map, $scope.ol3d, e);
               }
               addOverlay(gaMarkerOverlay, $scope.map, res);
               $scope.options.valueSelected(
@@ -402,7 +410,8 @@ goog.require('ga_urlutils_service');
           templateUrl: 'components/search/partials/searchtypes.html',
           scope: {
             options: '=gaSearchFeaturesOptions',
-            map: '=gaSearchFeaturesMap'
+            map: '=gaSearchFeaturesMap',
+            ol3d: '=gaSearchFeaturesOl3d'
           },
           controller: 'GaSearchTypesController',
           link: function($scope, element, attrs) {
@@ -443,8 +452,8 @@ goog.require('ga_urlutils_service');
                   features: [f],
                   onCloseCB: angular.noop
                 });
-                gaPreviewFeatures.zoom($scope.map,
-                    geojsonParser.readFeature(f));
+                var feature = geojsonParser.readFeature(f);
+                gaPreviewFeatures.zoom($scope.map, $scope.ol3d, feature);
               });
               $scope.options.valueSelected(
                   gaSearchLabels.cleanLabel(res.attrs.label));
@@ -509,7 +518,7 @@ goog.require('ga_urlutils_service');
                                                            res.attrs.layer);
 
               // Don't add preview layer if the layer is already on the map
-              if (!layer) {
+              if (!layer || !layer.visible) {
                 gaPreviewLayers.addBodLayer($scope.map, res.attrs.layer);
               }
             };
@@ -525,6 +534,9 @@ goog.require('ga_urlutils_service');
               if (!angular.isDefined(l)) {
                 var olLayer = gaLayers.getOlLayerById(res.attrs.layer);
                 $scope.map.addLayer(olLayer);
+              } else {
+                // Assure layer is visible
+                l.visible = true;
               }
               $scope.options.valueSelected(
                   gaSearchLabels.cleanLabel(res.attrs.label));

@@ -206,7 +206,7 @@ goog.require('ga_urlutils_service');
           var canUseProj = function(layer, projCode, tileMatrixSetToCrs) {
             var projCodeList = '';
             if ($scope.options.owsType === 'WMS') {
-              projCodeList = layer.CRS || layer.SRS;
+              projCodeList = layer.CRS || layer.SRS || [];
             } else if ($scope.options.owsType === 'WMTS' &&
                     layer.TileMatrixSetLink) {
               var setId = layer.TileMatrixSetLink[0].TileMatrixSet;
@@ -228,7 +228,12 @@ goog.require('ga_urlutils_service');
             // If projCode is undefined that means the parent layer can be
             // displayed with the current map projection, since it's an herited
             // property no need to test again.
-            if (projCode) {
+            // We don't have proj codes list for wms 1.1.1 so we assume the
+            // layer can be displayed (wait for
+            // https://github.com/openlayers/ol3/pull/2944)
+            var is130Wms = $scope.options.owsType === 'WMS' &&
+                owsVersion === '1.3.0';
+            if (is130Wms && projCode) {
               if (!canUseProj(layer, projCode, tileMatrixSetToCrs)) {
                 layer.isInvalid = true;
                 layer.Abstract = 'layer_invalid_no_crs';
