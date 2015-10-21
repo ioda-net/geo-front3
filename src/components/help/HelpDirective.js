@@ -103,8 +103,8 @@ goog.require('ga_help_service');
                   for (i = 0; i < len; i++) {
                     gaHelpService.get(ids[i]).then(function(res) {
                       results.push([
-                        $sce.trustAsHtml(res.rows[0][1]),
-                        $sce.trustAsHtml(res.rows[0][2]),
+                        $sce.trustAsHtml(decodeURIComponent(res.rows[0][1])),
+                        $sce.trustAsHtml(decodeURIComponent(res.rows[0][2])),
                         res.rows[0][4]
                       ]);
                       resultReceived();
