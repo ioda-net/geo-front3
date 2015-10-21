@@ -164,9 +164,10 @@ goog.require('ga_map_service');
     }
   });
 
-  module.factory('gaFeaturesGrid', function($window, gaPreviewFeatures,
-      gaGlobalOptions) {
+  module.factory('gaFeaturesGrid', function($translate, $window,
+      uiGridConstants, gaPreviewFeatures, gaGlobalOptions) {
     var parser = new ol.format.GeoJSON();
+    var isHiddenRegexp = /_hidden$/;
     var globalGridOptions = {
       enableGridMenu: true,
       enableSelectAll: true,
@@ -221,7 +222,8 @@ goog.require('ga_map_service');
     return {
       getLayerOptions: getLayerOptions,
       setSize: setSize,
-      close: close
+      close: close,
+      updateLang: updateLang
     };
 
     function getLayerOptions(feature, featuresToDisplay, featuresIdToIndex,
@@ -266,9 +268,6 @@ goog.require('ga_map_service');
       layerGridOptions.columnDefs = [];
       Object.keys(feature.properties).forEach(function(name) {
         var cellTemplate;
-        var isHiddenRegexp = /_hidden$/;
-        var visible = name !== 'label' && !isHiddenRegexp.test(name);
-        name = name.replace(isHiddenRegexp, '');
         if (goog.string.endsWith(name, '_url')) {
           cellTemplate = cellTemplates.url.replace('{name}', name);
         } else {
@@ -280,14 +279,46 @@ goog.require('ga_map_service');
         layerGridOptions.columnDefs.push({
           field: name,
           name: name,
-          displayName: name,
-          visible: visible,
+          displayName: _displayName(name),
+          visible: _visible(name),
           headerCellFilter: 'translate',
           cellFilter: 'translate',
           cellTemplate: cellTemplate
         });
       });
       return layerGridOptions;
+    }
+
+    function _visible(name) {
+      return name !== 'label' &&
+          !isHiddenRegexp.test(name) &&
+          _isInCurrentLang(name);
+    }
+
+    function _isInCurrentLang(name) {
+      var langSpecific = _isLangSpecificColumn(name);
+      return !langSpecific ||
+          (langSpecific && name.indexOf('_' + $translate.use()) > -1);
+    }
+
+    function _isLangSpecificColumn(name) {
+      var specific = false;
+      gaGlobalOptions.languages.forEach(function(lang) {
+        if (name.indexOf('_' + lang) > -1) {
+          specific = true;
+        }
+      });
+
+      return specific;
+    }
+
+    function _displayName(name) {
+      name = name.replace(isHiddenRegexp, '');
+      gaGlobalOptions.languages.forEach(function(lang) {
+        name = name.replace('_' + lang, '');
+      });
+
+      return name;
     }
 
     function setSize(cb) {
@@ -354,6 +385,15 @@ goog.require('ga_map_service');
       var popup = getPopup();
       popup.off('DOMSubtreeModified');
       popup.off('resize');
+    }
+
+    function updateLang(gridApi, gridOptions) {
+      for (var layer in gridOptions) {
+        gridOptions[layer].columnDefs.forEach(function(columnDef) {
+          columnDef.visible = _visible(columnDef.name);
+        });
+      }
+      gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
     }
   });
 })();
