@@ -19,11 +19,7 @@ goog.provide('ga_help_service');
       var Help = function() {
         //keeps cached versions of help snippets
         var registry = {};
-        var url = 'https://www.googleapis.com/fusiontables/v1/query?' +
-                  'callback=JSON_CALLBACK';
-        var apiKey = 'AIzaSyDT7wmEx97gAG5OnPwKyz2PnCx3yT4j7C0';
-        var sqlTmpl = 'select * from 1Tx2VSM1WHZfDXzf8rweRLG1kd23AA4aw8xnZ_3c' +
-                      ' where col0={id} and col5=\'{lang}\'';
+        var url = '/help/texts/{id}-{lang}.json';
 
         //Returns a promise
         this.get = function(id) {
@@ -36,16 +32,10 @@ goog.provide('ga_help_service');
             }, 0);
           }
 
-          //get it from fusion tables
-          var sql = sqlTmpl
-                    .replace('{id}', id)
-                    .replace('{lang}', lang);
-          $http.jsonp(url, {
-            params: {
-              key: apiKey,
-              sql: sql
-            }
-          }).success(function(response) {
+          var helpUrl = url
+              .replace('{id}', id)
+              .replace('{lang}', lang);
+          $http.get(helpUrl).success(function(response) {
             registry[key(id, lang)] = response;
             deferred.resolve(response);
           }).error(function() {
