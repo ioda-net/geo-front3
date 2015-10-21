@@ -18,7 +18,7 @@ goog.require('ga_styles_service');
   ]);
 
   module.directive('gaFeatures',
-      function($timeout, $http, $q, gaLayers, gaBrowserSniffer,
+      function($timeout, $http, $q, $rootScope, gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures,
           gaDragBox, gaFeaturesUtils, gaFeaturesGrid) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
@@ -53,6 +53,10 @@ goog.require('ga_styles_service');
                 var mapExtent = map.getView().calculateExtent(size);
                 findFeatures(geometry, size, mapExtent);
               });
+            });
+
+            $rootScope.$on('$translateChangeEnd', function() {
+              gaFeaturesGrid.updateLang(scope.options.gridApi, gridsOptions);
             });
 
             parser = new ol.format.GeoJSON();
