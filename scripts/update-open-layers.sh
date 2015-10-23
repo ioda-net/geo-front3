@@ -15,8 +15,8 @@ cd "${geo_front_root}"
 
 
 # Get Open Layers version
-ol_version=$(head -n 3 src/lib/ol.js | tail -n 1 | awk '{print $3}' | cut -f 1 -d '-')
-ol_cesium_version=$(head -n 3 src/lib/ol3cesium-debug.js | tail -n 1 | awk '{print $3}' | cut -f 1 -d '-')
+ol_version=$(grep 'OL3_VERSION ?=' Makefile | cut -f 3 -d ' ')
+ol_cesium_version=$(grep 'OL3_CESIUM_VERSION ?=' Makefile | cut -f 3 -d ' ')
 
 
 # Open Layers
@@ -67,5 +67,6 @@ git submodule update --recursive --init --force
 make dist
 node build/build.js "${geo_front_root}/scripts/ol3cesium-debug-geoadmin.json" "${geo_front_root}/src/lib/ol3cesium-debug.js"
 make cesium/Build/Cesium/Cesium.js
-cp -r cesium/Build/Cesium ../../src/lib/
-cat "${geo_front_root}/src/lib/Cesium/Cesium.js" dist/ol3cesium.js > "${geo_front_root}/src/lib/ol3cesium.js"
+cat cesium/Build/Cesium/Cesium.js dist/ol3cesium.js > "${geo_front_root}/src/lib/ol3cesium.js"
+rm -rf "${geo_front_root}/src/lib/Cesium/*"
+cp -r cesium/Build/CesiumUnminified/* "${geo_front_root}/src/lib/Cesium/"

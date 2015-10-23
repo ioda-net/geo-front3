@@ -1409,6 +1409,10 @@ goog.require('ga_urlutils_service');
   module.provider('gaMapUtils', function() {
     this.$get = function($window, gaGlobalOptions, gaUrlUtils, $q) {
       var resolutions = gaGlobalOptions.resolutions;
+      var isExtentEmpty = function(extent) {
+        return extent[0] >= extent[2] || extent[1] >= extent[3];
+      };
+
       return {
         Z_PREVIEW_LAYER: 1000,
         Z_PREVIEW_FEATURE: 1100,
@@ -1716,12 +1720,17 @@ goog.require('ga_urlutils_service');
           if (!extent || extent.length !== 4) {
             return gaGlobalOptions.defaultExtent;
           }
-          return [
+          var extent = [
             Math.max(extent[0], gaGlobalOptions.defaultExtent[0]),
             Math.max(extent[1], gaGlobalOptions.defaultExtent[1]),
             Math.min(extent[2], gaGlobalOptions.defaultExtent[2]),
             Math.min(extent[3], gaGlobalOptions.defaultExtent[3])
           ];
+          if (!isExtentEmpty(extent)) {
+            return extent;
+          } else {
+            return undefined;
+          }
         },
 
         isExtentEmpty: function(extent) {

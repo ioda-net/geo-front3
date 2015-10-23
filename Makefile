@@ -21,7 +21,7 @@ DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
 OL3_VERSION ?= dedf0a5d638ef36d1b74d13b8bf0b7223b762f7d
-OL3_CESIUM_VERSION ?= f476fa967b91e3298ecaa1ba21860bddc74522da
+OL3_CESIUM_VERSION ?= d72857d9c53471063d80f3622004dc14acbe6278
 CESIUM_VERSION ?= 9e67416d1016436b5cb237d6ec34f6c988bc5ecc
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
@@ -199,8 +199,9 @@ ol3cesium: .build-artefacts/ol3-cesium
 	node build/build.js ../../scripts/ol3cesium-debug-geoadmin.json dist/ol3cesium-debug.js;  \
 	cp dist/ol3cesium-debug.js ../../src/lib/; \
 	make cesium/Build/Cesium/Cesium.js -e CESIUM_COMPILE_TARGET=minifyRelease; \
-	cp -r cesium/Build/Cesium ../../src/lib/; \
-	cat ../../src/lib/Cesium/Cesium.js dist/ol3cesium.js > ../../src/lib/ol3cesium.js;
+	cat cesium/Build/Cesium/Cesium.js dist/ol3cesium.js > ../../src/lib/ol3cesium.js; \
+	rm -rf ../../src/lib/Cesium/*; \
+	cp -r cesium/Build/CesiumUnminified/* ../../src/lib/Cesium;
 
 .PHONY: fastclick
 fastclick: .build-artefacts/fastclick .build-artefacts/closure-compiler/compiler.jar

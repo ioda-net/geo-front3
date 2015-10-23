@@ -116,6 +116,25 @@ function FPS(scene, scope) {
 }
 
 
+Object.defineProperties(FPS.prototype, {
+  active: {
+    get: function() {
+      return this.active_;
+    }
+  },
+  flyMode: {
+    get: function() {
+      return this.flyMode_;
+    }
+  },
+  jetMode: {
+    get: function() {
+      return this.flyMode_ && this.buttons_.shift;
+    }
+  }
+});
+
+
 /**
  * Set the mode.
  * @param {boolean} flyMode
@@ -132,30 +151,6 @@ FPS.prototype.setFlyMode = function(flyMode) {
       roll: 0.0
     });
   }
-};
-
-
-/**
- * @return {boolean}
- */
-FPS.prototype.getActive = function() {
-  return this.active_;
-};
-
-
-/**
- * @return {boolean}
- */
-FPS.prototype.getFlyMode = function() {
-  return this.flyMode_;
-};
-
-
-/**
- * @return {boolean}
- */
-FPS.prototype.getJetMode = function() {
-  return this.flyMode_ && this.buttons_.shift;
 };
 
 
@@ -419,6 +414,7 @@ FPS.prototype.flyModeTick_ = function(delta) {
  * @private
  */
 FPS.prototype.manTick_ = function(delta) {
+  var hasPointerLock = this.getPointerLock();
   var heading = this.camera_.heading;
   var pitch = this.camera_.pitch;
 
@@ -435,10 +431,18 @@ FPS.prototype.manTick_ = function(delta) {
   var speed = this.buttons_.shift ? this.runSpeed_ : this.walkSpeed_;
   var moveAmount = speed * delta / 1000;
   if (this.buttons_.left) {
-    this.camera_.moveLeft(moveAmount);
+    if (hasPointerLock) {
+      this.camera_.moveLeft(moveAmount);
+    } else {
+      heading -= 0.03;
+    }
   }
   if (this.buttons_.right) {
-    this.camera_.moveRight(moveAmount);
+    if (hasPointerLock) {
+      this.camera_.moveRight(moveAmount);
+    } else {
+      heading += 0.03;
+    }
   }
   if (this.buttons_.forward) {
     this.camera_.moveForward(moveAmount);
