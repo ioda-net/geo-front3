@@ -14,7 +14,7 @@ goog.require('sigeom_plugins');
   ]);
 
   module.controller('GaPrintDirectiveController', function($scope,
-          $window, $timeout, $q, gaLayers,
+          $window, $timeout, $translate, $q, gaLayers,
           ngeoCreatePrint, ngeoPrintUtils, sgPlugins) {
 
     $scope.printError = false;
@@ -121,11 +121,13 @@ goog.require('sigeom_plugins');
         // commune at given point. In this case, mapfish print expect an empty
         // string or will crash.
         var commune = (data && data.commune) ? data.commune : '';
+        var name = $scope.options.title ? $scope.options.title :
+            $translate.instant($scope.options.titlePlaceholder);
         var spec = print.createSpec(map, $scope.scale, $scope.dpi,
           $scope.layout.name, {
             legend: legend,
             printLegend: Number($scope.options.legend),
-            name: $scope.options.title,
+            name: name,
             qrimage: $scope.options.qrcodeUrl + encodeURIComponent(url),
             url: url,
             scale: $scope.scale,

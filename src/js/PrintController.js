@@ -42,7 +42,7 @@ goog.provide('ga_print_controller');
           'ch.swisstopo.pixelkarte-farbe-pk50.noscale',
           'ch.swisstopo.pixelkarte-farbe-pk25.noscale'
         ],
-        title: 'Ma carte'
+        titlePlaceholder: 'print_title'
       };
   });
 })();
