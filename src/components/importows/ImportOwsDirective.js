@@ -35,7 +35,8 @@ goog.require('ga_urlutils_service');
               if ($scope.options.owsType === 'WMS') {
                 url =
                   gaUrlUtils.append(url, $scope.options.defaultGetCapParams);
-              } else if ($scope.options.owsType === 'WMTS') {
+              } else if ($scope.options.owsType === 'WMTS' &&
+                  !/\.xml$/.test(url)) {
                 url += '/' + $scope.options.wmtsVersion + '/' +
                         $scope.options.wmtsCap;
               }
@@ -117,21 +118,16 @@ goog.require('ga_urlutils_service');
           }
 
           function displayWmtsFileContent(data) {
-            var result = new ol.format.WMTSCapabilities().read(data);
+            var getCapabilities = new ol.format.WMTSCapabilities().read(data);
             $scope.userMessage = '';
-            var tileMatrixSetToCrs = {};
-            for (var i = 0; i < result.Contents.TileMatrixSet.length; i++) {
-              var set = result.Contents.TileMatrixSet[i];
-              tileMatrixSetToCrs[set['Identifier']] = set['SupportedCRS'];
-            }
 
-            if (result.Contents) {
-              var root = getChildLayers(result.Contents,
-                $scope.map.getView().getProjection().getCode(),
-                result.version, tileMatrixSetToCrs);
-              if (root) {
-                $scope.layers = root.Layer;
-              }
+            if (getCapabilities.Contents && getCapabilities.Contents.Layer) {
+              getCapabilities.Contents.Layer.forEach(function(layer) {
+                if (layer.Identifier) {
+                  $scope.layers.push(
+                      gaWmts.getLayerConfig(getCapabilities, layer));
+                }
+              });
             }
           }
 
@@ -147,7 +143,7 @@ goog.require('ga_urlutils_service');
           };
 
           // Add a layer from GetCapabilities object to the map
-          $scope.addLayer = function(getCapLayer) {
+          var addLayer = function(getCapLayer) {
             if (getCapLayer) {
               try {
                 var olLayer;
@@ -170,8 +166,7 @@ goog.require('ga_urlutils_service');
           // Add the selected layer to the map
           $scope.addLayerSelected = function() {
             if ($scope.options.layerSelected) {
-              var layerAdded = $scope.addLayer($scope.options.layerSelected,
-                  /* isPreview */ false);
+              var layerAdded = addLayer($scope.options.layerSelected);
               if (layerAdded) {
                 if ($scope.options.owsType === 'WMS') {
                   $scope.userMessage = $translate.instant(
@@ -238,27 +233,15 @@ goog.require('ga_urlutils_service');
             }
 
             // If the WMS layer has no name, it can't be displayed
-            if ((!layer.Name && $scope.options.owsType === 'WMS') ||
-                  (!layer.Title && $scope.options.owsType === 'WMTS')) {
+            if (!layer.Name) {
               layer.isInvalid = true;
               layer.Abstract = 'layer_invalid_no_name';
             }
 
-            if (!layer.isInvalid && $scope.options.owsType === 'WMS') {
-              layer.wmsUrl = $scope.fileUrl;
-              layer.wmsVersion = owsVersion;
-              layer.id = 'WMS||' + layer.wmsUrl + '||' + layer.Name;
-              layer.extent = getLayerExtentFromGetCap(layer);
-            } else if (!layer.isInvalid && $scope.options.owsType === 'WMTS') {
-              layer.wmtsCapabilityUrl = $scope.fileUrl;
-              layer.wmtsTemplateUrl = layer.ResourceURL[0].template;
-              layer.wmtsVersion = owsVersion;
-              layer.dimensions = getDimensions(layer);
-              layer.id = 'WMTS||' + layer.Title + '||' +
-                  gaWmts.formatDimensions(layer.dimensions) +
-                  '||' + layer.wmtsTemplateUrl;
-              layer.extent = layer.WGS84BoundingBox;
-            }
+            layer.wmsUrl = $scope.fileUrl;
+            layer.wmsVersion = owsVersion;
+            layer.id = 'WMS||' + layer.wmsUrl + '||' + layer.Name;
+            layer.extent = getLayerExtentFromGetCap(layer);
 
             // Go through the child to get valid layers
             if (layer.Layer) {
