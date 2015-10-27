@@ -171,9 +171,11 @@ goog.require('ga_map_service');
     var globalGridOptions = {
       enableGridMenu: true,
       enableSelectAll: true,
+      exporterHeaderFilter: $translate.instant,
       exporterMenuPdf: false,
       exporterPdfPageSize: 'A4',
       exporterPdfOrientation: 'landscape',
+      gridMenuTitleFilter: $translate,
       exporterPdfFooter: function(currentPage, pageCount) {
         return {text: currentPage.toString() + ' / ' + pageCount.toString()};
       },
