@@ -28,7 +28,7 @@ describe('ga_importows_directive', function() {
         owsType: 'WMS',
         proxyUrl: 'http://admin.ch/ogcproxy?url=',
         defaultGetCapParams: 'SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0',
-        defaultWMSList: [
+        defaultOWSList: [
            'http://wms.geo.admin.ch/',
            'http://ogc.heig-vd.ch/mapserver/wms?',
            'http://www.wms.stadt-zuerich.ch/WMS-ZH-STZH-OGD/MapServer/WMSServer?',
@@ -139,7 +139,7 @@ describe('ga_importows_directive', function() {
            '</WMS_Capabilities>'
       );
       $httpBackend.expectGET(expectedWmsGetCapAdminUrl);
-      scope.fileUrl = scope.options.defaultWMSList[0];
+      scope.fileUrl = scope.options.defaultOWSList[0];
       scope.handleFileUrl(); 
       $httpBackend.flush(); 
       $rootScope.$digest();

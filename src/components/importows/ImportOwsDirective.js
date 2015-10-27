@@ -439,7 +439,7 @@ goog.require('ga_urlutils_service');
 
               // Create the typeAhead input for the list of WMSs available
               var taElt = elt.find('input[name=url]').typeahead({
-                local: scope.options.defaultWMSList,
+                local: scope.options.defaultOWSList,
                 limit: 500
 
               }).on('typeahead:initialized', function(evt) {
