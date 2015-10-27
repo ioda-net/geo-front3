@@ -82,14 +82,33 @@ goog.require('ga_urlutils_service');
         Object.defineProperties(olLayer, {
           visible: {
             get: function() {
-              return this.getVisible();
+              return this.userVisible;
             },
             set: function(val) {
+              this.userVisible = val;
+              var vis = this.userVisible && !this.hiddenByOther;
               // apply the value only if it has changed
               // otherwise the change:visible event is triggered when it's
-              // unseless
-              if (val != this.getVisible()) {
-                this.setVisible(val);
+              // useless
+              if (vis != this.getVisible()) {
+                this.setVisible(vis);
+              }
+            }
+          },
+          userVisible: {
+            writable: true,
+            value: true
+          },
+          hiddenByOther: {
+            get: function() {
+              return this.get('hiddenByOther');
+            },
+            set: function(val) {
+              this.set('hiddenByOther', val);
+              if (val && this.userVisible) {
+                this.setVisible(false);
+              } else {
+                this.visible = this.userVisible;
               }
             }
           },
@@ -1011,7 +1030,6 @@ goog.require('ga_urlutils_service');
           lastLangUsed = lang;
           var url = getLayersConfigUrl(lang);
           return $http.get(url).then(function(response) {
-            // Live modifications for 3d test
             if (!layers) { // First load
               layers = response.data;
               // We register events only when layers are loaded
@@ -1720,7 +1738,7 @@ goog.require('ga_urlutils_service');
           if (!extent || extent.length !== 4) {
             return gaGlobalOptions.defaultExtent;
           }
-          var extent = [
+          extent = [
             Math.max(extent[0], gaGlobalOptions.defaultExtent[0]),
             Math.max(extent[1], gaGlobalOptions.defaultExtent[1]),
             Math.min(extent[2], gaGlobalOptions.defaultExtent[2]),
@@ -2107,7 +2125,7 @@ goog.require('ga_urlutils_service');
                 }
               }
               if (angular.isDefined(layer)) {
-                layer.setVisible(visible);
+                layer.visible = visible;
                 // if there is no opacity defined in the permalink, we keep
                 // the default opacity of the layers
                 if (opacity) {
@@ -2576,5 +2594,68 @@ goog.require('ga_urlutils_service');
       return new PreviewLayers();
     };
   });
+
+  /**
+   * Service to pseudo-hide layers behind fully opaque layers
+   * to avoid loading tiles/data for such layers.
+   */
+  module.provider('gaLayerHideManager', function() {
+    this.$get = function($rootScope, gaDebounce, gaLayers, gaLayerFilters) {
+      var layers = [];
+      var unregKeys = [];
+
+      var unreg = function() {
+        angular.forEach(unregKeys, function(key) {
+          if (key) {
+            ol.Observable.unByKey(key);
+          }
+        });
+        unregKeys = [];
+      };
+
+      var updateHiddenState = gaDebounce.debounce(function() {
+        var sortedLayers = layers.slice().reverse();
+        var hide = false;
+
+        unreg();
+
+        angular.forEach(sortedLayers, function(layer) {
+          layer.hiddenByOther = hide;
+
+          // Register all layers for changes
+          unregKeys.push(layer.on('change:visible', function(evt) {
+            updateHiddenState();
+          }));
+          unregKeys.push(layer.on('change:opacity', function(evt) {
+            updateHiddenState();
+          }));
+
+          // First opaque layer
+          if (!hide &&
+              gaLayers.getLayer(layer.id) &&
+              gaLayers.getLayer(layer.id).opaque &&
+              layer.visible &&
+              layer.invertedOpacity == '0') {
+            hide = true;
+          }
+        });
+      }, 50, false, false);
+
+      return function(map) {
+        var scope = $rootScope.$new();
+        scope.layers = map.getLayers().getArray();
+        scope.f = function(l) {
+          return (gaLayerFilters.background(l) ||
+                  gaLayerFilters.selected(l));
+        };
+        scope.$watchCollection('layers | filter:f', function(l) {
+          layers = (l) ? l : [];
+          updateHiddenState();
+        });
+      };
+    };
+  });
+
+
 })();
 

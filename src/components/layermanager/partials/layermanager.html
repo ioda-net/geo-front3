@@ -24,9 +24,8 @@
       </div>
       <button class="ga-icon ga-btn icon-user"
               ng-click="showWarning(layer)"></button>
-      <button ng-if="isBodLayer(layer) && allowInfobox" class="ga-icon ga-btn icon-info-sign"
-              ng-click="displayLayerMetadata($event, layer)"></button>
-    </div>
+      <button class="ga-icon icon-gear"></button>
+    </div><!--ga-layer-infos-->
     <div class="ga-layer-tools">
       <label>
         <div translate>transparency</div>&nbsp;
@@ -46,8 +45,6 @@
         <button ng-if="hasMetadata(layer) && allowInfobox" class="ga-icon ga-btn icon-info-sign"
                 ng-click="displayLayerMetadata($event, layer)"></button>
       </div>
-    </div>
-    <button class="ga-icon icon-gear"></button>
+    </div><!--ga-layer-tools-->
   </li>
 </ul>
-
