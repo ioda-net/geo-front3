@@ -1,8 +1,8 @@
 diff --git i/src/ol/format/wmtscapabilitiesformat.js w/src/ol/format/wmtscapabilitiesformat.js
-index 4318b35..042e08a 100644
+index aabfff5..918a0dd 100644
 --- i/src/ol/format/wmtscapabilitiesformat.js
 +++ w/src/ol/format/wmtscapabilitiesformat.js
-@@ -162,6 +162,18 @@ ol.format.WMTSCapabilities.readTileMatrixSetLink_ = function(node,
+@@ -161,6 +161,18 @@ ol.format.WMTSCapabilities.readTileMatrixSetLink_ = function(node,
   * @private
   * @param {Node} node Node.
   * @param {Array.<*>} objectStack Object stack.
@@ -21,7 +21,7 @@ index 4318b35..042e08a 100644
   * @return {Object|undefined} Resource URL object.
   */
  ol.format.WMTSCapabilities.readResourceUrl_ = function(node, objectStack) {
-@@ -305,6 +317,8 @@ ol.format.WMTSCapabilities.LAYER_PARSERS_ = ol.xml.makeParsersNS(
+@@ -304,6 +316,8 @@ ol.format.WMTSCapabilities.LAYER_PARSERS_ = ol.xml.makeStructureNS(
            ol.format.XSD.readString),
        'TileMatrixSetLink': ol.xml.makeObjectPropertyPusher(
            ol.format.WMTSCapabilities.readTileMatrixSetLink_),
@@ -29,8 +29,8 @@ index 4318b35..042e08a 100644
 +          ol.format.WMTSCapabilities.readDimensions_),
        'ResourceURL': ol.xml.makeObjectPropertyPusher(
            ol.format.WMTSCapabilities.readResourceUrl_)
-     }, ol.xml.makeParsersNS(ol.format.WMTSCapabilities.OWS_NAMESPACE_URIS_, {
-@@ -353,6 +367,23 @@ ol.format.WMTSCapabilities.TMS_LINKS_PARSERS_ = ol.xml.makeParsersNS(
+     }, ol.xml.makeStructureNS(ol.format.WMTSCapabilities.OWS_NAMESPACE_URIS_, {
+@@ -352,6 +366,23 @@ ol.format.WMTSCapabilities.TMS_LINKS_PARSERS_ = ol.xml.makeStructureNS(
   * @type {Object.<string, Object.<string, ol.xml.Parser>>}
   * @private
   */
@@ -51,14 +51,14 @@ index 4318b35..042e08a 100644
 + * @type {Object.<string, Object.<string, ol.xml.Parser>>}
 + * @private
 + */
- ol.format.WMTSCapabilities.WGS84_BBOX_READERS_ = ol.xml.makeParsersNS(
+ ol.format.WMTSCapabilities.WGS84_BBOX_READERS_ = ol.xml.makeStructureNS(
      ol.format.WMTSCapabilities.OWS_NAMESPACE_URIS_, {
        'LowerCorner': ol.xml.makeArrayPusher(
 diff --git i/src/ol/source/wmtssource.js w/src/ol/source/wmtssource.js
-index d494371..3b2fe7e 100644
+index 08ddff7..5bdf7b9 100644
 --- i/src/ol/source/wmtssource.js
 +++ w/src/ol/source/wmtssource.js
-@@ -402,12 +402,12 @@ ol.source.WMTS.optionsFromCapabilities = function(wmtsCap, config) {
+@@ -403,12 +403,12 @@ ol.source.WMTS.optionsFromCapabilities = function(wmtsCap, config) {
    if (goog.isDef(l['Dimension'])) {
      goog.array.forEach(l['Dimension'], function(elt, index, array) {
        var key = elt['Identifier'];
