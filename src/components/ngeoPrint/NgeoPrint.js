@@ -447,14 +447,6 @@ ngeo.Print.prototype.encodeVectorLayer_ = function(arr, layer, resolution) {
     var geometryType = geometry.getType();
     var geojsonFeature = geojsonFormat.writeFeatureObject(feature);
 
-    // Remove style property to avoid problem when converting to JSON
-    // This should be fixed in OpenLayers 3.7, see:
-    // https://github.com/openlayers/ol3/issues/3832
-    if (geojsonFeature.hasOwnProperty('properties') &&
-            geojsonFeature.properties &&
-            geojsonFeature.properties.hasOwnProperty('Style')) {
-      delete geojsonFeature.properties.Style;
-    }
     if (geojsonFeature.hasOwnProperty('properties') &&
             geojsonFeature.properties &&
             geojsonFeature.properties.hasOwnProperty('overlays')) {
