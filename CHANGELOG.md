@@ -1,3 +1,8 @@
+# 2015-10-27
+
+- Add two configaration keys: `default_wms_list` and `default_wmts_list`
+
+
 # 2015-08-31
 
 - Add configuration section for Ioda-Net

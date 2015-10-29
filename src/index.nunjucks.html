@@ -705,6 +705,12 @@ itemscope itemtype="http://schema.org/WebApplication"
           defaultResolution: ${default_resolution},
           defaultEpsg: '${default_epsg}',
           defaultEpsgExtent: ${default_epsg_extent},
+          {% if default_wms_list %}
+          wmsList: '${default_wms_list}'.split(','),
+          {% endif %}
+          {% if default_wmts_list %}
+          wmtsList: '${default_wmts_list}'.split(','),
+          {% endif %}
           fallbackElevationModel: '${fallback_elevation_model}',
           defaultElevationModel: '${default_elevation_model}',
           resolutions: ${resolutions},

@@ -41,6 +41,40 @@ feedback_recipient = 'support@sigeom.ch'
 default_terrain = 'ch.swisstopo.terrain.3d'
 
 
+# Default lists for WMS and WMTS
+# Comment the key to use the default lists. Use an empty array to not propose a list with the interface.
+default_wms_list = [
+  'https://wms.geo.admin.ch/',
+  'http://ogc.heig-vd.ch/mapserver/wms?',
+  'http://wms.geoportal.ch:8080/geoserver/AVAI/wms',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_basiswms_d_fk_s/MapServer/WMSServer?',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_grenzenwms_d_fk_s/MapServer/WMSServer?',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_planungwms_d_fk_s/MapServer/WMSServer?',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_umweltwms_d_fk_s/MapServer/WMSServer?',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_geologiewms_d_fk_s/MapServer/WMSServer?',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_gewaesserwms_d_fk_s/MapServer/WMSServer?',
+  'http://www.geoservice.apps.be.ch/geoservice/services/a4p/a4p_transportwms_d_fk_s/MapServer/WMSServer?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_geologie.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_gewaesser.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_grundlagen.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_natgef.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_oeko.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_richt.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_verkehr.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_wander.wms?',
+  'http://www.sogis1.so.ch/wms/avwms?',
+  'http://www.sogis1.so.ch/wms/grundbuchplan?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_orthofoto.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_bpav.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_strassenkarte.wms?',
+  'http://www.sogis1.so.ch/cgi-bin/sogis/sogis_dtm_dom.wms?',
+  'http://www.sogis1.so.ch/wms/wms_lidar?',
+]
+default_wmts_list = [
+  'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml'
+]
+
+
 # Ioda-Net specific configuration
 [in]
 allow_infobox = false

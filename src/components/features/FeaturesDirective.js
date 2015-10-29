@@ -56,7 +56,11 @@ goog.require('ga_styles_service');
             });
 
             $rootScope.$on('$translateChangeEnd', function() {
-              gaFeaturesGrid.updateLang(scope.options.gridApi, gridsOptions);
+              // The first call to updateLang may occure before we have asked
+              // for features. In this case, gridApi is not yet defined.
+              if (scope.options.gridApi) {
+                gaFeaturesGrid.updateLang(scope.options.gridApi, gridsOptions);
+              }
             });
 
             parser = new ol.format.GeoJSON();

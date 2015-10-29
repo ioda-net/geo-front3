@@ -475,8 +475,7 @@ goog.require('ga_urlutils_service');
    * Manage external WMTS layers
    */
   module.provider('gaWmts', function() {
-    this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils,
-        gaTileGrid) {
+    this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils) {
       var Wmts = function() {
 
         var formatDimensions = function(dimensions) {
@@ -488,72 +487,92 @@ goog.require('ga_urlutils_service');
           return exportedDimensions.join(';');
         };
 
-        var createWmtsLayer = function(options) {
-          options = options || {};
-          var attributions;
+        var completeWmtsConfig = function(layerConfig, capabilities, layer,
+                getCapabilitiesUrl) {
+          layerConfig.Title = layer.Title;
+          layerConfig.Name = layer.Title;
+          layerConfig.Abstract = layer.Abstract;
+          layerConfig.id = 'WMTS||' + layer.Identifier + '||' +
+              formatDimensions(layerConfig.dimensions) + '||' +
+              getCapabilitiesUrl;
+          layerConfig.attribution = capabilities.ServiceProvider.ProviderName;
+          layerConfig.attributionUrl =
+              capabilities.ServiceProvider.ProviderSite;
+          layerConfig.extent = layerConfig.projection.extent_;
+        };
 
-          if (options.attribution) {
-            attributions = [
-              gaMapUtils.getAttribution(options.attribution)
-            ];
-            if (gaUrlUtils.isValid(options.attribution)) {
-              options.attribution = gaUrlUtils.getHostname(options.attribution);
-            }
+        var getLayerConfig = function(getCapabilities, layer) {
+          var getCapabilitiesUrl = getCapabilities.OperationsMetadata
+            .GetCapabilities
+            .DCP
+            .HTTP
+            .Get[0]
+            .href;
+          var requestEncoding = getCapabilities.OperationsMetadata
+            .GetTile
+            .DCP
+            .HTTP
+            .Get[0]
+            .Constraint[0]
+            .AllowedValues
+            .Value[0];
+
+          var layerOptions = {
+            layer: layer.Identifier,
+            requestEncoding: requestEncoding
+          };
+          var layerConfig = ol.source.WMTS.optionsFromCapabilities(
+              getCapabilities, layerOptions);
+          completeWmtsConfig(
+              layerConfig, getCapabilities, layer, getCapabilitiesUrl);
+
+          return layerConfig;
+        };
+
+        this.getLayerConfig = getLayerConfig;
+
+        this.getLayerConfigFromIdentifier = function(getCapabilities,
+            identifier) {
+          var layerConfig;
+          if (getCapabilities.Contents && getCapabilities.Contents.Layer) {
+            getCapabilities.Contents.Layer.forEach(function(layer) {
+              if (layer.Identifier === identifier) {
+                layerConfig = getLayerConfig(getCapabilities, layer);
+              }
+            });
           }
 
-          var source = new ol.source.WMTS({
-            attributions: attributions,
-            dimensions: options.dimensions,
-            layer: '',
-            matrixSet: '21781',
-            format: options.format,
-            projection: 'EPSG:21781',
-            requestEncoding: 'REST',
-            tileGrid: gaTileGrid.get(),
-            url: options.templateUrl,
-            extent: options.extent,
-            ratio: options.ratio || 1
-          });
-
-          var layer = new ol.layer.Tile({
-            id: 'WMTS||' + options.label + '||' +
-                    formatDimensions(options.dimensions) + '||' +
-                    options.templateUrl,
-            extent: gaMapUtils.intersectWithDefaultExtent(
-                    source.getProjection().getExtent()),
-            //minResolution: layer.minResolution,
-            preload: gaMapUtils.preload,
-            //maxResolution: layer.maxResolution,
-            opacity: options.opacity,
-            attribution: options.attribution,
-            source: source
-          });
-          gaDefinePropertiesForLayer(layer);
-          layer.preview = options.preview;
-          layer.displayInLayerManager = !layer.preview;
-          layer.useThirdPartyData =
-                  gaUrlUtils.isThirdPartyValid(options.capabilitiesUrl);
-          layer.label = options.label;
-          return layer;
+          return layerConfig;
         };
 
         // Create an ol WMS layer from GetCapabilities informations
-        this.getOlLayerFromGetCapLayer = function(getCapLayer) {
-          var wmtsOptions = {
-            templateUrl: getCapLayer.wmtsTemplateUrl,
-            capabilitiesUrl: getCapLayer.wmtsCapabilityUrl,
-            label: getCapLayer.Title,
-            extent: gaMapUtils.intersectWithDefaultExtent(getCapLayer.extent),
-            attribution: getCapLayer.owsUrl,
-            dimensions: getCapLayer.dimensions,
-            format: getCapLayer.Format[0]
-          };
-          return createWmtsLayer(wmtsOptions);
+        this.getOlLayerFromGetCapLayer = function(wmtsSourceOptions) {
+          wmtsSourceOptions.attributions = [
+            gaMapUtils.getAttribution('<a href="' +
+              wmtsSourceOptions.attributionUrl +
+              '" target="new">' +
+              wmtsSourceOptions.attribution + '</a>')
+          ];
+          var source = new ol.source.WMTS(wmtsSourceOptions);
+          var layer = new ol.layer.Tile({
+            id: wmtsSourceOptions.id,
+            source: source,
+            extent: gaMapUtils.intersectWithDefaultExtent(
+                  source.getProjection().getExtent()),
+            preload: gaMapUtils.preload,
+            attribution: wmtsSourceOptions.attribution
+          });
+          gaDefinePropertiesForLayer(layer);
+          layer.useThirdPartyData =
+              gaUrlUtils.isThirdPartyValid(wmtsSourceOptions.urls[0]);
+          layer.label = wmtsSourceOptions.Title;
+
+          return layer;
         };
 
         // Create a WMTS layer and add it to the map
         this.addWmtsToMap = function(map, layerOptions, index) {
-          var olLayer = createWmtsLayer(layerOptions);
+          var olLayer = this.getOlLayerFromGetCapLayer(layerOptions);
           if (index) {
             map.getLayers().insertAt(index, olLayer);
           } else {
@@ -574,8 +593,6 @@ goog.require('ga_urlutils_service');
             return dimensions;
           }
         };
-
-        this.formatDimensions = formatDimensions;
       };
       return new Wmts();
     };
@@ -1178,10 +1195,9 @@ goog.require('ga_urlutils_service');
           // CORS errors.
           // Currently crossOrigin definition is only used for mouse cursor
           // detection on desktop in TooltipDirective.
-          var wmsHost = layer.wmsUrl ?
-              gaUrlUtils.getHostname($window.location.protocol + layer.wmsUrl) :
-              undefined;
-          if (gaBrowserSniffer.ios || wmsHost === window.location.host) {
+          var hostRegexp = new RegExp('(https?:)?//' + $window.location.host);
+          if (gaBrowserSniffer.ios ||
+              (layer.wmsUrl && hostRegexp.test(layer.wmsUrl))) {
             crossOrigin = undefined;
           }
 
@@ -2183,23 +2199,23 @@ goog.require('ga_urlutils_service');
               }
             } else if (gaMapUtils.isExternalWmtsLayer(layerSpec)) {
               var infos = layerSpec.split('||');
-              try {
-                var dimensions = gaWmts.importDimensions(infos[2]);
-
-                var wmtsOptions = {
-                  dimensions: dimensions,
-                  templateUrl: infos[3],
-                  label: infos[1]
-                };
-                wmtsOptions.format = /\.png$/.test(wmtsOptions.templateUrl) ?
-                      'image/png' : 'image/jpeg';
-                gaWmts.addWmtsToMap(map,
-                  wmtsOptions, index + 1);
-              } catch (e) {
-                // Adding external WMTS layer failed
+              $http.get(infos[3]).success(function(data) {
+                try {
+                  var getCapabilities =
+                      new ol.format.WMTSCapabilities().read(data);
+                  var layerConfig = gaWmts.getLayerConfigFromIdentifier(
+                      getCapabilities, infos[1]);
+                  layerConfig.dimensions = gaWmts.importDimensions(infos[2]);
+                    gaWmts.addWmtsToMap(map, layerConfig, index + 1);
+                } catch (e) {
+                  // Adding external WMTS layer failed
+                  console.error('Loading of external WMTS layer ' + layerSpec +
+                          ' failed. ' + e);
+                }
+              }).error(function() {
                 console.error('Loading of external WMTS layer ' + layerSpec +
-                        ' failed. ' + e);
-              }
+                        ' failed. Failed to get capabilities from server.');
+              });
             }
           });
 

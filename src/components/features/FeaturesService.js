@@ -171,9 +171,11 @@ goog.require('ga_map_service');
     var globalGridOptions = {
       enableGridMenu: true,
       enableSelectAll: true,
+      exporterHeaderFilter: $translate.instant,
       exporterMenuPdf: false,
       exporterPdfPageSize: 'A4',
       exporterPdfOrientation: 'landscape',
+      gridMenuTitleFilter: $translate,
       exporterPdfFooter: function(currentPage, pageCount) {
         return {text: currentPage.toString() + ' / ' + pageCount.toString()};
       },
@@ -201,11 +203,11 @@ goog.require('ga_map_service');
           '<a target="grudis" href="{{COL_FIELD}}">[G]</a></div>',
 
       hinni: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="hinni" href="{{COL_FIELD}}">' +
+          '<a ng-if="COL_FIELD.length>0" target="hinni" href="{{COL_FIELD}}">' +
           '<img src="img/dbh.png" style="width:18px;height:18px" /></a></div>',
 
       photo: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="photo" href="{{COL_FIELD}}">' +
+          '<a ng-if="COL_FIELD.length>0" target="photo" href="{{COL_FIELD}}">' +
           '<img src="img/camera.png" style="width:18px;height:18px"/>' +
           '</a></div>',
 
