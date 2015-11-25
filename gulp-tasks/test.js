@@ -81,12 +81,11 @@ function load(src, dest, config) {
             extReplace('prod.js', '.nunjucks.html'),
             extReplace('dev.js', '.nunjucks.html')
             ))
-        .pipe(gulp.dest(dest.test))
+        .pipe(gulp.dest(dest.test));
   });
 
 
   gulp.task('testintegration', function (cb) {
-    dest.dev = 'dev/coverage';
     runSequence([
       'build-test-conf',
       'index.html',

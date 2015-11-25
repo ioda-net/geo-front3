@@ -12,7 +12,7 @@ function load(src, dest, config) {
 
     return gulp.src(src.pluginsTemplate)
             .pipe(data(function () {
-              plugins.activatedPlugins = config.activatedPlugins;
+              plugins.activatedPlugins = config.front.default_values.plugins;
 
               return plugins;
             }))

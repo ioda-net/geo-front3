@@ -35,7 +35,7 @@ function load(src, dest, config) {
     ])
             .pipe(uglify())
             .pipe(concat('build.js'))
-            .pipe(gulp.dest(dest.prod + '/lib'));
+            .pipe(gulp.dest(dest.lib));
   });
 
 

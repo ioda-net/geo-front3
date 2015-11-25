@@ -6,13 +6,13 @@ var uglify = require('gulp-uglify');
 function load(src, dest, config) {
   gulp.task('copy-js', function () {
     return gulp.src(src.js)
-            .pipe(gulp.dest(dest.dev));
+            .pipe(gulp.dest(dest.output));
   });
 
 
   gulp.task('copy-cesium', ['copy-cesium-folder'], function() {
     return gulp.src(src.ol3cesium)
-        .pipe(gulp.dest(dest.lib));
+        .pipe(gulp.dest(dest.output));
   });
 
 
@@ -25,37 +25,31 @@ function load(src, dest, config) {
   gulp.task('copy-pdfmake-prod', function () {
     return gulp.src(src.pdfmakeProd)
             .pipe(uglify())
-            .pipe(gulp.dest(dest.lib));
+            .pipe(gulp.dest(dest.output));
   });
 
 
   gulp.task('copy-css', function () {
     return gulp.src(src.css)
-            .pipe(gulpif(config.prod,
-              gulp.dest(dest.prod),
-              gulp.dest(dest.dev)));
+            .pipe(gulp.dest(dest.output));
   });
 
 
   gulp.task('copy-partials', function () {
     return gulp.src(src.partials, {base: './src/'})
-            .pipe(gulp.dest(dest.dev));
+            .pipe(gulp.dest(dest.output));
   });
 
 
   gulp.task('copy-fonts', function () {
     return gulp.src(src.font)
-            .pipe(gulpif(config.prod,
-                    gulp.dest(dest.prod),
-                    gulp.dest(dest.dev)));
+            .pipe(gulp.dest(dest.output));
   });
 
 
   gulp.task('copy-checker', function () {
     return gulp.src('src/checker')
-            .pipe(gulpif(config.prod,
-                    gulp.dest(dest.prod),
-                    gulp.dest(dest.dev)));
+            .pipe(gulp.dest(dest.output));
   });
 
 

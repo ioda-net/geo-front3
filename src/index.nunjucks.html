@@ -10,9 +10,9 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta http-equiv="X-UA-Compatible" content="IE=9,IE=10,IE=edge,chrome=1"/>
     <![endif]-->
 {% if device == 'index' %}
-    <title translate="page_title">${portal_name}</title>
+    <title translate="page_title">${geoportal.name}</title>
 {% else %}
-    <title>${portal_name}</title>
+    <title>${geoportal.name}</title>
 {% endif %}
     <meta charset="utf-8"/>
 {#
@@ -28,13 +28,13 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, minimal-ui"/>
     <meta name="apple-mobile-web-app-capable" content="yes"/>
     <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
-    <meta name="application-name" content="${portal_name}"/>
+    <meta name="application-name" content="${geoportal.name}"/>
     <meta name="msapplication-TileImage" content="${versionslashed}img/touch-icon-bund-144x144.png"/>
     <meta name="msapplication-TileColor" content="#ffffff"/>
     <meta name="msapplication-square70x70logo" content="${versionslashed}img/touch-icon-bund-70x70.png"/>
     <meta name="msapplication-square150x150logo" content="${versionslashed}img/touch-icon-bund-150x150.png"/>
     <meta name="msapplication-square310x310logo" content="${versionslashed}img/touch-icon-bund-310x310.png"/>
-    <link rel="dns-prefetch" href="${api_url}"/>
+    <link rel="dns-prefetch" href="${front.build.api_url}"/>
 
     <link rel="apple-touch-icon" sizes="76x76" href="${versionslashed}img/touch-icon-bund-76x76.png"/>
     <link rel="apple-touch-icon" sizes="120x120" href="${versionslashed}img/touch-icon-bund-120x120.png"/>
@@ -168,8 +168,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
         </a>&nbsp;&nbsp;
         <a target="_blank" href="help/#?lang={{langId}}" translate>help_label</a>&nbsp;&nbsp;
-  {% if legends_url %}
-        <a target="_blank" href="${legends_url}" translate>legend_label</a>&nbsp;&nbsp;
+  {% if front.url.legends %}
+        <a target="_blank" href="${front.url.legends}" translate>legend_label</a>&nbsp;&nbsp;
   {% endif %}
         <a href="{{deviceSwitcherHref}}" translate>mobile_redirect</a>&nbsp;&nbsp;
         <div ng-controller="GaTranslationController">
@@ -261,7 +261,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   {% endif %}
      <div class="pull-right">
-        <a target="_blank" href="${copyrights_url}" translate>copyright_label</a>
+        <a target="_blank" href="${front.url.copyrights}" translate>copyright_label</a>
       </div>
   {% if device == 'index' %}
       {# <!-- Remove fix temp https://github.com/ioda-net/geo-front3/issues/58 -->
@@ -483,7 +483,7 @@ itemscope itemtype="http://schema.org/WebApplication"
                 <a target="_blank" href="{{topicId + '_service_link_href' | translate}}">{{topicId + '_service_link_label' | translate}}</a>
                 <br>
                 #}
-                <a target="_blank" href="${copyrights_url}" translate>copyright_label</a>
+                <a target="_blank" href="${front.url.copyrights}" translate>copyright_label</a>
               </p>
             </div>
           </div>
@@ -655,7 +655,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <script>
       window.addEventListener('load', function() {
         if (window.name !== "embed" && window.location == window.parent.location) {
-          document.body.innerHTML = "The ${portal_name} embed page must be used in an iframe."
+          document.body.innerHTML = "The ${geoportal.name} embed page must be used in an iframe."
         }
       }, false);
     </script>
@@ -670,38 +670,37 @@ itemscope itemtype="http://schema.org/WebApplication"
         module.constant('gaGlobalOptions', {
           //dev3d to be removed once 3d goes live
           dev3d: !!window.location.search.match(/(dev3d=true)/),
-          externalWmsHostnames: ${external_wms_hostnames},
-          mapUrl: location.origin + '${apache_base_path}',
-          apiUrl: location.protocol + '${api_url}',
-          publicUrl : location.protocol + '${public_url}',
-          publicUrlRegexp: new RegExp('${public_url_regexp}'),
-          adminUrlRegexp: new RegExp('${admin_url_regexp}'),
-          cachedApiUrl: location.protocol + '${api_url}' + cacheAdd,
+          externalWmsHostnames: ${front.default_values.external_wms_hostnames},
+          mapUrl: location.origin + '${front.build.apache_base_path}',
+          apiUrl: location.protocol + '${front.build.api_url}',
+          publicUrl : location.protocol + '${front.build.public_url}',
+          publicUrlRegexp: new RegExp('${front.build.public_url_regexp}'),
+          adminUrlRegexp: new RegExp('${front.build.admin_url_regexp}'),
+          cachedApiUrl: location.protocol + '${front.build.api_url}' + cacheAdd,
           resourceUrl: location.origin + pathname + '${versionslashed}',
-          ogcproxyUrl : location.protocol + '${api_url}' + '/ogcproxy?url=',
+          ogcproxyUrl : location.protocol + '${front.build.api_url}' + '/ogcproxy?url=',
           whitelist: [
             'https://' + window.location.host + '/**'
           ],
-          defaultTopicId: '${default_topic_id}',
-          translationFallbackCode: '${translation_fallback_code}',
-          defaultExtent: ${default_extent},
-          defaultResolution: ${default_resolution},
-          defaultEpsg: '${default_epsg}',
-          defaultEpsgExtent: ${default_epsg_extent},
-          {% if default_wms_list %}
-          wmsList: '${default_wms_list}'.split(','),
+          defaultTopicId: '${front.default_values.topic_id}',
+          translationFallbackCode: '${front.default_values.lang}',
+          defaultExtent: ${geoportal.extent},
+          defaultResolution: ${front.default_values.resolution},
+          defaultEpsg: '${geoportal.epsg}',
+          defaultEpsgExtent: ${geoportal.epsg_extent},
+          {% if front.default_values.wms_list %}
+          wmsList: ${front.default_values.wms_list},
           {% endif %}
-          {% if default_wmts_list %}
-          wmtsList: '${default_wmts_list}'.split(','),
+          {% if front.default_values.wmts_list %}
+          wmtsList: ${front.default_values.wmts_list},
           {% endif %}
-          fallbackElevationModel: '${fallback_elevation_model}',
-          defaultElevationModel: '${default_elevation_model}',
-          resolutions: ${resolutions},
-          portalName: '${portal_name}',
+          defaultElevationModel: '${front.default_values.elevation_model}',
+          resolutions: ${front.default_values.resolutions},
+          portalName: '${geoportal.name}',
           dpUrl: '/lib/IE/bootstrap-datetimepicker.js',
           defaultTerrain: '${default_terrain}',
-          languages: '${languages}'.split(','),
-          feedbackRecipient: '${feedback_recipient}'
+          languages: ${geoportal.langs},
+          feedbackRecipient: '${front.build.feedback_recipient}'
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {
@@ -771,8 +770,8 @@ itemscope itemtype="http://schema.org/WebApplication"
       (function() {
         var module = angular.module('IN');
         module.constant('inGlobalOptions', {
-          allowWebdav: ${in.allow_webdav},
-          allowInfobox: ${in.allow_infobox}
+          allowWebdav: ${front.gf3.allow_webdav | lower},
+          allowInfobox: ${front.gf3.allow_infobox | lower}
         });
       })();
 

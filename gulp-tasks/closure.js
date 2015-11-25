@@ -67,7 +67,7 @@ function load(src, dest, config) {
 
     return run(cmd, {verbosity: 0}).exec()
             .pipe(rename('deps.js'))
-            .pipe(gulp.dest(dest.dev));
+            .pipe(gulp.dest(dest.output));
   });
 }
 
