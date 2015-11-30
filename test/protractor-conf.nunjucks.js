@@ -17,7 +17,7 @@ exports.config = {
     '../test/integration/*.spec.js',
     '../test/selenium/*_test.js'
   ],
-  seleniumAddress: '${seleniumAddress}',
+  seleniumAddress: '${test.protractor.selenium_address}',
   maxSessions: 1,
   multiCapabilities: [
     {browserName: 'firefox', shardTestFiles: true, maxInstances: 1}
@@ -28,9 +28,9 @@ exports.config = {
     var jasmineEnv = jasmine.getEnv();
     waitPlugin.setOnComplete(report);
     browser.driver.manage().window().maximize();
-    browser.get('${testPortalAddress}');
+    browser.get('${test.protractor.test_portal_address}');
 
-    {% if generateCoverageReport %}
+    {% if test.protractor.generate_coverage_report %}
     jasmineEnv.addReporter(new function () {
       this.specDone = function (spec) {
         if (spec.status !== 'failed') {
