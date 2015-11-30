@@ -29,9 +29,7 @@ module.exports = function(config) {
 	       'lib/EPSG32631.js',
 	       'lib/EPSG32632.js',
            'lib/ol.js',
-           {% for jsFile in jsFiles -%}
-              ${jsFile}
-           {% endfor %}
+           ${js_files}
 	    {% endif %}
 	       '../test/angular/angular-mocks.js',
 	       '../test/expect-0.2.0/expect.js',
@@ -103,7 +101,7 @@ module.exports = function(config) {
 	// - Safari (only Mac)
 	// - PhantomJS
 	// - IE (only Windows)
-	browsers: ['Firefox', 'Chrome'],
+	browsers: ${test.karma.browsers},
 
 
 	// If browser does not capture in given timeout [ms], kill it
