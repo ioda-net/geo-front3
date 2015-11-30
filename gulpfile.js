@@ -32,7 +32,6 @@ require('./gulp-tasks/build')(src, dest, config);
 require('./gulp-tasks/clean')(src, dest, config);
 require('./gulp-tasks/closure')(src, dest, config);
 require('./gulp-tasks/copy')(src, dest, config);
-require('./gulp-tasks/misc')(src, dest, config);
 require('./gulp-tasks/plugins')(src, dest, config);
 require('./gulp-tasks/site')(src, dest, config);
 require('./gulp-tasks/test')(src, dest, config);
