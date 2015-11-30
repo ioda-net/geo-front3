@@ -20,15 +20,21 @@ GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat 
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= dedf0a5d638ef36d1b74d13b8bf0b7223b762f7d
-OL3_CESIUM_VERSION ?= d72857d9c53471063d80f3622004dc14acbe6278
-CESIUM_VERSION ?= 9e67416d1016436b5cb237d6ec34f6c988bc5ecc
+OL3_VERSION ?= 627abaf1a71d48627163eb00ea6a0b6fb8dede14
+OL3_CESIUM_VERSION ?= c68901adc91bbc019d6cc70056c51c00aa2fe99f
+CESIUM_VERSION ?= 3e3cf938786ee48b4b376ed932904541d798671d
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"en\", \"fr\", \"it\", \"rm\"]'
+TRANSLATE_GSPREAD_KEYS ?= 1F3R46w4PODfsbJq7jd79sapy3B7TXhQcYM7SEaccOA0
+TRANSLATE_CSV_FILES ?= "https://docs.google.com/spreadsheets/d/1F3R46w4PODfsbJq7jd79sapy3B7TXhQcYM7SEaccOA0/export?format=csv&gid=0"
+TRANSLATE_EMPTY_JSON ?= src/locales/empty.json
+TRANSLATE_OUTPUT ?= src/locales
 DEFAULT_EXTENT ?= '[420000, 30000, 900000, 350000]'
 DEFAULT_RESOLUTION ?= 500.0
+DEFAULT_LEVEL_OF_DETAIL ?= 7 #level of detail for the default resolution
 RESOLUTIONS ?= '[650.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 2.0, 1.0, 0.5, 0.25, 0.1]'
+LEVEL_OF_DETAILS ?= '[6, 7, 8, 9, 10, 11, 12, 13, 14, 14, 16, 17, 18, 18]' #lods corresponding to resolutions
 DEFAULT_EPSG ?= EPSG:21781
 DEFAULT_EPSG_EXTEND ?= '[420000, 30000, 900000, 350000]'
 DEFAULT_ELEVATION_MODEL ?= COMB
@@ -182,23 +188,24 @@ ol: scripts/ol-geoadmin.json .build-artefacts/ol3
 	cp $(addprefix .build-artefacts/ol3/build/,$(OL_JS)) src/lib/;
 
 .PHONY: ol3cesium
-ol3cesium: .build-artefacts/ol3-cesium
+ol3cesium: ol .build-artefacts/ol3-cesium
 	cd .build-artefacts/ol3-cesium; \
 	git reset HEAD --hard; \
-	git fetch -a; \
+	git fetch --all; \
 	git checkout $(OL3_CESIUM_VERSION); \
 	git submodule update --recursive --init --force; \
 	cd cesium; \
 	git remote | grep c2c || git remote add c2c git://github.com/camptocamp/cesium; \
-	git fetch c2c; \
+	git fetch --all; \
 	git checkout $(CESIUM_VERSION); \
 	cd ..; \
 	git show; \
 	ln -T -f -s ../../../../ol3-cesium-plugin/ src/plugins/geoadmin; \
-	make dist; \
+	( cd cesium; [ -f node_modules/.bin/gulp ] || npm install ); \
+	( cd cesium; if [ -e "Build/Cesium" ] && [ -e "Build/CesiumUnminified" ]; then echo 'Skipping Cesium debug build'; else npm run combine; rm -rf Build/Cesium; npm run minifyRelease; fi ); \
+	NO_CESIUM=1 make dist; \
 	node build/build.js ../../scripts/ol3cesium-debug-geoadmin.json dist/ol3cesium-debug.js;  \
 	cp dist/ol3cesium-debug.js ../../src/lib/; \
-	make cesium/Build/Cesium/Cesium.js -e CESIUM_COMPILE_TARGET=minifyRelease; \
 	cat cesium/Build/Cesium/Cesium.js dist/ol3cesium.js > ../../src/lib/ol3cesium.js; \
 	rm -rf ../../src/lib/Cesium/*; \
 	cp -r cesium/Build/CesiumUnminified/* ../../src/lib/Cesium;
@@ -231,8 +238,12 @@ update-datepicker:
 	cp node_modules/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js src/lib/
 
 .PHONY: translate
-translate: .build-artefacts/translate-requirements-installation.timestamp
-	${PYTHON_CMD} scripts/translation2json.py
+translate:
+	${PYTHON_CMD} scripts/translation2json.py \
+            --files $(TRANSLATE_CSV_FILES) \
+	    --languages "$(LANGUAGES)" \
+	    --empty-json-file $(TRANSLATE_EMPTY_JSON) \
+            --output-folder $(TRANSLATE_OUTPUT)
 
 .PHONY: fixrights
 fixrights:
@@ -313,14 +324,17 @@ define buildpage
 		--var "languages=$(LANGUAGES)" \
 		--var "default_extent"="$(DEFAULT_EXTENT)" \
 		--var "default_resolution"="$(DEFAULT_RESOLUTION)" \
+		--var "default_level_of_detail"="$(DEFAULT_LEVEL_OF_DETAIL)" \
 		--var "resolutions"="$(RESOLUTIONS)" \
+		--var "level_of_details"="$(LEVEL_OF_DETAILS)" \
 		--var "public_url=$(PUBLIC_URL)" \
 		--var "default_elevation_model=${DEFAULT_ELEVATION_MODEL}" \
 		--var "default_terrain=$(DEFAULT_TERRAIN)" \
 		--var "admin_url_regexp=$(ADMIN_URL_REGEXP)" \
 		--var "public_url_regexp=$(PUBLIC_URL_REGEXP)" \
 		--var "default_epsg"="$(DEFAULT_EPSG)" \
-		--var "default_epsg_extend"="$(DEFAULT_EPSG_EXTEND)" $< > $@
+		--var "default_epsg_extend"="$(DEFAULT_EPSG_EXTEND)" \
+		--var "staging"="$(DEPLOY_TARGET)" $< > $@
 endef
 
 prd/index.html: src/index.mako.html \
@@ -494,13 +508,6 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 
 .build-artefacts/python-venv/bin/htmlmin: .build-artefacts/python-venv
 	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "htmlmin==0.1.6"
-	touch $@
-
-.build-artefacts/translate-requirements-installation.timestamp: .build-artefacts/python-venv
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "PyYAML==3.10"
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "oauth2client==1.4.11"
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "gspread==0.2.5"
-	${PYTHON_CMD} .build-artefacts/python-venv/bin/pip install "pyopenssl==0.15.1"
 	touch $@
 
 .build-artefacts/python-venv/bin/gjslint: .build-artefacts/python-venv

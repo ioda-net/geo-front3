@@ -95,12 +95,25 @@ goog.require('ga_topic_service');
         startWith3D = true;
       }
 
+      var onRenderError = function(scene, error) {
+        $scope.globals.is3dActive = undefined;
+        alert($translate.instant('3d_render_error'));
+        $window.console.error(error.stack);
+        // Avoid the alert comes twice
+        $scope.ol3d.getCesiumScene().renderError.removeEventListener(
+           onRenderError);
+      };
+
       var cesium = new GaCesium($scope.map, gaPermalink, gaLayers,
-                                          gaGlobalOptions, $q);
+                                gaGlobalOptions, gaBrowserSniffer, $q,
+                                $translate);
       cesium.loaded().then(function(ol3d) {
         $scope.ol3d = ol3d;
         if (!$scope.ol3d) {
           $scope.globals.is3dActive = undefined;
+        } else {
+          $scope.ol3d.getCesiumScene().renderError.addEventListener(
+              onRenderError);
         }
       });
 
@@ -112,18 +125,8 @@ goog.require('ga_topic_service');
       $scope.map.on('change:target', function(event) {
         if (!!$scope.map.getTargetElement()) {
 
-          // Lazy load on idle (Desktop only)
-          if (!startWith3D &&
-              !gaBrowserSniffer.mobile && !gaBrowserSniffer.embed) {
-            var unregIdle = $scope.$on('gaIdle', function() {
-              cesium.enable(false);
-              unregIdle();
-            });
-          }
-
           $scope.$watch('globals.is3dActive', function(active) {
             if (active || $scope.ol3d) {
-              unregIdle && unregIdle() && (unregIdle = undefined);
               cesium.enable(active);
             }
           });
@@ -157,7 +160,7 @@ goog.require('ga_topic_service');
     gaRealtimeLayersManager($scope.map);
 
     // Optimize performance by hiding non-visible layers
-    gaLayerHideManager($scope.map);
+    gaLayerHideManager($scope);
 
     var initWithPrint = /print/g.test(gaPermalink.getParams().widgets);
     var initWithFeedback = /feedback/g.test(gaPermalink.getParams().widgets);
@@ -223,6 +226,7 @@ goog.require('ga_topic_service');
 
     $scope.globals = {
       dev3d: gaGlobalOptions.dev3d,
+      pegman: gaGlobalOptions.pegman,
       searchFocused: !gaBrowserSniffer.mobile,
       homescreen: false,
       tablet: gaBrowserSniffer.mobile && !gaBrowserSniffer.phone,
@@ -249,6 +253,16 @@ goog.require('ga_topic_service');
       if (active) {
         $scope.globals.feedbackPopupShown = false;
         $scope.globals.isSwipeActive = false;
+      }
+    });
+    // Deactivate all tools when 3d is opening
+    $scope.$watch('globals.is3dActive', function(active) {
+      if (active) {
+        $scope.globals.feedbackPopupShown = false;
+        $scope.globals.isFeatureTreeActive = false;
+        $scope.globals.isSwipeActive = false;
+        $scope.globals.isDrawActive = false;
+        $scope.globals.isShareActive = false;
       }
     });
     $rootScope.$on('gaNetworkStatusChange', function(evt, offline) {

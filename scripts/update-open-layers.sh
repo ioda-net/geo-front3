@@ -17,6 +17,7 @@ cd "${geo_front_root}"
 # Get Open Layers version
 ol_version=$(grep 'OL3_VERSION ?=' Makefile | cut -f 3 -d ' ')
 ol_cesium_version=$(grep 'OL3_CESIUM_VERSION ?=' Makefile | cut -f 3 -d ' ')
+cesium_version=$(grep '^CESIUM_VERSION' Makefile | cut -f 3 -d ' ')
 
 
 # Open Layers
@@ -29,14 +30,10 @@ fi
 cd ol3
 git reset HEAD --hard
 git checkout master
-git fetch -a
+git fetch --all
 
 # Switch to the proper tag
 git checkout "${ol_version}"
-
-# Apply patch (should be merged in 3.10.0)
-# See https://github.com/openlayers/ol3/pull/4045
-patch -p1 < "${patch_dir}/wmts-import.patch"
 
 # Apply patches by Swisstopo
 cat ../../scripts/ga-ol3-style.exports >> src/ol/style/style.js
@@ -57,16 +54,29 @@ if [[ ! -d ol3-cesium ]]; then
 fi
 cd ol3-cesium
 git reset HEAD --hard
-git fetch -a
-
-# Switch to the proper tag
+git fetch --all
+## Switch to the proper tag
 git checkout "${ol_cesium_version}"
 git submodule update --recursive --init --force
 
+## Building cesium
+cd cesium
+git remote | grep c2c || git remote add c2c git://github.com/camptocamp/cesium
+git fetch --all
+git checkout "${CESIUM_VERSION}"
+npm install
+if [[ -e "Build/Cesium" && -e "Build/CesiumUnminified" ]]; then
+    echo 'Skipping Cesium debug build'
+else
+    npm run combine
+    rm -rf Build/Cesium
+    npm run minifyRelease
+fi
+cd ..
+
 # Build (from swisstopo's Makefile)
-make dist
+NO_CESIUM=1 make dist make dist
 node build/build.js "${geo_front_root}/scripts/ol3cesium-debug-geoadmin.json" "${geo_front_root}/src/lib/ol3cesium-debug.js"
-make cesium/Build/Cesium/Cesium.js
 cat cesium/Build/Cesium/Cesium.js dist/ol3cesium.js > "${geo_front_root}/src/lib/ol3cesium.js"
 rm -rf "${geo_front_root}/src/lib/Cesium/*"
 cp -r cesium/Build/CesiumUnminified/* "${geo_front_root}/src/lib/Cesium/"

@@ -140,10 +140,17 @@ itemscope itemtype="http://schema.org/WebApplication"
         IE9Fix.call(this);
       </script>
     <![endif]-->
-    <div ng-cloak
-         class="corner-ribbon top-left sticky red shadow" ng-show="globals.is3dActive">
+
+    <div ng-cloak class="corner-ribbon 
+% if device == 'mobile':
+    top-left    
+% else:
+    bottom-left
+% endif
+    sticky red shadow" ng-show="globals.is3dActive">
       3D - ALPHA
     </div>
+
     <div ng-controller="GaSeoController">
       <div ga-seo ga-seo-options="options" ga-seo-map="map"></div>
     </div>
@@ -234,7 +241,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 % endif
 
-    <div ga-controls3d ga-controls3d-ol3d="::ol3d" ng-if="ol3d" ng-show="globals.is3dActive"></div>
+    <div ga-controls3d ga-controls3d-ol3d="::ol3d" ng-if="ol3d" ng-show="globals.is3dActive" ga-controls3d-pegman="globals.pegman"></div>
 
 % if device != 'embed':
     <div ng-cloak ga-background-selector
@@ -275,9 +282,10 @@ itemscope itemtype="http://schema.org/WebApplication"
 
 % if device != 'embed':
     <div ng-controller="GaTimeSelectorController">
-      <div ga-time-selector ga-time-selector-map="map"
-           ga-time-selector-options="options"
-           ng-show="!globals.is3dActive">
+      <div ga-time-selector
+           ga-time-selector-map="::map"
+           ga-time-selector-ol3d="::ol3d"
+           ga-time-selector-options="options">
       </div>
     </div>
 % endif
@@ -707,7 +715,12 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         module.constant('gaGlobalOptions', {
           //dev3d to be removed once 3d goes live
+% if staging=='prod' :
+          dev3d: false,
+% else:
           dev3d: !!window.location.search.match(/(dev3d=true)/),
+% endif
+          pegman: !!window.location.search.match(/(pegman=true)/),
           mapUrl : location.origin + '${apache_base_path}',
           apiUrl : location.protocol + '${api_url}',
           publicUrl : location.protocol + '${public_url}',
@@ -723,7 +736,9 @@ itemscope itemtype="http://schema.org/WebApplication"
           translationFallbackCode: '${translation_fallback_code}',
           defaultExtent: JSON.parse(${default_extent}),
           defaultResolution: ${default_resolution},
+          defaultLod: ${default_level_of_detail},
           resolutions: JSON.parse(${resolutions}),
+          lods: JSON.parse(${level_of_details}),
           defaultEpsg: '${default_epsg}',
           defaultEpsgExtent: JSON.parse(${default_epsg_extend}),
           defaultElevationModel: '${default_elevation_model}',

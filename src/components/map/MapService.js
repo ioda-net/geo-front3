@@ -387,7 +387,8 @@ goog.require('ga_urlutils_service');
           rectangle: gaMapUtils.extentToRectangle(extent, 'EPSG:21781'),
           proxy: proxy,
           tilingScheme: new Cesium.GeographicTilingScheme(),
-          hasAlphaChannel: true
+          hasAlphaChannel: true,
+          availableLevels: window.imageryAvailableLevels
         });
       };
 
@@ -694,9 +695,13 @@ goog.require('ga_urlutils_service');
 
       // Sanitize the feature's properties (id, geometry, style).
       var sanitizeFeature = function(feature, projection) {
+        var geometry = feature.getGeometry();
+        // Remove feature without geometry.
+        if (!geometry) {
+          return;
+        }
         // Ensure polygons are closed.
         // Reason: print server failed when polygons are not closed.
-        var geometry = feature.getGeometry();
         closeGeometries((geometry instanceof ol.geom.GeometryCollection) ?
             geometry.getGeometries() : [geometry]);
 
@@ -729,7 +734,8 @@ goog.require('ga_urlutils_service');
           }
 
           // If the feature has name we display it on the map as Google does
-          if (feature.get('name') && style.getText()) {
+          if (feature.get('name') && style.getText() &&
+              style.getText().getScale() != 0) {
             if (image && image.getScale() == 0) {
               // transparentCircle is used to allow selection
               image = gaStyleFactory.getStyle('transparentCircle');
@@ -777,6 +783,7 @@ goog.require('ga_urlutils_service');
           })];
           feature.setStyle(styles);
         }
+        return feature;
       };
 
       var Kml = function() {
@@ -802,11 +809,15 @@ goog.require('ga_urlutils_service');
 
           // Read features available in a kml string, then create an ol layer.
           return readFeatures(kml).then(function(features) {
+            var sanitizedFeatures = [];
             for (var i = 0, ii = features.length; i < ii; i++) {
-              sanitizeFeature(features[i], options.projection);
+              var feat = sanitizeFeature(features[i], options.projection);
+              if (feat) {
+                sanitizedFeatures.push(feat);
+              }
             }
             var source = new ol.source.Vector({
-              features: features
+              features: sanitizedFeatures
             });
             var layerOptions = {
               id: options.id,
@@ -950,7 +961,11 @@ goog.require('ga_urlutils_service');
         var layers;
 
         // Returns a unique WMS template url (e.g. //wms{s}.geo.admin.ch)
-        var getWmsTpl = function(tpl, wmsParams) {
+        var getWmsTpl = function(wmsUrl, wmsParams) {
+          var tpl = wmsUrl;
+          if (/wms.geo/.test(wmsUrl)) {
+            tpl = undefined;
+          }
           if (tpl && /(request|service|version)/i.test(tpl)) {
             tpl = gaUrlUtils.remove(tpl, ['request', 'service', 'version'],
                 true);
@@ -1095,7 +1110,10 @@ goog.require('ga_urlutils_service');
           var requestedLayer = config3d.serverLayerName || bodId;
           if (config3d.type == 'terrain') {
             provider = new Cesium.CesiumTerrainProvider({
-              url: getTerrainTileUrl(requestedLayer, timestamp)
+              url: getTerrainTileUrl(requestedLayer, timestamp),
+              availableLevels: window.terrainAvailableLevels,
+              rectangle: gaMapUtils.extentToRectangle(
+                gaGlobalOptions.defaultExtent, 'EPSG:21781')
             });
             provider.bodId = bodId;
           }
@@ -1112,7 +1130,6 @@ goog.require('ga_urlutils_service');
           var requestedLayer = config3d.wmsLayers || config3d.serverLayerName ||
               bodId;
           var format = config3d.format || 'png';
-
           if (config3d.type == 'aggregate') {
             var providers = [];
             config3d.subLayersIds.forEach(function(item) {
@@ -1120,7 +1137,7 @@ goog.require('ga_urlutils_service');
               if (Array.isArray(subProvider)) {
                 providers.push.apply(providers, subProvider);
               } else {
-                providers.push(this.getCesiumImageryProviderById(item));
+                providers.push(subProvider);
               }
             }, this);
             return providers;
@@ -1129,8 +1146,6 @@ goog.require('ga_urlutils_service');
             params = {
               url: getWmtsGetTileTpl(config3d.url, requestedLayer, timestamp,
                   '4326', format),
-              minimumRetrievingLevel: window.minimumRetrievingLevel,
-              maximumLevel: 20,
               tileSize: 256,
               subdomains: config3d.subdomains || dfltWmtsMapProxySubdomains
             };
@@ -1161,15 +1176,32 @@ goog.require('ga_urlutils_service');
           var extent = gaMapUtils.intersectWithDefaultExtent(config3d.extent ||
               ol.proj.get('EPSG:21781').getExtent());
           if (params) {
+            var minRetLod = gaMapUtils.getLodFromRes(config3d.maxResolution) ||
+                window.minimumRetrievingLevel;
+            var maxRetLod = gaMapUtils.getLodFromRes(config3d.minResolution);
+            var maxLod = 17;// 17 is the last terrain level
+            if (config3d.resolutions) {
+              maxLod = gaMapUtils.getLodFromRes(
+                  config3d.resolutions[config3d.resolutions.length - 1]);
+            }
             provider = new Cesium.UrlTemplateImageryProvider({
               url: params.url,
-              minimumRetrievingLevel: window.minimumRetrievingLevel,
               subdomains: params.subdomains,
+              minimumRetrievingLevel: minRetLod,
+              maximumRetrievingLevel: maxRetLod,
+              // This property active client zoom for next levels.
+              maximumLevel: maxLod,
               rectangle: gaMapUtils.extentToRectangle(extent, 'EPSG:21781'),
               tilingScheme: new Cesium.GeographicTilingScheme(),
               tileWidth: params.tileSize,
               tileHeight: params.tileSize,
-              hasAlphaChannel: (format == 'png')
+              hasAlphaChannel: (format == 'png'),
+              availableLevels: window.imageryAvailableLevels
+              // Experimental
+              // Because of troubles in layer.json definitions, we remove this
+              // feature for now. We will re-activate after demo
+              //metadataUrl: '//terrain3.geo.admin.ch/1.0.0/' + bodId +
+              //    '/default/20150101/4326/'
             });
           }
           if (provider) {
@@ -1392,17 +1424,16 @@ goog.require('ga_urlutils_service');
          * found.
          */
         this.getLayerTimestampFromYear = function(bodId, yearStr) {
+          if (angular.isNumber(yearStr)) {
+            yearStr = '' + yearStr;
+          }
           var layer = this.getLayer(bodId);
           var timestamps = layer.timestamps || [];
 
           if (!layer.timeEnabled) {
-            // a WMTS layer has at least one timestamp
+            // a WMTS/Terrain layer has at least one timestamp
             return (layer.type == 'wmts' || layer.type == 'terrain') ?
                 timestamps[0] : undefined;
-          } else if (layer.type == 'wms') {
-            // A time enabled WMS layer has no timestamps so we return the
-            // yearsStr unchanged
-            return yearStr;
           }
 
           if (!angular.isDefined(yearStr)) {
@@ -1441,11 +1472,16 @@ goog.require('ga_urlutils_service');
    * Service provides map util functions.
    */
   module.provider('gaMapUtils', function() {
-    this.$get = function($window, gaGlobalOptions, gaUrlUtils, $q) {
+    this.$get = function($window, gaGlobalOptions, gaUrlUtils, $q,
+        gaDefinePropertiesForLayer) {
       var resolutions = gaGlobalOptions.resolutions;
+      var lodsForRes = gaGlobalOptions.lods;
       var isExtentEmpty = function(extent) {
         return extent[0] >= extent[2] || extent[1] >= extent[3];
       };
+      // Level of detail for the default resolution
+      var lodForDfltRes = gaGlobalOptions.defaultLod;
+      var dfltResIdx = resolutions.indexOf(gaGlobalOptions.defaultResolution);
 
       return {
         Z_PREVIEW_LAYER: 1000,
@@ -1783,7 +1819,21 @@ goog.require('ga_urlutils_service');
             zIndex: this.Z_FEATURE_OVERLAY
           });
           layer.set('altitudeMode', 'clampToGround');
+          gaDefinePropertiesForLayer(layer);
+          layer.displayInLayerManager = false;
           return layer;
+        },
+
+        getLodFromRes: function(res) {
+          if (!res) {
+            return;
+          }
+          var idx = resolutions.indexOf(res);
+          if (idx != -1) {
+            return lodsForRes[idx];
+          }
+          // TODO: Implement the calculation of the closest level of detail
+          // available if res is not in the resolutions array
         }
       };
     };
@@ -1819,7 +1869,8 @@ goog.require('ga_urlutils_service');
         timeEnabledLayersFilter: function(layer) {
           return !layer.background &&
                  layer.timeEnabled &&
-                 layer.visible;
+                 layer.visible &&
+                 !layer.preview;
         },
         /**
          * Keep layers with potential tooltip
@@ -2375,18 +2426,23 @@ goog.require('ga_urlutils_service');
         // Param onNextClear is a function to call on the next execution of
         // clear function.
         this.addBodFeatures = function(map, featureIdsByBodId, onNextClear) {
+          var defer = $q.defer();
+          var features = [];
           this.clear(map);
           var that = this;
           getFeatures(featureIdsByBodId).then(function(results) {
             angular.forEach(results, function(result) {
               result.data.feature.properties.layerId =
                   result.data.feature.layerBodId;
+              features.push(result.data.feature);
               that.add(map, geojson.readFeature(result.data.feature));
             });
             that.zoom(map);
+            defer.resolve(features);
           });
 
           onClear = onNextClear;
+          return defer.promise;
         };
 
         // Remove all.
@@ -2479,8 +2535,20 @@ goog.require('ga_urlutils_service');
           });
 
           if (featureIdsCount > 0) {
-            gaPreviewFeatures.addBodFeatures(map, featureIdsByBodId,
-                removeParamsFromPL);
+            var featuresShown = gaPreviewFeatures.addBodFeatures(map,
+                featureIdsByBodId, removeParamsFromPL);
+
+            if (queryParams.showTooltip == 'true') {
+              featuresShown.then(function(features) {
+                $rootScope.$broadcast('gaTriggerTooltipRequest', {
+                  features: features,
+                  onCloseCB: function() {
+                    gaPermalink.deleteParam('showTooltip');
+                  },
+                  nohighlight: true
+                });
+              });
+            }
 
             // When a layer is removed, we need to update the permalink
             listenerKey = map.getLayers().on('remove', function(event) {
@@ -2616,9 +2684,10 @@ goog.require('ga_urlutils_service');
    * to avoid loading tiles/data for such layers.
    */
   module.provider('gaLayerHideManager', function() {
-    this.$get = function($rootScope, gaDebounce, gaLayers, gaLayerFilters) {
+    this.$get = function(gaDebounce, gaLayers, gaLayerFilters) {
       var layers = [];
       var unregKeys = [];
+      var is3DActive = false;
 
       var unreg = function() {
         angular.forEach(unregKeys, function(key) {
@@ -2638,34 +2707,40 @@ goog.require('ga_urlutils_service');
         angular.forEach(sortedLayers, function(layer) {
           layer.hiddenByOther = hide;
 
-          // Register all layers for changes
-          unregKeys.push(layer.on('change:visible', function(evt) {
-            updateHiddenState();
-          }));
-          unregKeys.push(layer.on('change:opacity', function(evt) {
-            updateHiddenState();
-          }));
+          if (is3DActive) {
+            // Register all layers for changes
+            unregKeys.push(layer.on('change:visible', function(evt) {
+              updateHiddenState();
+            }));
+            unregKeys.push(layer.on('change:opacity', function(evt) {
+              updateHiddenState();
+            }));
 
-          // First opaque layer
-          if (!hide &&
-              gaLayers.getLayer(layer.id) &&
-              gaLayers.getLayer(layer.id).opaque &&
-              layer.visible &&
-              layer.invertedOpacity == '0') {
-            hide = true;
+            // First opaque layer
+            if (!hide &&
+                gaLayers.getLayer(layer.id) &&
+                gaLayers.getLayer(layer.id).opaque &&
+                layer.visible &&
+                layer.invertedOpacity == '0') {
+              hide = true;
+            }
           }
         });
-      }, 50, false, false);
-
-      return function(map) {
-        var scope = $rootScope.$new();
-        scope.layers = map.getLayers().getArray();
+      }, 100, false, false);
+      return function(parentScope) {
+        var scope = parentScope.$new();
+        scope.layers = scope.map.getLayers().getArray();
         scope.f = function(l) {
           return (gaLayerFilters.background(l) ||
                   gaLayerFilters.selected(l));
         };
         scope.$watchCollection('layers | filter:f', function(l) {
           layers = (l) ? l : [];
+          updateHiddenState();
+        });
+
+        scope.$watch('globals.is3dActive', function(val) {
+          is3DActive = val;
           updateHiddenState();
         });
       };

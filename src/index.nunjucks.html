@@ -143,10 +143,15 @@ itemscope itemtype="http://schema.org/WebApplication"
         IE9Fix.call(this);
       </script>
     <![endif]-->
-    <div ng-cloak
-         class="corner-ribbon top-left sticky red shadow" ng-show="globals.is3dActive">
-      3D - ALPHA
-    </div>
+<div ng-cloak class="corner-ribbon
+{% if device == 'mobile' %}
+    top-left
+{% else %}
+    bottom-left
+{% endif %}
+    sticky red shadow" ng-show="globals.is3dActive">
+       3D - ALPHA
+     </div>
     <div ng-controller="GaSeoController">
       <div ga-seo ga-seo-options="options" ga-seo-map="map"></div>
     </div>
@@ -239,7 +244,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
 {% endif %}
 
-    <div ga-controls3d ga-controls3d-ol3d="::ol3d" ng-if="ol3d" ng-show="globals.is3dActive"></div>
+    <div ga-controls3d ga-controls3d-ol3d="::ol3d" ng-if="ol3d" ng-show="globals.is3dActive" ga-controls3d-pegman="globals.pegman"></div>
 
 {% if device != 'embded' %}
   <div ng-cloak ga-background-selector
@@ -283,9 +288,10 @@ itemscope itemtype="http://schema.org/WebApplication"
 
   {% if device != 'embed' %}
     <div ng-controller="GaTimeSelectorController">
-      <div ga-time-selector ga-time-selector-map="map"
-           ga-time-selector-options="options"
-           ng-show="!globals.is3dActive">
+      <div ga-time-selector
+           ga-time-selector-map="::map"
+           ga-time-selector-ol3d="::ol3d"
+           ga-time-selector-options="options">
       </div>
     </div>
   {% endif %}
@@ -703,6 +709,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           translationFallbackCode: '${front.default_values.lang}',
           defaultExtent: ${geoportal.extent},
           defaultResolution: ${front.default_values.resolution},
+          defaultLod: '',
+          lods: [],
           defaultEpsg: '${geoportal.epsg}',
           defaultEpsgExtent: ${geoportal.epsg_extent},
           {% if front.default_values.wms_list %}
