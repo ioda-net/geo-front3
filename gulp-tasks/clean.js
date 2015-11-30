@@ -8,7 +8,7 @@ function load(src, dest, config) {
   });
 
 
-  gulp.task('clean', ['clean-prod'], function (cb) {
+  gulp.task('clean', ['clean-output'], function (cb) {
     del([
       dest.sgPlugins,
       src.template_cache_module,
@@ -16,14 +16,13 @@ function load(src, dest, config) {
       src.karma_dev_conf,
       src.karma_prod_conf,
       src.protractor_dev_conf,
-      src.protractor_prod_conf,
-      dest.dev
+      src.protractor_prod_conf
     ], cb);
   }).help = 'remove generated files.';
 
 
-  gulp.task('clean-prod', function(cb) {
-    del(['prod/' + config.portal_name], cb);
+  gulp.task('clean-output', function(cb) {
+    del([dest.output], cb);
   });
 
 

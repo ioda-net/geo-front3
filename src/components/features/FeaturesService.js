@@ -216,6 +216,11 @@ goog.require('ga_map_service');
           '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
           '</a></div>',
 
+      pdf: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
+          '<a target="pdf" href="{{COL_FIELD}}">' +
+          '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
+          '</a></div>',
+
       url: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
           '<a target="_blank" href="{{COL_FIELD}}">' +
           '{{COL_FIELD CUSTOM_FILTERS}}</a></div>'

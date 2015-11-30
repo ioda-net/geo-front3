@@ -1,5 +1,6 @@
 'use strict';
 
+var fs = require('fs');
 var gulp = require('gulp');
 var ghelp = require('gulp-showhelp');
 var watch = require('gulp-watch');
@@ -9,64 +10,20 @@ var utils = require('./gulp-tasks/utils');
 
 
 // Define global variables
-var knownCliOptions = {
-  string: 'portal',
-  boolean: 'prod',
-  default: {
-      portal: 'geojb',
-      prod: false
-  }
-};
-var cliOptions = minimist(process.argv.slice(2), knownCliOptions);
-var config = utils.loadConf(process.argv[2], cliOptions);
+var config = JSON.parse(fs.readFileSync('/dev/stdin').toString());
 var tempDir;
 if (config.prod) {
   tempDir = utils.createTmpDir();
 }
 
-var src = {
-  appcache: 'src/*.nunjucks.appcache',
-  build_karma_conf_script: 'scripts/build-js-components-deps-from-js-files.sh',
-  cesium: 'src/lib/Cesium/**/*',
-  components: 'src/components/**/*.js',
-  config: 'config/' + cliOptions.portal + '-dev.toml',
-  css: ['src/**/*.css'],
-  font: ['src/**/*.eot', 'src/**/*.otf', 'src/**/*.svg', 'src/**/*.ttf', 'src/**/*.woff'],
-  index: 'src/*.nunjucks.html',
-  js: ['!src/plugins/*', '!src/SigeomPlugins.nunjucks.js', 'src/**/*.js'],
-  js_files: '{temp}/js-files'.replace('{temp}', tempDir),
-  karma_conf_template: 'test/karma-conf.nunjucks.js',
-  karma_dev_conf: 'test/karma-conf.dev.js',  // used in build-js-components-deps-from-js-files.sh
-  karma_prod_conf: 'test/karma-conf.prod.js',  // used in build-js-components-deps-from-js-files.sh
-  less: 'src/style/app.less',
-  ol3cesium: 'src/lib/ol3cesium.js',
-  partials: 'src/components/**/partials/**/*.html',
-  pdfmakeProd: ['src/lib/pdfmake.js', 'src/lib/vfs_fonts.js'],
-  plugins: 'src/plugins/*.js',
-  pluginsTemplate: 'src/SigeomPlugins.nunjucks.js',
-  protractor_conf_template: 'test/protractor-conf.nunjucks.js',
-  protractor_prod_conf: 'test/protractor-conf.prod.js',  // used in build-js-components-deps-from-js-files.sh
-  protractor_dev_conf: 'test/protractor-conf.dev.js',  // used in build-js-components-deps-from-js-files.sh
-  src_js: 'src/js/**/*.js',
-  template_cache_module: 'src/TemplateCacheModule.js',  // used in build-js-components-deps-from-js-files.sh
-  test_conf: 'config/test.toml',
-  test_deps: 'test/deps',  // used in build-js-components-deps-from-js-files.sh
-  watchLess: 'src/**/*.less',
-};
+var src = config.src.geo_front3;
+src.js_files = src.js_files.replace('{temp}', tempDir);
 
-var dest = {
-  annotated: '{temp}/annotated'.replace('{temp}', tempDir),
-  closure: tempDir + '/closure-compiler',
-  dev: 'dev/' + cliOptions.portal,
-  lib: 'prod/{portal}'.replace('{portal}', cliOptions.portal),
-  lib_cesium: 'prod/{portal}/Cesium'.replace('{portal}', cliOptions.portal),
-  lib_ie: 'prod/{portal}/lib/IE'.replace('{portal}', cliOptions.portal),
-  pluginsFile: 'src/js',
-  prod: 'prod/' + cliOptions.portal,
-  sgPlugins: 'src/js/SigeomPlugins.js',
-  test: 'test',
-  tmp: tempDir,
-};
+var dest = config.dest.geo_front3;
+dest.output = config.dest.relative_output;
+dest.tmp = tempDir;
+dest.annotated = dest.annotated.replace('{temp}', tempDir);
+dest.closure = dest.closure.replace('{temp}', tempDir);
 
 
 // Load our custom gulp tasks in the global namespace and pass them
@@ -75,10 +32,8 @@ require('./gulp-tasks/build')(src, dest, config);
 require('./gulp-tasks/clean')(src, dest, config);
 require('./gulp-tasks/closure')(src, dest, config);
 require('./gulp-tasks/copy')(src, dest, config);
-require('./gulp-tasks/misc')(src, dest, config);
 require('./gulp-tasks/plugins')(src, dest, config);
 require('./gulp-tasks/site')(src, dest, config);
-require('./gulp-tasks/test')(src, dest, config);
 
 
 // Define small tasks
@@ -93,7 +48,6 @@ gulp.task('help', function () {
 gulp.task('dev', function () {
   runSequence('plugins',
   [
-    'index.html',
     'app.css',
     'copy-js',
     'copy-css',
@@ -134,7 +88,7 @@ gulp.task('watch', ['dev'], function () {
   });
 
   // Relaunch dev task after a clean done by another instance.
-  watch(dest.dev, {events: ['unlinkDir'], base: dest.dev}, function () {
+  watch(dest.output, {events: ['unlinkDir'], base: dest.output}, function () {
     gulp.start('dev');
   });
 }).help = 'watch for changes in the development files and launch tasks impacted by the update';
@@ -144,7 +98,6 @@ gulp.task('prod', function (cb) {
   runSequence(
           'plugins',
           [
-            'index.html',
             'app.css',
             'copy-fonts',
             'copy-cesium',
