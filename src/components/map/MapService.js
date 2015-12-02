@@ -962,19 +962,9 @@ goog.require('ga_urlutils_service');
 
         // Returns a unique WMS template url (e.g. //wms{s}.geo.admin.ch)
         var getWmsTpl = function(wmsUrl, wmsParams) {
-          var tpl = wmsUrl;
-          if (/wms.geo/.test(wmsUrl)) {
-            tpl = undefined;
-          }
-          if (tpl && /(request|service|version)/i.test(tpl)) {
-            tpl = gaUrlUtils.remove(tpl, ['request', 'service', 'version'],
-                true);
-          }
-          var url = (tpl || wmsUrlTemplate);
-          if (wmsParams) {
-            url = gaUrlUtils.append(url, gaUrlUtils.toKeyValue(wmsParams));
-          }
-          return url;
+          // We currently don't use WMS template, nothing to do yet.
+
+          return wmsUrl;
         };
 
         // Returns a list of WMS servers using a template
