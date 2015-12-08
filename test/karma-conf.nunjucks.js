@@ -66,6 +66,7 @@ module.exports = function(config) {
 	    // tests using ngMock's "module" function.
 	    //'components/**/*.html': 'html2js'
         'js/*.js': ['coverage'],
+        '../test/specs/importows/*.js': ['babel'],
         'components/**/*.js': ['coverage']
 	},
 

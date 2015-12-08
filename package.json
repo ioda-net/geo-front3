@@ -14,6 +14,7 @@
   "devDependencies": {
     "angular": "1.4.2",
     "angular-translate": "2.7.2",
+    "babel": "^5.8.34",
     "browserstack-webdriver": "2.41.1",
     "commander": "2.2.0",
     "del": "~1.2.0",
@@ -40,6 +41,7 @@
     "html-minifier": "0.7.2",
     "istanbul": "~0.3.20",
     "karma": "~0.13.9",
+    "karma-babel-preprocessor": "^5.2.2",
     "karma-chrome-launcher": "~0.2.0",
     "karma-coverage": "~0.5.2",
     "karma-firefox-launcher": "~0.1.6",
@@ -52,7 +54,7 @@
     "mktemp": "~0.4.0",
     "mocha": "^2.3.4",
     "ng-annotate": "0.15.4",
-    "phantomjs": "1.9.16",
+    "phantomjs": "1.9.19",
     "q": "~1.4.1",
     "run-sequence": "~1.1.0",
     "toml": "~2.2.3"
