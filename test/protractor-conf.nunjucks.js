@@ -12,6 +12,8 @@ function report() {
   }
 }
 
+exports.testPortalAddress = '${test.protractor.test_portal_address}';
+
 exports.config = {
   specs: [
     '../test/integration/*.spec.js',
@@ -28,7 +30,7 @@ exports.config = {
     var jasmineEnv = jasmine.getEnv();
     waitPlugin.setOnComplete(report);
     browser.driver.manage().window().maximize();
-    browser.get('${test.protractor.test_portal_address}');
+    browser.get('${test.protractor.test_portal_address}'.replace('{portal}', browser.params.portal));
 
     {% if test.protractor.generate_coverage_report %}
     jasmineEnv.addReporter(new function () {
