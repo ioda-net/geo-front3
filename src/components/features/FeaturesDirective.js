@@ -20,7 +20,7 @@ goog.require('gf3_features_service');
   module.directive('gf3Features',
       function($timeout, $http, $q, $rootScope, gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures,
-          gf3DragBox, gf3FeaturesUtils, gf3FeaturesGrid) {
+          gf3DragBox, gf3FeaturesUtils, gf3FeaturesGrid, datatable) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -36,7 +36,8 @@ goog.require('gf3_features_service');
             isActive: '=gf3FeaturesActive'
           },
           link: function(scope, element, attrs) {
-            var featuresToDisplay = {},
+            var featurePropertiesToDisplay = {},
+                features = {},
                 featuresIdToIndex = {},
                 gridsOptions = {},
                 map = scope.map,
@@ -54,13 +55,14 @@ goog.require('gf3_features_service');
                 findFeatures(geometry, size, mapExtent);
               });
             });
+            gf3FeaturesGrid.init(
+                map,
+                features,
+                featurePropertiesToDisplay,
+                featuresIdToIndex);
 
             $rootScope.$on('$translateChangeEnd', function() {
-              // The first call to updateLang may occure before we have asked
-              // for features. In this case, gridApi is not yet defined.
-              if (scope.options.gridApi) {
-                gf3FeaturesGrid.updateLang(scope.options.gridApi, gridsOptions);
-              }
+              gf3FeaturesGrid.updateLang(gridsOptions);
             });
 
             parser = new ol.format.GeoJSON();
@@ -134,7 +136,8 @@ goog.require('gf3_features_service');
               // Create new cancel object
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
-              gf3FeaturesUtils.clearObject(featuresToDisplay);
+              gf3FeaturesUtils.clearObject(featurePropertiesToDisplay);
+              gf3FeaturesUtils.clearObject(features);
               gf3FeaturesUtils.clearObject(featuresIdToIndex);
               gf3FeaturesUtils.clearObject(gridsOptions);
               if (scope.popupToggle) {
@@ -303,6 +306,16 @@ goog.require('gf3_features_service');
                 );
 
                 angular.forEach(foundFeatures, displayFeature);
+                if (foundFeatures.length > 0) {
+                  var seenId = [];
+                  foundFeatures.forEach(function(feature) {
+                    var layerId = feature.layerId;
+                    if (seenId.indexOf(layerId) === -1) {
+                      var data = featurePropertiesToDisplay[layerId];
+                      gridsOptions[layerId].setData(data);
+                    }
+                  });
+                }
               }
             }
 
@@ -332,25 +345,27 @@ goog.require('gf3_features_service');
             // Show the popup with all features informations
             function showPopup(feature) {
               // Show popup on first result
-              if (Object.keys(featuresToDisplay).length === 0) {
+              if (Object.keys(featurePropertiesToDisplay).length === 0) {
                 if (!scope.popupToggle) {
                   initPopup(feature);
                 }
               }
-              if (!(feature.layerId in featuresToDisplay)) {
+              if (!(feature.layerId in featurePropertiesToDisplay)) {
                 initFeaturesForLayer(feature);
               }
               // Multiple layers may request the same feature table. If both
               // layers are active, a features can be return two times. We check
               // if the Ids is know. If it is, we don't add the feature again.
               var featureId = feature.featureId.toString();
+              var layerId = feature.layerId;
               var addedFeaturesIds =
-                  Object.keys(featuresIdToIndex[feature.layerId]);
+                  Object.keys(featuresIdToIndex[layerId]);
               if (addedFeaturesIds.indexOf(featureId) === -1) {
-                featuresIdToIndex[feature.layerId][feature.featureId] =
-                  featuresToDisplay[feature.layerId].length;
-                featuresToDisplay[feature.layerId].push(feature);
-                gridsOptions[feature.layerId].data.push(feature.properties);
+                featuresIdToIndex[layerId][feature.featureId] =
+                  featurePropertiesToDisplay[layerId].length;
+                feature.properties.layerLabel = layerId;
+                featurePropertiesToDisplay[layerId].push(feature.properties);
+                features[layerId].push(feature);
               }
             }
 
@@ -392,7 +407,7 @@ goog.require('gf3_features_service');
             function initPopup(feature) {
               angular.extend(scope.options, {
                 content: popupContent,
-                features: featuresToDisplay,
+                features: featurePropertiesToDisplay,
                 gridsOptions: gridsOptions
               });
               angular.extend(scope.options.popupOptions, {
@@ -414,13 +429,10 @@ goog.require('gf3_features_service');
 
             function initFeaturesForLayer(feature) {
               featuresIdToIndex[feature.layerId] = {};
-              featuresToDisplay[feature.layerId] = [];
-              gridsOptions[feature.layerId] = gf3FeaturesGrid
-                      .getLayerOptions(feature, featuresToDisplay,
-                        featuresIdToIndex, map,
-                        function(gridApi) {
-                          scope.options.gridApi = gridApi;
-                        });
+              featurePropertiesToDisplay[feature.layerId] = [];
+              features[feature.layerId] = [];
+              var layerOptions = gf3FeaturesGrid.getLayerOptions(feature);
+              gridsOptions[feature.layerId] = datatable(layerOptions);
             }
 
             function close() {

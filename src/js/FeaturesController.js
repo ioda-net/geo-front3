@@ -4,7 +4,7 @@ goog.provide('gf3_features_controller');
   var module = angular.module('gf3_features_controller', []);
 
   module.controller('gf3FeaturesController',
-      function($scope, angularLoad, gaGlobalOptions, gaBrowserSniffer) {
+      function($scope, gaGlobalOptions, gaBrowserSniffer) {
         $scope.gridApi = {};
         $scope.options = {
           tolerance: gaBrowserSniffer.touchDevice ? 15 : 5,
@@ -18,26 +18,10 @@ goog.provide('gf3_features_controller');
             x: 0,
             y: 'auto',
             container: 'body',
-            position: 'bottom-left',
+            position: 'features',
             showPrint: false,
-            draggable: false,
-            print: print
+            draggable: false
           }
         };
-
-        function print() {
-          angularLoad.loadScript('/lib/pdfmake.js').then(function() {
-            return angularLoad.loadScript('/lib/vfs_fonts.js');
-          }).then(function() {
-            var exportRowType;
-            if ($scope.options.gridApi.selection.getSelectedRows().length > 0) {
-              exportRowType = 'selected';
-            } else {
-              exportRowType = 'all';
-            }
-
-            $scope.options.gridApi.exporter.pdfExport(exportRowType, 'visible');
-          });
-        }
       });
 })();
