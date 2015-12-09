@@ -1,6 +1,6 @@
-describe('ga_features_service', function() {
-  describe('gaFeaturesUtils', function() {
-    var gaFeaturesUtils;
+describe('gf_features_service', function() {
+  describe('gfFeaturesUtils', function() {
+    var gfFeaturesUtils;
 
     beforeEach(function() {
       module(function($provide) {
@@ -15,14 +15,14 @@ describe('ga_features_service', function() {
         });
       });
 
-      inject(function(_gaFeaturesUtils_) {
-        gaFeaturesUtils = _gaFeaturesUtils_;
+      inject(function(_gfFeaturesUtils_) {
+        gfFeaturesUtils = _gfFeaturesUtils_;
       });
     });
 
     it('detects vector layers', function() {
       var layer = new ol.layer.Vector();
-      expect(gaFeaturesUtils.isVectorLayer(layer)).to.be(true);
+      expect(gfFeaturesUtils.isVectorLayer(layer)).to.be(true);
 
       layer = new ol.layer.Image({
         source: new ol.source.ImageVector({
@@ -30,23 +30,23 @@ describe('ga_features_service', function() {
           projection: '21781'
         })
       });
-      expect(gaFeaturesUtils.isVectorLayer(layer)).to.be(true);
+      expect(gfFeaturesUtils.isVectorLayer(layer)).to.be(true);
 
       layer = new ol.layer.Image();
-      expect(gaFeaturesUtils.isVectorLayer(layer)).to.be(false);
+      expect(gfFeaturesUtils.isVectorLayer(layer)).to.be(false);
 
       layer = new ol.layer.Tile();
-      expect(gaFeaturesUtils.isVectorLayer(layer)).to.be(false);
+      expect(gfFeaturesUtils.isVectorLayer(layer)).to.be(false);
     });
 
     it('detects queryable bod layer', function() {
       var layer = {
         bodId: 'queryable'
       };
-      expect(gaFeaturesUtils.isQueryableBodLayer(layer)).to.be(true);
+      expect(gfFeaturesUtils.isQueryableBodLayer(layer)).to.be(true);
 
       layer.bodId = 'not_queryable';
-      expect(gaFeaturesUtils.isQueryableBodLayer(layer)).to.be(false);
+      expect(gfFeaturesUtils.isQueryableBodLayer(layer)).to.be(false);
     });
 
     it('lists the queryablbe layers of a map', function() {
@@ -87,7 +87,7 @@ describe('ga_features_service', function() {
         layers: [layer, vectorLayer, notQueryableLayer]
       });
 
-      var layersToQuery = gaFeaturesUtils.getLayersToQuery(map);
+      var layersToQuery = gfFeaturesUtils.getLayersToQuery(map);
       expect(layersToQuery.length).to.be(2);
 
       var layersToQueryIds = layersToQuery.map(function(l) {
@@ -98,49 +98,49 @@ describe('ga_features_service', function() {
 
     it('gets year from string', function() {
       var time = '2015-08-09';
-      expect(gaFeaturesUtils.yearFromString(time)).to.be(2015);
+      expect(gfFeaturesUtils.yearFromString(time)).to.be(2015);
     });
 
     it('clears object', function() {
       var obj = {toto: 'toto'};
-      gaFeaturesUtils.clearObject(obj);
+      gfFeaturesUtils.clearObject(obj);
       expect(Object.keys(obj).length).to.be(0);
     });
 
     it('detects name or descriptions', function() {
       var feature = {get: function() {}};
-      expect(gaFeaturesUtils.hasNameOrDescription(feature)).to.be(false);
+      expect(gfFeaturesUtils.hasNameOrDescription(feature)).to.be(false);
 
       feature.get = function(type) {
         if (type === 'name') {
           return 'feature_name';
         }
       };
-      expect(gaFeaturesUtils.hasNameOrDescription(feature)).to.be(true);
+      expect(gfFeaturesUtils.hasNameOrDescription(feature)).to.be(true);
 
       feature.get = function(type) {
         if (type === 'description') {
           return 'feature_description';
         }
       };
-      expect(gaFeaturesUtils.hasNameOrDescription(feature)).to.be(true);
+      expect(gfFeaturesUtils.hasNameOrDescription(feature)).to.be(true);
     });
 
     it('gets coords or extent', function() {
       var coord = [0, 0];
-      expect(gaFeaturesUtils.getCoords(coord)).to.be(coord);
+      expect(gfFeaturesUtils.getCoords(coord)).to.be(coord);
 
       var geom = {
         getExtent: function() {
           return coord;
         }
       };
-      expect(gaFeaturesUtils.getCoords(geom)).to.be(coord);
+      expect(gfFeaturesUtils.getCoords(geom)).to.be(coord);
     });
 
     it('generates random ids', function() {
-      var id1 = gaFeaturesUtils.getRandomId();
-      var id2 = gaFeaturesUtils.getRandomId();
+      var id1 = gfFeaturesUtils.getRandomId();
+      var id2 = gfFeaturesUtils.getRandomId();
 
       expect(id1).not.to.be(id2);
     });

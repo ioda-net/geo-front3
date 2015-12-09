@@ -13,10 +13,6 @@ function load(src, dest, config) {
       dest.sgPlugins,
       src.template_cache_module,
       src.test_deps,
-      src.karma_dev_conf,
-      src.karma_prod_conf,
-      src.protractor_dev_conf,
-      src.protractor_prod_conf
     ], cb);
   }).help = 'remove generated files.';
 

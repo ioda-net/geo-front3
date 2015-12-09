@@ -1,5 +1,27 @@
 // Karma configuration
 
+function mergeFilesWithArgv(staticFiles) {
+    var common = [
+       '../test/angular/angular-mocks.js',
+       '../test/expect-0.2.0/expect.js',
+       '../test/sinon-1.7.3/sinon.js',
+       '../test/specs/Loader.spec.js',
+       '../test/specs/**/*.js'
+    ];
+    var source = staticFiles || [];
+    var argv = process.argv;
+
+    argv.forEach(function (arg) {
+        var index = arg.indexOf('--portal=');
+        if (index !== - 1) {
+            source.push(arg.substring(9) + '/lib/build.js');
+        }
+    });
+
+    return source.concat(common);
+}
+
+
 module.exports = function(config) {
     config.set({
 	// base path, that will be used to resolve files and exclude
@@ -10,10 +32,8 @@ module.exports = function(config) {
 	{% endif %}
 
 	// list of files / patterns to load in the browser
-	files: [
-	    {% if prod %}
-	        'geojb/lib/build.js',
-	    {% else %}
+	files: mergeFilesWithArgv([
+	    {% if not prod %}
 	       'lib/jquery-2.1.4.js',
 	       'lib/angular.js',
            'lib/angular-load.js',
@@ -31,12 +51,7 @@ module.exports = function(config) {
            'lib/ol.js',
            ${js_files}
 	    {% endif %}
-	       '../test/angular/angular-mocks.js',
-	       '../test/expect-0.2.0/expect.js',
-	       '../test/sinon-1.7.3/sinon.js',
-	       '../test/specs/Loader.spec.js',
-	       '../test/specs/**/*.js'
-	],
+	]),
 
 
 	// frameworks to use
@@ -51,6 +66,7 @@ module.exports = function(config) {
 	    // tests using ngMock's "module" function.
 	    //'components/**/*.html': 'html2js'
         'js/*.js': ['coverage'],
+        '../test/specs/importows/*.js': ['babel'],
         'components/**/*.js': ['coverage']
 	},
 

@@ -1,9 +1,9 @@
-goog.provide('ga_importows');
+goog.provide('gf_importows');
 
-goog.require('ga_importows_directive');
+goog.require('gf_importows_directive');
 (function() {
 
-  angular.module('ga_importows', [
-    'ga_importows_directive'
+  angular.module('gf_importows', [
+    'gf_importows_directive'
   ]);
 })();

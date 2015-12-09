@@ -549,10 +549,10 @@ goog.require('ga_urlutils_service');
         // Create an ol WMS layer from GetCapabilities informations
         this.getOlLayerFromGetCapLayer = function(wmtsSourceOptions) {
           wmtsSourceOptions.attributions = [
-            gaMapUtils.getAttribution('<a href="' +
+            '<a href="' +
               wmtsSourceOptions.attributionUrl +
               '" target="new">' +
-              wmtsSourceOptions.attribution + '</a>')
+              wmtsSourceOptions.attribution + '</a>'
           ];
           var source = new ol.source.WMTS(wmtsSourceOptions);
           var layer = new ol.layer.Tile({

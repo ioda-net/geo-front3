@@ -1,9 +1,9 @@
-goog.provide('ga_importwms_controller');
+goog.provide('gf_importwms_controller');
 (function() {
 
-  var module = angular.module('ga_importwms_controller', []);
+  var module = angular.module('gf_importwms_controller', []);
 
-  module.controller('GaImportWmsController', function($scope, gaGlobalOptions) {
+  module.controller('GfImportWmsController', function($scope, gaGlobalOptions) {
     var defaultWmsList = [
       'https://wms.geo.admin.ch/',
       'http://ogc.heig-vd.ch/mapserver/wms?',

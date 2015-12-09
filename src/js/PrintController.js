@@ -1,9 +1,9 @@
-goog.provide('ga_print_controller');
+goog.provide('gf_print_controller');
 (function() {
 
-  var module = angular.module('ga_print_controller', []);
+  var module = angular.module('gf_print_controller', []);
 
-  module.controller('GaPrintController',
+  module.controller('GfPrintController',
     function($scope, gaGlobalOptions) {
       var printPath = '/print/' + gaGlobalOptions.portalName;
       var printPath = gaGlobalOptions.apiUrl + printPath;

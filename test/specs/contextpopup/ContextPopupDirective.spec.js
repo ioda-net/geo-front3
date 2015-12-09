@@ -1,5 +1,5 @@
 describe('ga_contextpopup_directive', function() {
-  var element, handlers = {}, viewport, map, originalEvt, mapEvt;
+  var element, handlers = {}, viewport, map, originalEvt, mapEvt, plugins;
 
   var expectedHeightUrl = '//api.geo.admin.ch/height' +
       '?easting=661473&elevationModel=COMB' +
@@ -37,7 +37,8 @@ describe('ga_contextpopup_directive', function() {
       coordinate: [661473, 188192]
     };
 
-    inject(function($rootScope, $compile) {
+    inject(function($rootScope, $compile, sgPlugins) {
+      plugins = sgPlugins;
       map = new ol.Map({});
       $rootScope.map = map;
       $rootScope.options = {
@@ -92,7 +93,9 @@ describe('ga_contextpopup_directive', function() {
     it('correctly handles map contextmenu events', function() {
       $httpBackend.expectGET(expectedHeightUrl);
       $httpBackend.expectGET(expectedReframeUrl);
-      $httpBackend.expectGET(expecteCommunesUrl);
+      if (plugins.communes) {
+        $httpBackend.expectGET(expecteCommunesUrl);
+      }
       viewport.trigger($.Event("contextmenu", originalEvt));
       $httpBackend.flush();
 
@@ -101,8 +104,12 @@ describe('ga_contextpopup_directive', function() {
 
       expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
       expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
-      expect($(tds[11]).text()).to.be('Moutier');
-      expect($(tds[13]).text()).to.be('1233 m');
+      if (plugins.communes) {
+        expect($(tds[11]).text()).to.be('Moutier');
+        expect($(tds[13]).text()).to.be('1233 m');
+      } else {
+        expect($(tds[11]).text()).to.be('1233 m');
+      }
     });
 
     describe('On device without contextmenu event', function() {
@@ -132,8 +139,12 @@ describe('ga_contextpopup_directive', function() {
 
         expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
         expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
-        expect($(tds[11]).text()).to.be('Moutier');
-        expect($(tds[13]).text()).to.be('1233 m');
+        if (plugins.communes) {
+          expect($(tds[11]).text()).to.be('Moutier');
+          expect($(tds[13]).text()).to.be('1233 m');
+        } else {
+          expect($(tds[11]).text()).to.be('1233 m');
+        }
       });
 
       it('touchend prevents handler from being called', function() {

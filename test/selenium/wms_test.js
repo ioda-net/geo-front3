@@ -2,7 +2,11 @@
 
 var QUERYSTRING_WMS = "WMS%7C%7CAGNES%7C%7Chttp:%2F%2Fwms.geo.admin.ch%2F%7C%7Cch.swisstopo.fixpunkte-agnes";
 
-var utils = require('../integration/utils');
+if (browser.params.type === 'prod') {
+  var config = require('../protractor-conf.prod.js');
+} else {
+  var config = require('../protractor-conf.dev.js');
+}
 
 describe('wms', function () {
   it('imports wms with popup', function () {
@@ -16,13 +20,13 @@ describe('wms', function () {
           .sendKeys('http://wms.geo.admin.ch/');
     }).then(function () {
       // Click on "Verbinden"
-      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.ga-import-ows-connect").click();
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.gf-import-ows-connect").click();
     }).then(function () {
       // Click on "AGNES"
-      return $$("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] div.ga-import-ows-content li div.ga-header-group").get(0).click();
+      return $$("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] div.gf-import-ows-content li div.ga-header-group").get(0).click();
     }).then(function () {
       // Click on "Layer hinzufügen"
-      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.ga-import-ows-add").click();
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.gf-import-ows-add").click();
     }).then(function () {
       return browser.sleep(2000);
     }).then(function () {
@@ -52,7 +56,7 @@ describe('wms', function () {
 
   it('imports WMS directly by URL', function () {
     // Go to the WMS layer page
-    browser.get( utils.config.dev.testPortalAddress + '?layers=' + QUERYSTRING_WMS).then(function () {
+    browser.get(config.testPortalAddress.replace('{portal}', browser.params.portal) + '?layers=' + QUERYSTRING_WMS).then(function () {
       // Check if the WMS Layer is loaded
       return $$("#selection label").get(0).getText();
     }).then(function(text) {
