@@ -1,6 +1,5 @@
 goog.provide('ga_search_directive');
 
-goog.require('IN');
 goog.require('ga_map_service');
 goog.require('ga_marker_overlay_service');
 goog.require('ga_permalink');
@@ -8,6 +7,7 @@ goog.require('ga_search_service');
 goog.require('ga_search_type_directives');
 goog.require('ga_topic_service');
 goog.require('ga_translation_service');
+goog.require('gf');
 (function() {
 
   var module = angular.module('ga_search_directive', [
@@ -19,7 +19,7 @@ goog.require('ga_translation_service');
     'ga_urlutils_service',
     'ga_translation_service',
     'ga_topic_service',
-    'IN'
+    'gf'
   ]);
 
   var ResultStats = function() {
@@ -72,11 +72,11 @@ goog.require('ga_translation_service');
     function($scope, $rootScope, $sce, $timeout, gaPermalink,
              gaUrlUtils, gaSearchGetCoordinate, gaMapUtils, gaMarkerOverlay,
              gaKml, gaPreviewLayers, gaLang, gaTopic, gaLayers,
-             gaGlobalOptions, inGlobalOptions) {
+             gaGlobalOptions, gfGlobalOptions) {
       var blockQuery = false;
       var restat = new ResultStats();
       $scope.restat = restat;
-      $scope.allowInfobox = inGlobalOptions.allowInfobox;
+      $scope.allowInfobox = gfGlobalOptions.allowInfobox;
 
       // Child options are used as a carrier of communication
       // between main search directive and result directive

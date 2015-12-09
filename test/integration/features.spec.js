@@ -6,7 +6,7 @@ describe('features', function() {
   function featureClick() {
     var map = $('.ol-viewport canvas');
 
-    return $('.ga-features-popup').isDisplayed()
+    return $('.gf-features-popup').isDisplayed()
         .then(function(visible) {
           expect(visible).toBe(false);
           return map.getSize();
@@ -45,7 +45,7 @@ describe('features', function() {
   }
 
   function featureClose() {
-    return $('.ga-features-popup')
+    return $('.gf-features-popup')
         .element(by.xpath('..'))
         .element(by.xpath('..'))
         .element(by.css('button.icon-remove'))
@@ -55,7 +55,7 @@ describe('features', function() {
   it('should appear when the user click on the map', function () {
     featureClick()
         .then(function () {
-          return $('.ga-features-popup').isDisplayed();
+          return $('.gf-features-popup').isDisplayed();
         })
         .then(function (visible) {
           expect(visible).toBe(true);
@@ -64,7 +64,7 @@ describe('features', function() {
 
   it('should appear when the user draw a rectangle', function() {
     featureSelectByRectangle().then(function() {
-      return $('.ga-features-popup').isDisplayed();
+      return $('.gf-features-popup').isDisplayed();
     }).then(function(visible) {
       expect(visible).toBe(true);
 
@@ -76,7 +76,7 @@ describe('features', function() {
     var tabs;
 
     featureClick().then(function() {
-      tabs = $$('.ga-features-popup .htmlpopup-content .nav-tabs li a');
+      tabs = $$('.gf-features-popup .htmlpopup-content .nav-tabs li a');
       // Only the first tab should be active
       return tabs.first().getAttribute('class');
     }).then(function(classes) {
@@ -116,7 +116,7 @@ describe('features', function() {
     utils.importKmlFromUrl(kmlUrl, true).then(function() {
       return featureClick();
     }).then(function() {
-      tabs = $$('.ga-features-popup .htmlpopup-content .nav-tabs li a');
+      tabs = $$('.gf-features-popup .htmlpopup-content .nav-tabs li a');
 
       return tabs.count();
     }).then(function(numberTabs) {
@@ -138,7 +138,7 @@ describe('features', function() {
     var kmlUrl = 'http://jenselme.perso.centrale-marseille.fr/visible/kml-attributes.kml';
 
     featureSelectByRectangle().then(function() {
-      tabs = $$('.ga-features-popup .htmlpopup-content .nav-tabs li a');
+      tabs = $$('.gf-features-popup .htmlpopup-content .nav-tabs li a');
 
       return tabs.count();
     }).then(function(numberTabs) {
@@ -162,7 +162,7 @@ describe('features', function() {
     utils.importKmlFromUrl(kmlUrl, true).then(function() {
       return featureClick();
     }).then(function() {
-      tabs = $$('.ga-features-popup .htmlpopup-content .nav-tabs li a');
+      tabs = $$('.gf-features-popup .htmlpopup-content .nav-tabs li a');
 
       return tabs.count();
     }).then(function(numberTabs) {

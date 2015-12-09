@@ -1,4 +1,4 @@
-describe('ga_importows_directive', function() {
+describe('gf_importows_directive', function() {
 
   describe('a good WMS GetCapabilities is received', function() {
     var element, scope, map;
@@ -21,8 +21,8 @@ describe('ga_importows_directive', function() {
         map.getView().fit([-20000000, -20000000, 20000000, 20000000], map.getSize());
 
         element = angular.element(
-            '<div ga-import-ows ga-import-ows-map="map" ' +
-            'ga-import-ows-options="options">' +
+            '<div gf-import-ows gf-import-ows-map="map" ' +
+            'gf-import-ows-options="options">' +
             '</div>');
         scope = $rootScope.$new();
         scope.map = map;
@@ -38,8 +38,8 @@ describe('ga_importows_directive', function() {
             'http://mapserver1.gr.ch/wms/admineinteilung?'
           ]
         };
-        $injector.get('$controller')('GaImportOwsDirectiveController', {'$scope': scope});
-        $injector.get('$controller')('GaImportOwsItemDirectiveController', {'$scope': scope});
+        $injector.get('$controller')('GfImportOwsDirectiveController', {'$scope': scope});
+        $injector.get('$controller')('GfImportOwsItemDirectiveController', {'$scope': scope});
         $compile(element)(scope);
         $rootScope.$digest();
         $translate.use('fr');
@@ -50,13 +50,13 @@ describe('ga_importows_directive', function() {
       var form = element.find('form');
       expect(form.find('input[type=url][ng-model=fileUrl]').length).to.be(1);
       expect(form.find('.twitter-typeahead').length).to.be(1);
-      expect(form.find('.ga-import-ows-open').length).to.be(1);
-      expect(form.find('.ga-import-ows-connect').length).to.be(1);
-      expect(element.find('.ga-import-ows-container').length).to.be(1);
-      expect(element.find('.ga-import-ows-content').length).to.be(1);
+      expect(form.find('.gf-import-ows-open').length).to.be(1);
+      expect(form.find('.gf-import-ows-connect').length).to.be(1);
+      expect(element.find('.gf-import-ows-container').length).to.be(1);
+      expect(element.find('.gf-import-ows-content').length).to.be(1);
       expect(element.find('textarea').length).to.be(1);
-      expect(element.find('.ga-import-ows-add').length).to.be(1);
-      form.find('.ga-import-ows-open').click();
+      expect(element.find('.gf-import-ows-add').length).to.be(1);
+      form.find('.gf-import-ows-open').click();
       expect(element.find('.tt-dropdown-menu').css('display')).not.to.be('none');
       expect(element.find('.tt-suggestion').length).to.be(5);
     }));
@@ -157,7 +157,7 @@ describe('ga_importows_directive', function() {
       expect(scope.layers[1].Layer.length).to.be(1);
     }));
     
-    describe('ga_importows_item_directive', function() {
+    describe('gf_importows_item_directive', function() {
       var evt = {
         stopPropagation: function(){}
       };
@@ -208,8 +208,8 @@ describe('ga_importows_directive', function() {
         map.getView().fit([-20000000, -20000000, 20000000, 20000000], map.getSize());
 
         element = angular.element(
-            '<div ga-import-ows ga-import-ows-map="map" ' +
-            'ga-import-ows-options="options">' +
+            '<div gf-import-ows gf-import-ows-map="map" ' +
+            'gf-import-ows-options="options">' +
             '</div>');
         scope = $rootScope.$new();
         scope.map = map;
@@ -220,8 +220,8 @@ describe('ga_importows_directive', function() {
             'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml'
           ]
         };
-        $injector.get('$controller')('GaImportOwsDirectiveController', {'$scope': scope});
-        $injector.get('$controller')('GaImportOwsItemDirectiveController', {'$scope': scope});
+        $injector.get('$controller')('GfImportOwsDirectiveController', {'$scope': scope});
+        $injector.get('$controller')('GfImportOwsItemDirectiveController', {'$scope': scope});
         $compile(element)(scope);
         $rootScope.$digest();
         $translate.use('fr');
@@ -232,13 +232,13 @@ describe('ga_importows_directive', function() {
       var form = element.find('form');
       expect(form.find('input[type=url][ng-model=fileUrl]').length).to.be(1);
       expect(form.find('.twitter-typeahead').length).to.be(1);
-      expect(form.find('.ga-import-ows-open').length).to.be(1);
-      expect(form.find('.ga-import-ows-connect').length).to.be(1);
-      expect(element.find('.ga-import-ows-container').length).to.be(1);
-      expect(element.find('.ga-import-ows-content').length).to.be(1);
+      expect(form.find('.gf-import-ows-open').length).to.be(1);
+      expect(form.find('.gf-import-ows-connect').length).to.be(1);
+      expect(element.find('.gf-import-ows-container').length).to.be(1);
+      expect(element.find('.gf-import-ows-content').length).to.be(1);
       expect(element.find('textarea').length).to.be(1);
-      expect(element.find('.ga-import-ows-add').length).to.be(1);
-      form.find('.ga-import-ows-open').click();
+      expect(element.find('.gf-import-ows-add').length).to.be(1);
+      form.find('.gf-import-ows-open').click();
       expect(element.find('.tt-dropdown-menu').css('display')).not.to.be('none');
       expect(element.find('.tt-suggestion').length).to.be(1);
     }));
@@ -669,7 +669,7 @@ describe('ga_importows_directive', function() {
       expect(layer.matrixSet).to.be('21781_24');
     }));
 
-    describe('ga_importows_item_directive', function() {
+    describe('gf_importows_item_directive', function() {
       var evt = {
         stopPropagation: function() {}
       };

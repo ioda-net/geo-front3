@@ -1,10 +1,10 @@
-goog.provide('ga_features');
+goog.provide('gf_features');
 
-goog.require('ga_features_directive');
+goog.require('gf_features_directive');
 (function() {
 
-  angular.module('ga_features', [
-    'ga_features_directive',
+  angular.module('gf_features', [
+    'gf_features_directive',
     'ui.grid',
     'ui.grid.pagination',
     'ui.grid.selection',

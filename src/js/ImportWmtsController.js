@@ -1,9 +1,9 @@
-goog.provide('ga_importwmts_controller');
+goog.provide('gf_importwmts_controller');
 (function() {
 
-  var module = angular.module('ga_importwmts_controller', []);
+  var module = angular.module('gf_importwmts_controller', []);
 
-  module.controller('GaImportWmtsController', function($scope, gaGlobalOptions) {
+  module.controller('GfImportWmtsController', function($scope, gaGlobalOptions) {
     var defaultWmtsList = [
       'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml'
     ];

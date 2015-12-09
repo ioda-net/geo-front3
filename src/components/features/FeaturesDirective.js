@@ -1,26 +1,26 @@
-goog.provide('ga_features_directive');
+goog.provide('gf_features_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_debounce_service');
-goog.require('ga_features_service');
 goog.require('ga_map_service');
 goog.require('ga_popup_service');
 goog.require('ga_styles_service');
+goog.require('gf_features_service');
 (function() {
 
-  var module = angular.module('ga_features_directive', [
+  var module = angular.module('gf_features_directive', [
     'ga_debounce_service',
-    'ga_features_service',
+    'gf_features_service',
     'ga_popup_service',
     'ga_map_service',
     'ga_styles_service',
     'pascalprecht.translate'
   ]);
 
-  module.directive('gaFeatures',
+  module.directive('gfFeatures',
       function($timeout, $http, $q, $rootScope, gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures,
-          gaDragBox, gaFeaturesUtils, gaFeaturesGrid) {
+          gfDragBox, gfFeaturesUtils, gfFeaturesGrid) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
                             '<div class="ga-tooltip-separator" ' +
@@ -31,9 +31,9 @@ goog.require('ga_styles_service');
           restrict: 'A',
           templateUrl: 'components/features/partials/features.html',
           scope: {
-            map: '=gaFeaturesMap',
-            options: '=gaFeaturesOptions',
-            isActive: '=gaFeaturesActive'
+            map: '=gfFeaturesMap',
+            options: '=gfFeaturesOptions',
+            isActive: '=gfFeaturesActive'
           },
           link: function(scope, element, attrs) {
             var featuresToDisplay = {},
@@ -46,7 +46,7 @@ goog.require('ga_styles_service');
                 parser,
                 year,
                 listenerKey;
-            var dragBox = gaDragBox(map, function(geometry) {
+            var dragBox = gfDragBox(map, function(geometry) {
               scope.isActive = true;
               scope.$apply(function() {
                 var size = map.getSize();
@@ -59,7 +59,7 @@ goog.require('ga_styles_service');
               // The first call to updateLang may occure before we have asked
               // for features. In this case, gridApi is not yet defined.
               if (scope.options.gridApi) {
-                gaFeaturesGrid.updateLang(scope.options.gridApi, gridsOptions);
+                gfFeaturesGrid.updateLang(scope.options.gridApi, gridsOptions);
               }
             });
 
@@ -107,11 +107,11 @@ goog.require('ga_styles_service');
                   },
                   undefined,
                   function(layer) {
-                    return gaFeaturesUtils.isQueryableBodLayer(layer);
+                    return gfFeaturesUtils.isQueryableBodLayer(layer);
                   });
               }
               map.getTarget().style.cursor = (hasQueryableLayer ||
-                  gaFeaturesUtils.hasImportedQueryableLayer(map, evt.pixel)) ?
+                  gfFeaturesUtils.hasImportedQueryableLayer(map, evt.pixel)) ?
                   'pointer' : '';
             };
             var updateCursorStyleDebounced = gaDebounce.debounce(
@@ -134,9 +134,9 @@ goog.require('ga_styles_service');
               // Create new cancel object
               canceler = $q.defer();
               // htmls = [] would break the reference in the popup
-              gaFeaturesUtils.clearObject(featuresToDisplay);
-              gaFeaturesUtils.clearObject(featuresIdToIndex);
-              gaFeaturesUtils.clearObject(gridsOptions);
+              gfFeaturesUtils.clearObject(featuresToDisplay);
+              gfFeaturesUtils.clearObject(featuresIdToIndex);
+              gfFeaturesUtils.clearObject(gridsOptions);
               if (scope.popupToggle) {
                 $timeout(function() {
                   scope.popupToggle = false;
@@ -200,7 +200,7 @@ goog.require('ga_styles_service');
             function findVectorFeaturesInDragBox(geometry) {
               var features = [];
               map.getLayers().getArray().forEach(function(layer) {
-                if (gaFeaturesUtils.isVectorLayer(layer)) {
+                if (gfFeaturesUtils.isVectorLayer(layer)) {
                   layer.getSource()
                     .getFeatures()
                     .forEach(function(feature) {
@@ -208,7 +208,7 @@ goog.require('ga_styles_service');
                         .getExtent();
                       var geometryExtent = geometry.getExtent();
 
-                      if (gaFeaturesUtils.hasNameOrDescription(feature) &&
+                      if (gfFeaturesUtils.hasNameOrDescription(feature) &&
                             ol.extent.intersects(geometryExtent,
                               featureGeometryExtent)) {
                         vectorFeatureSetProperties(feature, layer);
@@ -222,7 +222,7 @@ goog.require('ga_styles_service');
             }
 
             function vectorFeatureSetProperties(feature, layer) {
-              var featureId = feature.getId() || gaFeaturesUtils.getRandomId();
+              var featureId = feature.getId() || gfFeaturesUtils.getRandomId();
               feature.set('layerId', layer.id);
               feature.set('featureId', featureId);
             }
@@ -231,7 +231,7 @@ goog.require('ga_styles_service');
               var features = [];
               map.forEachFeatureAtPixel(pixel, function(feature, layer) {
                 if (layer && vectorLayer === layer) {
-                  if (gaFeaturesUtils.hasNameOrDescription(feature)) {
+                  if (gfFeaturesUtils.hasNameOrDescription(feature)) {
                     vectorFeatureSetProperties(feature, layer);
                     features.push(feature);
                   }
@@ -243,12 +243,12 @@ goog.require('ga_styles_service');
 
             // Find features for all type of layers
             function findFeatures(geometry, size, mapExtent) {
-              var layersToQuery = gaFeaturesUtils.getLayersToQuery(map);
-              var coordinates = gaFeaturesUtils.getCoords(geometry);
+              var layersToQuery = gfFeaturesUtils.getLayersToQuery(map);
+              var coordinates = gfFeaturesUtils.getCoords(geometry);
               initTooltip();
               for (var i = 0; i < layersToQuery.length; i++) {
                 var layerToQuery = layersToQuery[i];
-                if (gaFeaturesUtils.isVectorLayer(layerToQuery)) {
+                if (gfFeaturesUtils.isVectorLayer(layerToQuery)) {
                   var features =
                       findVectorFeatures(coordinates, layerToQuery, geometry);
                   if (features) {
@@ -277,7 +277,7 @@ goog.require('ga_styles_service');
               // Only timeEnabled layers use the timeInstant parameter
               if (layerToQuery.timeEnabled) {
                 params.timeInstant = year ||
-                    gaFeaturesUtils.yearFromString(layerToQuery.time);
+                    gfFeaturesUtils.yearFromString(layerToQuery.time);
               }
 
               $http.get(identifyUrl, {
@@ -404,7 +404,7 @@ goog.require('ga_styles_service');
               // has the proper size, the size of the columns are too small:
               // they are designed fit into the container before it has the good
               // size.
-              gaFeaturesGrid.setSize(function() {
+              gfFeaturesGrid.setSize(function() {
                 if (!done) {
                   scope.options.currentTab = feature.layerId;
                   done = true;
@@ -415,7 +415,7 @@ goog.require('ga_styles_service');
             function initFeaturesForLayer(feature) {
               featuresIdToIndex[feature.layerId] = {};
               featuresToDisplay[feature.layerId] = [];
-              gridsOptions[feature.layerId] = gaFeaturesGrid
+              gridsOptions[feature.layerId] = gfFeaturesGrid
                       .getLayerOptions(feature, featuresToDisplay,
                         featuresIdToIndex, map,
                         function(gridApi) {
@@ -426,7 +426,7 @@ goog.require('ga_styles_service');
             function close() {
               gaPreviewFeatures.clear(map);
               dragBox.hide();
-              gaFeaturesGrid.close();
+              gfFeaturesGrid.close();
             }
           }
         };

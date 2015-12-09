@@ -287,11 +287,11 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
   {% endif %}
 
-    <div ng-controller="GaFeaturesController">
-      <div ga-features
-           ga-features-map="map"
-           ga-features-options="options"
-           ga-features-active="!globals.isDrawActive && !globals.feedbackPopupShown"></div>
+    <div ng-controller="gfFeaturesController">
+      <div gf-features
+           gf-features-map="map"
+           gf-features-options="options"
+           gf-features-active="!globals.isDrawActive && !globals.feedbackPopupShown"></div>
     </div>
 {% if device != 'embed' %}
     <div  id="pulldown" ng-cloak translate-cloak ng-show="!globals.offline"
@@ -327,7 +327,7 @@ itemscope itemtype="http://schema.org/WebApplication"
             <span translate>print</span>
           </a>
           <div id="print" class="panel-collapse collapse">
-            <div class="panel-body" ng-controller="GaPrintController">
+            <div class="panel-body" ng-controller="GfPrintController">
                 <div ga-print
                    ga-print-map="map"
                    ga-print-options="options"
@@ -529,10 +529,10 @@ itemscope itemtype="http://schema.org/WebApplication"
          ga-popup-options="{title:'import_wms', help:'62'}"
          ga-draggable=".popover-title"
          id="import-ows-popup" >
-      <div ng-controller="GaImportWmsController">
-        <div ga-import-ows
-             ga-import-ows-map="map"
-             ga-import-ows-options="options">
+      <div ng-controller="GfImportWmsController">
+        <div gf-import-ows
+             gf-import-ows-map="map"
+             gf-import-ows-options="options">
         </div>
       </div>
     </div> <!-- end Import WMS -->
@@ -542,10 +542,10 @@ itemscope itemtype="http://schema.org/WebApplication"
          ga-popup-options="{title:'import_wmts', help:'62'}"
          ga-draggable=".popover-title"
          id="import-ows-popup" >
-      <div ng-controller="GaImportWmtsController">
-        <div ga-import-ows
-             ga-import-ows-map="map"
-             ga-import-ows-options="options">
+      <div ng-controller="GfImportWmtsController">
+        <div gf-import-ows
+             gf-import-ows-map="map"
+             gf-import-ows-options="options">
         </div>
       </div>
     </div> <!-- end Import WMTS -->
@@ -768,8 +768,8 @@ itemscope itemtype="http://schema.org/WebApplication"
 
       <!-- Load and configure Ioda-Net modules -->
       (function() {
-        var module = angular.module('IN');
-        module.constant('inGlobalOptions', {
+        var module = angular.module('gf');
+        module.constant('gfGlobalOptions', {
           allowWebdav: ${front.gf3.allow_webdav | lower},
           allowInfobox: ${front.gf3.allow_infobox | lower}
         });

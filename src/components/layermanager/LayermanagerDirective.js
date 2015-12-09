@@ -1,15 +1,15 @@
 goog.provide('ga_layermanager_directive');
 
-goog.require('IN');
 goog.require('ga_layer_metadata_popup_service');
 goog.require('ga_map_service');
+goog.require('gf');
 (function() {
 
   var module = angular.module('ga_layermanager_directive', [
     'pascalprecht.translate',
     'ga_layer_metadata_popup_service',
     'ga_map_service',
-    'IN'
+    'gf'
   ]);
 
   /**
@@ -55,7 +55,7 @@ goog.require('ga_map_service');
 
   module.directive('gaLayermanager', function($compile, $document, $timeout,
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
-      gaLayerMetadataPopup, gaLayers, inGlobalOptions) {
+      gaLayerMetadataPopup, gaLayers, gfGlobalOptions) {
 
     // Timestamps list template
     var tpl =
@@ -143,7 +143,7 @@ goog.require('ga_map_service');
         scope.layers = map.getLayers().getArray();
         scope.layerFilter = gaLayerFilters.selected;
         scope.mobile = gaBrowserSniffer.mobile;
-        scope.allowInfobox = inGlobalOptions.allowInfobox;
+        scope.allowInfobox = gfGlobalOptions.allowInfobox;
 
         // On mobile we use a classic select box, on desktop a popover
         if (!scope.mobile) {

@@ -20,13 +20,13 @@ describe('wms', function () {
           .sendKeys('http://wms.geo.admin.ch/');
     }).then(function () {
       // Click on "Verbinden"
-      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.ga-import-ows-connect").click();
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.gf-import-ows-connect").click();
     }).then(function () {
       // Click on "AGNES"
-      return $$("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] div.ga-import-ows-content li div.ga-header-group").get(0).click();
+      return $$("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] div.gf-import-ows-content li div.ga-header-group").get(0).click();
     }).then(function () {
       // Click on "Layer hinzufügen"
-      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.ga-import-ows-add").click();
+      return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.gf-import-ows-add").click();
     }).then(function () {
       return browser.sleep(2000);
     }).then(function () {
