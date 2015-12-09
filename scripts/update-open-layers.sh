@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
+set -u
 
 
 geo_front_root="$(pwd)"
@@ -19,33 +20,9 @@ ol_version=$(grep 'OL3_VERSION ?=' Makefile | cut -f 3 -d ' ')
 ol_cesium_version=$(grep 'OL3_CESIUM_VERSION ?=' Makefile | cut -f 3 -d ' ')
 cesium_version=$(grep '^CESIUM_VERSION' Makefile | cut -f 3 -d ' ')
 
-
-# Open Layers
-# Clone Open Layers 3
-mkdir -p .build
-cd .build
-if [[ ! -d ol3 ]]; then
-    git clone https://github.com/openlayers/ol3 ol3
+if [[ ! -d "${geo_front_root}/.build" ]]; then
+    mkdir "${geo_front_root}/.build"
 fi
-cd ol3
-git reset HEAD --hard
-git checkout master
-git fetch --all
-
-# Switch to the proper tag
-git checkout "${ol_version}"
-
-# Apply patches by Swisstopo
-cat ../../scripts/ga-ol3-style.exports >> src/ol/style/style.js
-cat ../../scripts/ga-ol3-tilegrid.exports >> src/ol/tilegrid/tilegrid.js
-cat ../../scripts/ga-ol3-tilerange.exports >> src/ol/tilerange.js
-cat ../../scripts/ga-ol3-view.exports >> src/ol/view.js
-
-# Build Open Layers
-npm install
-node tasks/build.js config/ol-debug.json "${geo_front_root}/src/lib/ol-debug.js"
-node tasks/build.js "${geo_front_root}/scripts/ol-geoadmin.json" "${geo_front_root}/src/lib/ol.js"
-
 
 # Cesium
 cd "${geo_front_root}/.build"
@@ -59,24 +36,37 @@ git fetch --all
 git checkout "${ol_cesium_version}"
 git submodule update --recursive --init --force
 
-## Building cesium
-cd cesium
+## Build ol3
+cd ol3
+git reset HEAD --hard
+git fetch --all
+git checkout "${ol_version}"
+
+### Apply patches by Swisstopo
+cat "${geo_front_root}/scripts/ga-ol3-style.exports" >> src/ol/style/style.js
+cat "${geo_front_root}/scripts/ga-ol3-tilegrid.exports" >> src/ol/tilegrid/tilegrid.js
+cat "${geo_front_root}/scripts/ga-ol3-tilerange.exports" >> src/ol/tilerange.js
+cat "${geo_front_root}/scripts/ga-ol3-view.exports" >> src/ol/view.js
+
+npm install --production
+node tasks/build-ext.js
+
+cd ../cesium
+
 git remote | grep c2c || git remote add c2c git://github.com/camptocamp/cesium
 git fetch --all
-git checkout "${CESIUM_VERSION}"
-npm install
-if [[ -e "Build/Cesium" && -e "Build/CesiumUnminified" ]]; then
-    echo 'Skipping Cesium debug build'
-else
-    npm run combine
-    rm -rf Build/Cesium
-    npm run minifyRelease
-fi
+git checkout "${cesium_version}"
 cd ..
 
-# Build (from swisstopo's Makefile)
-NO_CESIUM=1 make dist make dist
-node build/build.js "${geo_front_root}/scripts/ol3cesium-debug-geoadmin.json" "${geo_front_root}/src/lib/ol3cesium-debug.js"
-cat cesium/Build/Cesium/Cesium.js dist/ol3cesium.js > "${geo_front_root}/src/lib/ol3cesium.js"
-rm -rf "${geo_front_root}/src/lib/Cesium/*"
-cp -r cesium/Build/CesiumUnminified/* "${geo_front_root}/src/lib/Cesium/"
+ln -T -f -s "${geo_front_root}/ol3-cesium-plugin/" src/plugins/geoadmin
+( cd cesium; [ -f node_modules/.bin/gulp ] || npm install )
+( cd cesium; if [ -f "Build/Cesium/Cesium.js" ] ; then echo 'Skipping Cesium minified build'; else node_modules/.bin/gulp minifyRelease; fi )
+( cd cesium; if [ -f "Build/CesiumUnminified/Cesium.js" ] ; then echo 'Skipping Cesium debug build'; else node_modules/.bin/gulp generateStubs combine; fi )
+
+npm install
+node build/generate-exports.js dist/exports.js
+node build/build.js build/ol3cesium-debug.json "${geo_front_root}/src/lib/ol3cesium-debug.js"
+node build/build.js "${geo_front_root}/scripts/ol3cesium-geoadmin.json" "${geo_front_root}/src/lib/ol3cesium.js"
+rm -rf "${geo_front_root}/src/lib/Cesium"
+cp -r cesium/Build/CesiumUnminified "${geo_front_root}/src/lib/Cesium"
+cp cesium/Build/Cesium/Cesium.js "${geo_front_root}/src/lib/Cesium.min.js"

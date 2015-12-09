@@ -154,14 +154,20 @@ button.ga-icon {
 }
 
 button.ga-btn, .ol-control button {
-  &:hover:not[disabled] {
-    opacity: 0.7;
+
+  &[disabled] {
+    cursor: not-allowed;
   }
 
-  &:active {
-    transform: scale(1.2);
-    -ms-transform: scale(1.2);
-    -webkit-transform: scale(1.2);
+  &:not([disabled]) {
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:active {
+      .scale(1.2);
+    }
   }
 }
 
@@ -648,7 +654,7 @@ a .ga-icon-separator {
     height: 14px;
     margin: 0 7px 0 12px;
     text-align: center;
-    transition: transform 0.2s ease;
+    .transition-transform(0.2s ease);
     vertical-align: -2px;
   }
 
@@ -774,7 +780,7 @@ a .ga-icon-separator {
 
   .icon-caret-up {
     display: inline-block;
-    transition: transform 0.2s ease;
+    .transition-transform(0.2s ease);
   }
   .visible-collapsed {
     display: none;
@@ -1422,6 +1428,7 @@ input[type=range] {
 }
 
 #buttonGroup {
+  .user-select(none);
   position: absolute;
   top: unit(@header-height, px);
   right: unit(@control-btns-right, px);

@@ -36,6 +36,7 @@ beforeEach(function() {
       whitelist: [
         'https://' + location.host + '/**'
       ],
+      defaultEpsg: 'EPSG:21781',
       defaultTopicId: 'sometopic',
       translationFallbackCode: 'somelang',
       languages: ['de', 'fr', 'it', 'en', 'rm', 'somelang'],
@@ -50,7 +51,7 @@ beforeEach(function() {
     });
   });
 
-  module('ga');
+  module('geoadmin');
 
   // Configure the $translate service in such a way that no
   // requests to translation files are performed.

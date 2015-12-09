@@ -16,7 +16,12 @@ goog.provide('ga_cesium');
 var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     gaBrowserSniffer, $q, $translate) {
   // Url of ol3cesium library
-  var ol3CesiumLibUrl = gaGlobalOptions.resourceUrl + 'lib/ol3cesium.js';
+  var ol3CesiumLibUrl = gaGlobalOptions.resourceUrl;
+  if (gaGlobalOptions.buildMode === 'prod') {
+    ol3CesiumLibUrl += 'lib/Cesium.min.js';
+  } else {
+    ol3CesiumLibUrl += 'lib/Cesium/Cesium.js';
+  }
   var cesiumLoaded = $q.defer();
   var cesiumClients = $q.defer();
   var ol3d = undefined;
@@ -66,8 +71,8 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     var fogEnabled = boolParam('fogEnabled', true);
     var fogDensity = floatParam('fogDensity', '0.0001');
     var fogSseFactor = floatParam('fogSseFactor', '25');
-    var terrainLevels = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
-    window.minimumRetrievingLevel = intParam('minimumRetrievingLevel', '5');
+    var terrainLevels = [8, 11, 14, 16, 17];
+    window.minimumRetrievingLevel = intParam('minimumRetrievingLevel', '8');
     window.terrainAvailableLevels = arrayParam('terrainLevels', terrainLevels);
     window.imageryAvailableLevels = arrayParam('imageryLevels', undefined);
 
@@ -77,7 +82,7 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
         map: map,
         createSynchronizers: function(map, scene) {
            return [
-             new ga.GaRasterSynchronizer(map, scene),
+             new olcs.GaRasterSynchronizer(map, scene),
              new olcs.VectorSynchronizer(map, scene)
            ];
         }
@@ -180,7 +185,7 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     return function(activate) {
       // Check if cesium library is already loaded
       toActivate = activate;
-      if (!window.olcs) {
+      if (!window.Cesium) {
         loading = true;
         $.getScript(ol3CesiumLibUrl, function() {
           cesiumLoaded.resolve(toActivate);
@@ -243,7 +248,8 @@ var SSECorrector = function(gaPermalink) {
 SSECorrector.prototype.newFrameState = function(frameState) {
     this.cameraHeight = frameState.camera.positionCartographic.height;
 
-    if (this.pickglobe && !this.noheight && this.maxheight) {
+    if (this.pickglobe && !this.noheight &&
+        (!this.maxHeight || this.cameraHeight < this.maxheight)) {
       var scene = frameState.camera._scene;
       var canvas = scene.canvas;
       var pixelHeight = this.pickposition * canvas.clientHeight;

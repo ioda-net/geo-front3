@@ -13,11 +13,11 @@ function load(src, dest, config) {
       jsFiles,
       '--jscomp_error checkVars',
       '--compilation_level SIMPLE',
-      '--externs externs/angular.js',
-      '--externs externs/jquery.js',
       '--externs externs/ol.js',
       '--externs externs/ol3-cesium.js',
       '--externs externs/Cesium.externs.js',
+      '--externs externs/angular.js',
+      '--externs externs/jquery.js',
       '--js_output_file ' + dest.closure
     ]);
 
@@ -33,7 +33,7 @@ function load(src, dest, config) {
       'python node_modules/google-closure-library/closure/bin/build/closurebuilder.py',
       '--root=' + dest.annotated,
       '--root=node_modules/google-closure-library',
-      '--namespace="ga"',
+      '--namespace="geoadmin"',
       '--namespace="__ga_template_cache__"',
       '--output_mode=list'
     ]);

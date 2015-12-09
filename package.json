@@ -13,7 +13,7 @@
   "readmeFileName": "README.md",
   "devDependencies": {
     "angular": "1.4.2",
-    "angular-translate": "2.7.2",
+    "angular-translate": "2.8.1",
     "babel": "^5.8.34",
     "browserstack-webdriver": "2.41.1",
     "commander": "2.2.0",

@@ -384,7 +384,7 @@ goog.require('ga_urlutils_service');
         return new Cesium.UrlTemplateImageryProvider({
           minimumRetrievingLevel: window.minimumRetrievingLevel,
           url: gaUrlUtils.append(layer.url, gaUrlUtils.toKeyValue(wmsParams)),
-          rectangle: gaMapUtils.extentToRectangle(extent, 'EPSG:21781'),
+          rectangle: gaMapUtils.extentToRectangle(extent),
           proxy: proxy,
           tilingScheme: new Cesium.GeographicTilingScheme(),
           hasAlphaChannel: true,
@@ -980,8 +980,8 @@ goog.require('ga_urlutils_service');
         };
 
         var getWmtsGetTileTpl = function(tpl, layer, time, tileMatrixSet,
-            format, use2dTpl) {
-          var dfltTpl = use2dTpl ? wmtsGetTileUrlTemplate :
+            format, useMapProxyTpl) {
+          var dfltTpl = !useMapProxyTpl ? wmtsGetTileUrlTemplate :
               wmtsMapProxyGetTileUrlTemplate;
           var url = (tpl || dfltTpl)
               .replace('{Layer}', layer)
@@ -1095,15 +1095,15 @@ goog.require('ga_urlutils_service');
          */
         this.getCesiumTerrainProviderById = function(bodId) {
           var provider, config = layers[bodId];
-          var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
           var config3d = this.getConfig3d(config);
+          var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
           var requestedLayer = config3d.serverLayerName || bodId;
           if (config3d.type == 'terrain') {
             provider = new Cesium.CesiumTerrainProvider({
               url: getTerrainTileUrl(requestedLayer, timestamp),
               availableLevels: window.terrainAvailableLevels,
               rectangle: gaMapUtils.extentToRectangle(
-                gaGlobalOptions.defaultExtent, 'EPSG:21781')
+                gaGlobalOptions.defaultExtent)
             });
             provider.bodId = bodId;
           }
@@ -1116,7 +1116,8 @@ goog.require('ga_urlutils_service');
         this.getCesiumImageryProviderById = function(bodId) {
           var provider, params, config = layers[bodId];
           var config3d = this.getConfig3d(config);
-          var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
+          var timestamp = this.getLayerTimestampFromYear(
+              config3d, gaTime.get());
           var requestedLayer = config3d.wmsLayers || config3d.serverLayerName ||
               bodId;
           var format = config3d.format || 'png';
@@ -1135,7 +1136,7 @@ goog.require('ga_urlutils_service');
           if (config3d.type == 'wmts') {
             params = {
               url: getWmtsGetTileTpl(config3d.url, requestedLayer, timestamp,
-                  '4326', format),
+                  '4326', format, true),
               tileSize: 256,
               subdomains: config3d.subdomains || dfltWmtsMapProxySubdomains
             };
@@ -1164,7 +1165,7 @@ goog.require('ga_urlutils_service');
             };
           }
           var extent = gaMapUtils.intersectWithDefaultExtent(config3d.extent ||
-              ol.proj.get('EPSG:21781').getExtent());
+              ol.proj.get(gaGlobalOptions.defaultEpsg).getExtent());
           if (params) {
             var minRetLod = gaMapUtils.getLodFromRes(config3d.maxResolution) ||
                 window.minimumRetrievingLevel;
@@ -1181,17 +1182,16 @@ goog.require('ga_urlutils_service');
               maximumRetrievingLevel: maxRetLod,
               // This property active client zoom for next levels.
               maximumLevel: maxLod,
-              rectangle: gaMapUtils.extentToRectangle(extent, 'EPSG:21781'),
+              rectangle: gaMapUtils.extentToRectangle(extent),
               tilingScheme: new Cesium.GeographicTilingScheme(),
               tileWidth: params.tileSize,
               tileHeight: params.tileSize,
               hasAlphaChannel: (format == 'png'),
-              availableLevels: window.imageryAvailableLevels
+              availableLevels: window.imageryAvailableLevels,
               // Experimental
-              // Because of troubles in layer.json definitions, we remove this
-              // feature for now. We will re-activate after demo
-              //metadataUrl: '//terrain3.geo.admin.ch/1.0.0/' + bodId +
-              //    '/default/20150101/4326/'
+              metadataUrl: config3d.has3dMetadata ?
+                  getTerrainTileUrl(requestedLayer, timestamp) + '/' :
+                  undefined
             });
           }
           if (provider) {
@@ -1209,8 +1209,8 @@ goog.require('ga_urlutils_service');
           var olLayer;
           var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
           var crossOrigin = 'anonymous';
-          var extent = gaMapUtils.intersectWithDefaultExtent(
-              layer.extent || ol.proj.get('EPSG:21781').getExtent());
+          var extent = gaMapUtils.intersectWithDefaultExtent(layer.extent ||
+              ol.proj.get(gaGlobalOptions.defaultEpsg).getExtent());
 
           // For some obscure reasons, on iOS, displaying a base 64 image
           // in a tile with an existing crossOrigin attribute generates
@@ -1231,13 +1231,13 @@ goog.require('ga_urlutils_service');
                 dimensions: {
                   'Time': timestamp
                 },
-                projection: 'EPSG:21781',
+                projection: gaGlobalOptions.defaultEpsg,
                 requestEncoding: 'REST',
                 tileGrid: gaTileGrid.get(layer.resolutions,
                     layer.minResolution),
                 tileLoadFunction: tileLoadFunction,
                 url: getWmtsGetTileTpl(layer.url, layer.serverLayerName, null,
-                  '21781', layer.format, true),
+                  '21781', layer.format),
                 crossOrigin: crossOrigin
               });
             }
@@ -1413,13 +1413,13 @@ goog.require('ga_urlutils_service');
          * If there is more than one timestamp for a year we choose the first
          * found.
          */
-        this.getLayerTimestampFromYear = function(bodId, yearStr) {
+        this.getLayerTimestampFromYear = function(configOrBodId, yearStr) {
+          var layer = angular.isString(configOrBodId) ?
+              this.getLayer(configOrBodId) : configOrBodId;
+          var timestamps = layer.timestamps || [];
           if (angular.isNumber(yearStr)) {
             yearStr = '' + yearStr;
           }
-          var layer = this.getLayer(bodId);
-          var timestamps = layer.timestamps || [];
-
           if (!layer.timeEnabled) {
             // a WMTS/Terrain layer has at least one timestamp
             return (layer.type == 'wmts' || layer.type == 'terrain') ?
@@ -1427,7 +1427,7 @@ goog.require('ga_urlutils_service');
           }
 
           if (!angular.isDefined(yearStr)) {
-            var timeBehaviour = this.getLayerProperty(bodId, 'timeBehaviour');
+            var timeBehaviour = layer.timeBehaviour;
             //check if specific 4/6/8 digit timestamp is specified
             if (/^\d{4}$|^\d{6}$|^\d{8}$/.test(timeBehaviour)) {
                 yearStr = timeBehaviour;
@@ -1463,7 +1463,7 @@ goog.require('ga_urlutils_service');
    */
   module.provider('gaMapUtils', function() {
     this.$get = function($window, gaGlobalOptions, gaUrlUtils, $q,
-        gaDefinePropertiesForLayer) {
+        gaDefinePropertiesForLayer, $http) {
       var resolutions = gaGlobalOptions.resolutions;
       var lodsForRes = gaGlobalOptions.lods;
       var isExtentEmpty = function(extent) {
@@ -1500,6 +1500,7 @@ goog.require('ga_urlutils_service');
         },
         // Convert an extent to Cesium
         extentToRectangle: function(e, sourceProj) {
+          sourceProj = sourceProj || ol.proj.get(gaGlobalOptions.defaultEpsg);
           e = ol.proj.transformExtent(e, sourceProj, 'EPSG:4326');
           return Cesium.Rectangle.fromDegrees(e[0], e[1], e[2], e[3]);
         },
@@ -1556,20 +1557,39 @@ goog.require('ga_urlutils_service');
           return layer;
         },
 
+        flyToAnimation: function(ol3d, center, destination, defer) {
+          var scene = ol3d.getCesiumScene();
+          var camera = scene.camera;
+          var globe = scene.globe;
+          var carto = globe.ellipsoid.cartesianToCartographic(destination);
+          $http.get(gaGlobalOptions.apiUrl + '/rest/services/height', {
+            params: {
+              easting: center[0],
+              northing: center[1]
+            }
+          }).then(function(response) {
+            var height = carto.height - response.data.height;
+            var offset = Math.tan(Cesium.Math.toRadians(50)) * (height + 50);
+            destination.x += offset * 2;
+            camera.flyTo({
+              destination: destination,
+              orientation: {
+                pitch: Cesium.Math.toRadians(-50)
+              },
+              complete: defer.resolve,
+              cancel: defer.resolve
+            });
+          });
+        },
+
         moveTo: function(map, ol3d, zoom, center) {
           var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
-            var deg = ol.proj.transform(center,
-                ol3d.getOlMap().getView().getProjection(), 'EPSG:4326');
-            ol3d.getCesiumScene().camera.flyTo({
-              destination: Cesium.Cartesian3.fromDegrees(deg[0], deg[1], 3000),
-              complete: function() {
-                defer.resolve();
-              },
-              cancel: function() {
-                defer.resolve();
-              }
-            });
+            var projection = ol3d.getOlMap().getView().getProjection();
+            var deg = ol.proj.transform(center, projection, 'EPSG:4326');
+            var destination = Cesium.Cartesian3.fromDegrees(
+                deg[0], deg[1], 3000);
+            this.flyToAnimation(ol3d, center, destination, defer);
           } else {
             var view = map.getView();
             view.setZoom(zoom);
@@ -1581,16 +1601,11 @@ goog.require('ga_urlutils_service');
         zoomToExtent: function(map, ol3d, extent) {
           var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
-            ol3d.getCesiumScene().camera.flyTo({
-              destination: this.extentToRectangle(extent,
-                  ol3d.getOlMap().getView().getProjection()),
-              complete: function() {
-                defer.resolve();
-              },
-              cancel: function() {
-                defer.resolve();
-              }
-            });
+            var camera = ol3d.getCesiumScene().camera;
+            var rectangle = this.extentToRectangle(extent);
+            var destination = camera.getRectangleCameraCoordinates(rectangle);
+            var center = ol.extent.getCenter(extent);
+            this.flyToAnimation(ol3d, center, destination, defer);
           } else {
             map.getView().fit(extent, map.getSize());
             defer.resolve();
