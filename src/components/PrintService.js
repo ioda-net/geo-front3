@@ -1,11 +1,11 @@
-goog.provide('gf_print_service');
+goog.provide('gf3_print_service');
 (function() {
 
-  var module = angular.module('gf_print_service', [
+  var module = angular.module('gf3_print_service', [
     'pascalprecht.translate'
   ]);
 
-  module.provider('gfPrintService', function() {
+  module.provider('gf3PrintService', function() {
     var windowPrint;
 
     var buildHtml = function(body, head) {

@@ -4,7 +4,7 @@ goog.require('ga_attribution_service');
 goog.require('ga_layer_metadata_popup_service');
 goog.require('ga_map_service');
 goog.require('ga_urlutils_service');
-goog.require('gf');
+goog.require('gf3');
 
 (function() {
 
@@ -14,7 +14,7 @@ goog.require('gf');
     'ga_map_service',
     'ga_attribution_service',
     'ga_urlutils_service',
-    'gf'
+    'gf3'
   ]);
 
   /**
@@ -50,7 +50,7 @@ goog.require('gf');
   module.directive('gaLayermanager', function($compile, $document, $timeout,
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
       gaLayerMetadataPopup, gaLayers, gaAttribution, gaUrlUtils, gaMapUtils,
-      gfGlobalOptions) {
+      gf3GlobalOptions) {
 
     // Timestamps list template
     var tpl =
@@ -140,7 +140,7 @@ goog.require('gf');
         scope.layers = map.getLayers().getArray();
         scope.layerFilter = gaLayerFilters.selected;
         scope.mobile = gaBrowserSniffer.mobile;
-        scope.allowInfobox = gfGlobalOptions.allowInfobox;
+        scope.allowInfobox = gf3GlobalOptions.allowInfobox;
         scope.$watchCollection('layers | filter:layerFilter', function(items) {
           scope.filteredLayers = (items) ? items.slice().reverse() : [];
         });

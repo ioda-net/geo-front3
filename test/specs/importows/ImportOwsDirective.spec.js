@@ -1,4 +1,4 @@
-describe('gf_importows_directive', function() {
+describe('gf3_importows_directive', function() {
 
   describe('a good WMS GetCapabilities is received', function() {
     var element, scope, map;
@@ -21,8 +21,8 @@ describe('gf_importows_directive', function() {
         map.getView().fit([-20000000, -20000000, 20000000, 20000000], map.getSize());
 
         element = angular.element(
-            '<div gf-import-ows gf-import-ows-map="map" ' +
-            'gf-import-ows-options="options">' +
+            '<div gf3-import-ows gf3-import-ows-map="map" ' +
+            'gf3-import-ows-options="options">' +
             '</div>');
         scope = $rootScope.$new();
         scope.map = map;
@@ -50,13 +50,13 @@ describe('gf_importows_directive', function() {
       var form = element.find('form');
       expect(form.find('input[type=url][ng-model=fileUrl]').length).to.be(1);
       expect(form.find('.twitter-typeahead').length).to.be(1);
-      expect(form.find('.gf-import-ows-open').length).to.be(1);
-      expect(form.find('.gf-import-ows-connect').length).to.be(1);
-      expect(element.find('.gf-import-ows-container').length).to.be(1);
-      expect(element.find('.gf-import-ows-content').length).to.be(1);
+      expect(form.find('.gf3-import-ows-open').length).to.be(1);
+      expect(form.find('.gf3-import-ows-connect').length).to.be(1);
+      expect(element.find('.gf3-import-ows-container').length).to.be(1);
+      expect(element.find('.gf3-import-ows-content').length).to.be(1);
       expect(element.find('textarea').length).to.be(1);
-      expect(element.find('.gf-import-ows-add').length).to.be(1);
-      form.find('.gf-import-ows-open').click();
+      expect(element.find('.gf3-import-ows-add').length).to.be(1);
+      form.find('.gf3-import-ows-open').click();
       expect(element.find('.tt-dropdown-menu').css('display')).not.to.be('none');
       expect(element.find('.tt-suggestion').length).to.be(5);
     }));
@@ -157,7 +157,7 @@ describe('gf_importows_directive', function() {
       expect(scope.layers[1].Layer.length).to.be(1);
     }));
     
-    describe('gf_importows_item_directive', function() {
+    describe('gf3_importows_item_directive', function() {
       var evt = {
         stopPropagation: function(){}
       };
@@ -208,8 +208,8 @@ describe('gf_importows_directive', function() {
         map.getView().fit([-20000000, -20000000, 20000000, 20000000], map.getSize());
 
         element = angular.element(
-            '<div gf-import-ows gf-import-ows-map="map" ' +
-            'gf-import-ows-options="options">' +
+            '<div gf3-import-ows gf3-import-ows-map="map" ' +
+            'gf3-import-ows-options="options">' +
             '</div>');
         scope = $rootScope.$new();
         scope.map = map;
@@ -232,13 +232,13 @@ describe('gf_importows_directive', function() {
       var form = element.find('form');
       expect(form.find('input[type=url][ng-model=fileUrl]').length).to.be(1);
       expect(form.find('.twitter-typeahead').length).to.be(1);
-      expect(form.find('.gf-import-ows-open').length).to.be(1);
-      expect(form.find('.gf-import-ows-connect').length).to.be(1);
-      expect(element.find('.gf-import-ows-container').length).to.be(1);
-      expect(element.find('.gf-import-ows-content').length).to.be(1);
+      expect(form.find('.gf3-import-ows-open').length).to.be(1);
+      expect(form.find('.gf3-import-ows-connect').length).to.be(1);
+      expect(element.find('.gf3-import-ows-container').length).to.be(1);
+      expect(element.find('.gf3-import-ows-content').length).to.be(1);
       expect(element.find('textarea').length).to.be(1);
-      expect(element.find('.gf-import-ows-add').length).to.be(1);
-      form.find('.gf-import-ows-open').click();
+      expect(element.find('.gf3-import-ows-add').length).to.be(1);
+      form.find('.gf3-import-ows-open').click();
       expect(element.find('.tt-dropdown-menu').css('display')).not.to.be('none');
       expect(element.find('.tt-suggestion').length).to.be(1);
     }));
@@ -269,7 +269,7 @@ describe('gf_importows_directive', function() {
             <ows:Keyword>Frontieres</ows:Keyword>
             <ows:Keyword>swissBOUNDARIES3D</ows:Keyword>
             <ows:Keyword>Cartes historiques</ows:Keyword>
-            <ows:Keyword>Atlas Siegfried</ows:Keyword>
+            <ows:Keyword>Atlas Siegf3ried</ows:Keyword>
             <ows:Keyword>Carte Dufour</ows:Keyword>
         </ows:Keywords>
         <ows:ServiceType>OGC WMTS</ows:ServiceType>
@@ -669,7 +669,7 @@ describe('gf_importows_directive', function() {
       expect(layer.matrixSet).to.be('21781_24');
     }));
 
-    describe('gf_importows_item_directive', function() {
+    describe('gf3_importows_item_directive', function() {
       var evt = {
         stopPropagation: function() {}
       };

@@ -20,9 +20,9 @@ goog.require('ga_geolocation');
 goog.require('ga_help');
 goog.require('ga_importkml');
 goog.require('ga_importkml_controller');
-goog.require('gf_importows');
-goog.require('gf_importwms_controller');
-goog.require('gf_importwmts_controller');
+goog.require('gf3_importows');
+goog.require('gf3_importwms_controller');
+goog.require('gf3_importwmts_controller');
 goog.require('ga_layermanager');
 goog.require('ga_main_controller');
 goog.require('ga_map');
@@ -33,7 +33,7 @@ goog.require('ga_mouseposition_controller');
 goog.require('ga_offline');
 goog.require('ga_placeholder_directive');
 goog.require('ga_popup');
-goog.require('gf_print_controller');
+goog.require('gf3_print_controller');
 goog.require('ga_print_directive');
 goog.require('ga_profile');
 goog.require('ga_rotate');
@@ -54,10 +54,10 @@ goog.require('ga_topic');
 goog.require('ga_translation');
 goog.require('ga_translation_controller');
 goog.require('ga_waitcursor_service');
-goog.require('gf_features');
-goog.require('gf_features_controller');
+goog.require('gf3_features');
+goog.require('gf3_features_controller');
 goog.require('ga_draw_controller');
-goog.require('gf_webdav');
+goog.require('gf3_webdav');
 (function() {
 
 
@@ -67,7 +67,7 @@ goog.require('gf_webdav');
     'ga_catalogtree',
     'ga_contextpopup',
     'ga_importkml',
-    'gf_importows',
+    'gf3_importows',
     'ga_help',
     'ga_map',
     'ga_mouseposition',
@@ -83,7 +83,7 @@ goog.require('gf_webdav');
     'ga_translation',
     'ga_feedback',
     'ga_layermanager',
-    'gf_features',
+    'gf3_features',
     'ga_swipe',
     'ga_measure',
     'ga_profile',
@@ -100,13 +100,13 @@ goog.require('gf_webdav');
     'ga_importkml_controller',
     'ga_geolocation',
     'ga_rotate',
-    'gf_importwms_controller',
-    'gf_importwmts_controller',
+    'gf3_importwms_controller',
+    'gf3_importwmts_controller',
     'ga_main_controller',
     'ga_catalogtree_controller',
     'ga_mouseposition_controller',
     'ga_share_controller',
-    'gf_print_controller',
+    'gf3_print_controller',
     'ga_print_directive',
     'ga_translation_controller',
     'ga_feedback_controller',
@@ -115,8 +115,8 @@ goog.require('gf_webdav');
     'ga_seo_controller',
     'ga_timeselector_controller',
     'ga_draw_controller',
-    'gf_features_controller',
-    'gf_webdav',
+    'gf3_features_controller',
+    'gf3_webdav',
     'ga_tilt3d'
   ]);
 

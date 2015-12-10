@@ -1,11 +1,11 @@
-goog.provide('gf_webdav');
+goog.provide('gf3_webdav');
 
-goog.require('gf_webdav_directive');
-goog.require('gf_webdav_service');
+goog.require('gf3_webdav_directive');
+goog.require('gf3_webdav_service');
 (function() {
 
-  angular.module('gf_webdav', [
-    'gf_webdav_directive',
-    'gf_webdav_service'
+  angular.module('gf3_webdav', [
+    'gf3_webdav_directive',
+    'gf3_webdav_service'
   ]);
 })();

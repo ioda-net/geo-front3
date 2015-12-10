@@ -1,9 +1,9 @@
-goog.provide('gf_features_controller');
+goog.provide('gf3_features_controller');
 (function() {
 
-  var module = angular.module('gf_features_controller', []);
+  var module = angular.module('gf3_features_controller', []);
 
-  module.controller('gfFeaturesController',
+  module.controller('gf3FeaturesController',
       function($scope, angularLoad, gaGlobalOptions, gaBrowserSniffer) {
         $scope.gridApi = {};
         $scope.options = {

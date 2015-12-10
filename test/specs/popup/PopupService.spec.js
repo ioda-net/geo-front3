@@ -5,7 +5,7 @@ describe('ga_popup_service', function() {
     module(function($provide) {
       htmlPrintoutSpy = sinon.spy();
 
-      $provide.value('gfPrintService', {
+      $provide.value('gf3PrintService', {
         htmlPrintout: htmlPrintoutSpy
       });
     });

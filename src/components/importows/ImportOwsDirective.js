@@ -1,17 +1,17 @@
-goog.provide('gf_importows_directive');
+goog.provide('gf3_importows_directive');
 
 goog.require('ga_map_service');
 goog.require('ga_urlutils_service');
 (function() {
 
-  var module = angular.module('gf_importows_directive', [
+  var module = angular.module('gf3_importows_directive', [
     'ga_map_service',
     'ga_urlutils_service',
     'pascalprecht.translate'
   ]);
 
   module.controller('GfImportOwsDirectiveController',
-      function($scope, $http, $q, $translate, gaUrlUtils, gaWms, gaWmts) {
+      function($scope, $http, $q, $translate, gaUrlUtils, gaWms, gf3Wmts) {
 
           // List of layers available in the GetCapabilities.
           // The layerXXXX properties use layer objects from the parsing of
@@ -125,7 +125,7 @@ goog.require('ga_urlutils_service');
               getCapabilities.Contents.Layer.forEach(function(layer) {
                 if (layer.Identifier) {
                   $scope.layers.push(
-                      gaWmts.getLayerConfig(getCapabilities, layer));
+                      gf3Wmts.getLayerConfig(getCapabilities, layer));
                 }
               });
             }
@@ -150,7 +150,7 @@ goog.require('ga_urlutils_service');
                 if ($scope.options.owsType === 'WMS') {
                   olLayer = gaWms.getOlLayerFromGetCapLayer(getCapLayer);
                 } else if ($scope.options.owsType === 'WMTS') {
-                  olLayer = gaWmts.getOlLayerFromGetCapLayer(getCapLayer);
+                  olLayer = gf3Wmts.getOlLayerFromGetCapLayer(getCapLayer);
                 }
                 if (olLayer) {
                   $scope.map.addLayer(olLayer);
@@ -339,7 +339,7 @@ goog.require('ga_urlutils_service');
     };
   });
 
-  module.directive('gfImportOwsItem', function($compile) {
+  module.directive('gf3ImportOwsItem', function($compile) {
 
     /**** UTILS functions ****/
     // from OL2
@@ -430,14 +430,14 @@ goog.require('ga_urlutils_service');
     };
   });
 
-  module.directive('gfImportOws',
+  module.directive('gf3ImportOws',
       function($http, $translate, $rootScope) {
           return {
             restrict: 'A',
             templateUrl: 'components/importows/partials/importows.html',
             scope: {
-              map: '=gfImportOwsMap',
-              options: '=gfImportOwsOptions'
+              map: '=gf3ImportOwsMap',
+              options: '=gf3ImportOwsOptions'
             },
             controller: 'GfImportOwsDirectiveController',
             link: function(scope, elt, attrs, controller) {
@@ -465,7 +465,7 @@ goog.require('ga_urlutils_service');
 
 
               // Toggle list of suggestions
-              elt.find('.gf-import-ows-open').on('click', function(evt) {
+              elt.find('.gf3-import-ows-open').on('click', function(evt) {
                 elt.find('.tt-dropdown-menu').toggle();
                 // Re-initialize the list of suggestions
                 initSuggestions();

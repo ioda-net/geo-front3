@@ -1,17 +1,17 @@
 goog.provide('ga_popup_service');
 
 goog.require('ga_draggable_directive');
-goog.require('gf_print_service');
+goog.require('gf3_print_service');
 (function() {
 
   var module = angular.module('ga_popup_service', [
     'ga_draggable_directive',
-    'gf_print_service'
+    'gf3_print_service'
   ]);
 
   module.provider('gaPopup', function() {
 
-    this.$get = function($compile, $rootScope, $timeout, $q, gfPrintService) {
+    this.$get = function($compile, $rootScope, $timeout, $q, gf3PrintService) {
 
       var Popup = function(options) {
         // Create the popup element with its content to the HTML page
@@ -26,7 +26,7 @@ goog.require('gf_print_service');
         options.print = options.print ||
               (function() {
                 var contentEl = element.find('.ga-popup-content');
-                gfPrintService.htmlPrintout(contentEl.clone().html());
+                gf3PrintService.htmlPrintout(contentEl.clone().html());
               });
 
         if (options.className) {

@@ -1,30 +1,30 @@
-goog.provide('gf_webdav_directive');
+goog.provide('gf3_webdav_directive');
 
-goog.require('gf');
+goog.require('gf3');
 
 (function() {
-  var module = angular.module('gf_webdav_directive', ['gf']);
+  var module = angular.module('gf3_webdav_directive', ['gf3']);
 
-  module.directive('gfWebdavSaveSelect', function(gfGlobalOptions) {
+  module.directive('gf3WebdavSaveSelect', function(gf3GlobalOptions) {
     return {
       restrict: 'A',
       templateUrl: 'components/webdav/partials/webdavsaveselect.html',
       scope: {
-        drawingSave: '=?gfDrawingSave'
+        drawingSave: '=?gf3DrawingSave'
       },
       link: function(scope) {
-        scope.allowWebdav = gfGlobalOptions.allowWebdav;
+        scope.allowWebdav = gf3GlobalOptions.allowWebdav;
       }
     };
   });
 
-  module.directive('gfWebdavConnect', function() {
+  module.directive('gf3WebdavConnect', function() {
     return {
       restrict: 'A',
       templateUrl: 'components/webdav/partials/webdavconnect.html',
       scope: {
-        drawingSave: '=gfDrawingSave',
-        webdav: '=gfWebdav'
+        drawingSave: '=gf3DrawingSave',
+        webdav: '=gf3Webdav'
       }
     };
   });

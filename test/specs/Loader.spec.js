@@ -45,7 +45,7 @@ beforeEach(function() {
       adminUrlRegexp: /^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)/
     });
 
-    $provide.constant('gfGlobalOptions', {
+    $provide.constant('gf3GlobalOptions', {
       allowWebdav: true,
       allowInfobox: true
     });

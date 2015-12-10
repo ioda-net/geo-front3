@@ -475,7 +475,7 @@ goog.require('ga_urlutils_service');
   /**
    * Manage external WMTS layers
    */
-  module.provider('gaWmts', function() {
+  module.provider('gf3Wmts', function() {
     this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils) {
       var Wmts = function() {
 
@@ -2023,7 +2023,7 @@ goog.require('ga_urlutils_service');
   module.provider('gaLayersPermalinkManager', function() {
 
     this.$get = function($rootScope, gaLayers, gaPermalink, $translate, $http,
-        gaKml, gaMapUtils, gaWms, gaWmts, gaLayerFilters, gaUrlUtils,
+        gaKml, gaMapUtils, gaWms, gf3Wmts, gaLayerFilters, gaUrlUtils,
         gaFileStorage, gaTopic, gaGlobalOptions, $q, gaTime) {
 
       var layersParamValue = gaPermalink.getParams().layers;
@@ -2259,10 +2259,10 @@ goog.require('ga_urlutils_service');
                 try {
                   var getCapabilities =
                       new ol.format.WMTSCapabilities().read(data);
-                  var layerConfig = gaWmts.getLayerConfigFromIdentifier(
+                  var layerConfig = gf3Wmts.getLayerConfigFromIdentifier(
                       getCapabilities, infos[1]);
-                  layerConfig.dimensions = gaWmts.importDimensions(infos[2]);
-                    gaWmts.addWmtsToMap(map, layerConfig, index + 1);
+                  layerConfig.dimensions = gf3Wmts.importDimensions(infos[2]);
+                    gf3Wmts.addWmtsToMap(map, layerConfig, index + 1);
                 } catch (e) {
                   // Adding external WMTS layer failed
                   console.error('Loading of external WMTS layer ' + layerSpec +
@@ -2583,7 +2583,7 @@ goog.require('ga_urlutils_service');
     var olPreviewLayers = {};
 
     this.$get = function($rootScope, gaLayers, gaWms, gaTime, gaMapUtils,
-        gaWmts) {
+        gf3Wmts) {
       var olPreviewLayer;
 
       var PreviewLayers = function() {
@@ -2653,7 +2653,7 @@ goog.require('ga_urlutils_service');
           var olPreviewLayer = olPreviewLayers[getCapLayer.id];
 
           if (!olPreviewLayer) {
-            olPreviewLayer = gaWmts.getOlLayerFromGetCapLayer(getCapLayer);
+            olPreviewLayer = gf3Wmts.getOlLayerFromGetCapLayer(getCapLayer);
           }
 
           olPreviewLayer.preview = true;

@@ -302,11 +302,11 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
   {% endif %}
 
-    <div ng-controller="gfFeaturesController">
-      <div gf-features
-           gf-features-map="map"
-           gf-features-options="options"
-           gf-features-active="!globals.isDrawActive && !globals.feedbackPopupShown"></div>
+    <div ng-controller="gf3FeaturesController">
+      <div gf3-features
+           gf3-features-map="map"
+           gf3-features-options="options"
+           gf3-features-active="!globals.isDrawActive && !globals.feedbackPopupShown"></div>
     </div>
 {% if device != 'embed' %}
     <div  id="pulldown" ng-cloak translate-cloak ng-show="!globals.offline"
@@ -554,9 +554,9 @@ itemscope itemtype="http://schema.org/WebApplication"
          ga-draggable=".popover-title"
          id="import-ows-popup" >
       <div ng-controller="GfImportWmsController">
-        <div gf-import-ows
-             gf-import-ows-map="map"
-             gf-import-ows-options="options">
+        <div gf3-import-ows
+             gf3-import-ows-map="map"
+             gf3-import-ows-options="options">
         </div>
       </div>
     </div> <!-- end Import WMS -->
@@ -567,9 +567,9 @@ itemscope itemtype="http://schema.org/WebApplication"
          ga-draggable=".popover-title"
          id="import-ows-popup" >
       <div ng-controller="GfImportWmtsController">
-        <div gf-import-ows
-             gf-import-ows-map="map"
-             gf-import-ows-options="options">
+        <div gf3-import-ows
+             gf3-import-ows-map="map"
+             gf3-import-ows-options="options">
         </div>
       </div>
     </div> <!-- end Import WMTS -->
@@ -799,8 +799,8 @@ itemscope itemtype="http://schema.org/WebApplication"
 
       <!-- Load and configure Ioda-Net modules -->
       (function() {
-        var module = angular.module('gf');
-        module.constant('gfGlobalOptions', {
+        var module = angular.module('gf3');
+        module.constant('gf3GlobalOptions', {
           allowWebdav: ${front.gf3.allow_webdav | lower},
           allowInfobox: ${front.gf3.allow_infobox | lower}
         });

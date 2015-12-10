@@ -2,23 +2,23 @@
   <form ng-class="{'has-error': error}">
     <input type="url" name="url" autocomplete="off" placeholder="{{'choose_wms_url' | translate}}"
       ng-model="fileUrl" required class="form-control"/>
-    <div class="gf-import-ows-open icon-collapse"></div>
-    <button type="button" class="btn btn-default gf-import-ows-connect"
+    <div class="gf3-import-ows-open icon-collapse"></div>
+    <button type="button" class="btn btn-default gf3-import-ows-connect"
             ng-click="handleFileUrl()" translate>connect</button>
     <div class="ga-message">{{userMessage}}</div>
   </form>
-  <div class="gf-import-ows-container">
-    <div class="gf-import-ows-header" ng-click="reverse = !reverse">
+  <div class="gf3-import-ows-container">
+    <div class="gf3-import-ows-header" ng-click="reverse = !reverse">
       <label translate>title</label>
       <button class="pull-right" ng-class="{
         'icon-sort-by-alphabet': !reverse,
         'icon-sort-by-alphabet-alt': reverse
       }"></button>
     </div>
-    <div class="gf-import-ows-content">
+    <div class="gf3-import-ows-content">
       <ul>
         <li ng-repeat="layer in layers | orderBy:'Title':reverse">
-          <div gf-import-ows-item></div>
+          <div gf3-import-ows-item></div>
         </li>
       </ul>
     </div>
@@ -28,11 +28,11 @@
       </div>
     </div>
   </div>
-  <div class="gf-import-ows-descr">
+  <div class="gf3-import-ows-descr">
     <label translate>description</label>
     <textarea ng-if="options.owsType === 'WMS'" placeholder="{{'description_instructions' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
     <textarea ng-if="options.owsType === 'WMTS'" placeholder="{{'description_instructions_wmts' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
-    <button type="button" class="btn btn-default gf-import-ows-add"
+    <button type="button" class="btn btn-default gf3-import-ows-add"
     ng-disabled="(options.layerSelected && options.layerSelected.isInvalid)" ng-click="addLayerSelected()" translate>add_layer</button>
   </div>
 </div>

@@ -1,15 +1,15 @@
-goog.provide('gf_webdav_service');
+goog.provide('gf3_webdav_service');
 
 goog.require('ga_export_kml_service');
 goog.require('ga_map_service');
 (function() {
-  var module = angular.module('gf_webdav_service', [
+  var module = angular.module('gf3_webdav_service', [
     'ga_export_kml_service',
     'ga_map_service',
     'pascalprecht.translate'
   ]);
 
-  module.factory('gfWebdav', function(gaKml, gaExportKml, gaMapUtils, $http,
+  module.factory('gf3Webdav', function(gaKml, gaExportKml, gaMapUtils, $http,
       $translate) {
     return {
       load: load,

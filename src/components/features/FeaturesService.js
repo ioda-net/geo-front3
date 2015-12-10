@@ -1,11 +1,11 @@
-goog.provide('gf_features_service');
+goog.provide('gf3_features_service');
 
 goog.require('ga_map_service');
 
 (function() {
-  var module = angular.module('gf_features_service', ['ga_map_service']);
+  var module = angular.module('gf3_features_service', ['ga_map_service']);
 
-  module.provider('gfDragBox', function() {
+  module.provider('gf3DragBox', function() {
     this.$get = function(gaStyleFactory, gaBrowserSniffer) {
       var DragBox = function(map, onDragBoxEnd) {
         var dragBox, boxOverlay;
@@ -77,7 +77,7 @@ goog.require('ga_map_service');
     };
   });
 
-  module.factory('gfFeaturesUtils', function(gaLayers) {
+  module.factory('gf3FeaturesUtils', function(gaLayers) {
     return {
       isVectorLayer: isVectorLayer,
       isQueryableBodLayer: isQueryableBodLayer,
@@ -164,7 +164,7 @@ goog.require('ga_map_service');
     }
   });
 
-  module.factory('gfFeaturesGrid', function($translate, $window,
+  module.factory('gf3FeaturesGrid', function($translate, $window,
       uiGridConstants, gaPreviewFeatures, gaGlobalOptions) {
     var parser = new ol.format.GeoJSON();
     var isHiddenRegexp = /_hidden$/;
@@ -193,7 +193,7 @@ goog.require('ga_map_service');
               '</div></div>',
       onRegisterApi: function(gridApi) {
         gridApi.core.on.renderingComplete(null, function() {
-          $('.gf-features-popup').trigger('resize');
+          $('.gf3-features-popup').trigger('resize');
         });
       }
     };
@@ -344,7 +344,7 @@ goog.require('ga_map_service');
     }
 
     function getPopup() {
-      return $('.gf-features-popup').parent().parent();
+      return $('.gf3-features-popup').parent().parent();
     }
 
     function correctTableSize(popup) {
@@ -354,7 +354,7 @@ goog.require('ga_map_service');
 
     function correctWidth(popup) {
       // max-width on features container to always view buttons
-      var table = $('.gf-features-popup .grid-container');
+      var table = $('.gf3-features-popup .grid-container');
       if (table.length > 0) {
         var popupContent = popup.find('.ga-popup-content');
         var newWidth = $window.innerWidth -
@@ -368,8 +368,8 @@ goog.require('ga_map_service');
       // max-height on features container to scroll vertically
       // We must take into account the size of the title bar which may
       // be inserted in the DOM after this function is called.
-      var tableContainer = $('.gf-features-popup .grid-container');
-      var table = $('.gf-features-popup .grid');
+      var tableContainer = $('.gf3-features-popup .grid-container');
+      var table = $('.gf3-features-popup .grid');
       var popupTitle = popup.find('.popover-title');
       var heightTitle = parseInt(
               popupTitle.outerHeight(), 10);

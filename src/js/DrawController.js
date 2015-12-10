@@ -1,7 +1,7 @@
 goog.provide('ga_draw_controller');
 
 goog.require('ga_browsersniffer_service');
-goog.require('gf_print_service');
+goog.require('gf3_print_service');
 goog.require('ga_styles_service');
 (function() {
 
@@ -9,12 +9,12 @@ goog.require('ga_styles_service');
     'pascalprecht.translate',
     'ga_styles_service',
     'ga_browsersniffer_service',
-    'gf_print_service'
+    'gf3_print_service'
   ]);
 
   module.controller('GaDrawController', function($rootScope, $scope, $translate,
       $timeout, gaBrowserSniffer, gaGlobalOptions, gaStyleFactory,
-      gfPrintService) {
+      gf3PrintService) {
 
     $scope.$on('gaPopupFocusChange', function(evt, isFocus) {
       $scope.options.hasPopupFocus = isFocus;
@@ -512,7 +512,7 @@ goog.require('ga_styles_service');
         printWindow.print();
       };
       $timeout(function() {
-        gfPrintService.htmlPrintout(contentEl.clone().html(), undefined,
+        gf3PrintService.htmlPrintout(contentEl.clone().html(), undefined,
             onLoad);
       }, 0, false);
     };

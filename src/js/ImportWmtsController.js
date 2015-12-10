@@ -1,7 +1,7 @@
-goog.provide('gf_importwmts_controller');
+goog.provide('gf3_importwmts_controller');
 (function() {
 
-  var module = angular.module('gf_importwmts_controller', []);
+  var module = angular.module('gf3_importwmts_controller', []);
 
   module.controller('GfImportWmtsController', function($scope, gaGlobalOptions) {
     var defaultWmtsList = [

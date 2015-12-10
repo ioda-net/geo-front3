@@ -1,7 +1,7 @@
 goog.provide('ga_popup_directive');
 
 goog.require('ga_browsersniffer_service');
-goog.require('gf_print_service');
+goog.require('gf3_print_service');
 (function() {
 
   var module = angular.module('ga_popup_directive', [

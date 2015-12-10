@@ -5,7 +5,7 @@ goog.require('ga_file_storage_service');
 goog.require('ga_map_service');
 goog.require('ga_measure_service');
 goog.require('ga_permalink');
-goog.require('gf_webdav_service');
+goog.require('gf3_webdav_service');
 (function() {
 
   var module = angular.module('ga_draw_directive', [
@@ -14,7 +14,7 @@ goog.require('gf_webdav_service');
     'ga_map_service',
     'ga_measure_service',
     'ga_permalink',
-    'gf_webdav_service',
+    'gf3_webdav_service',
     'pascalprecht.translate'
   ]);
 
@@ -33,7 +33,7 @@ goog.require('gf_webdav_service');
     function($timeout, $translate, $window, $rootScope, gaBrowserSniffer,
         gaDefinePropertiesForLayer, gaDebounce, gaFileStorage, gaLayerFilters,
         gaExportKml, gaMapUtils, gaPermalink, gaUrlUtils,
-        $document, gaMeasure, gfWebdav, $http, $q) {
+        $document, gaMeasure, gf3Webdav, $http, $q) {
 
       var createDefaultLayer = function(map, useTemporaryLayer) {
         var dfltLayer = new ol.layer.Vector({
@@ -291,7 +291,7 @@ goog.require('gf_webdav_service');
               // If there is a layer loaded from public.admin.ch, we use it for
               // modification.
               map.getLayers().forEach(function(item) {
-                var isWebdavLayer = gfWebdav.isWebdavStoredKmlLayer(item,
+                var isWebdavLayer = gf3Webdav.isWebdavStoredKmlLayer(item,
                   scope.webdav.url, scope.webdav.file);
                 if (gaMapUtils.isStoredKmlLayer(item) || isWebdavLayer) {
                   layer = item;
@@ -341,7 +341,7 @@ goog.require('gf_webdav_service');
             // new layer.
             unLayerAdd = map.getLayers().on('add', function(evt) {
               var added = evt.element;
-              var isWebdavLayer = gfWebdav.isWebdavStoredKmlLayer(added,
+              var isWebdavLayer = gf3Webdav.isWebdavStoredKmlLayer(added,
                 scope.webdav.url, scope.webdav.file);
               if ((gaMapUtils.isStoredKmlLayer(added) || isWebdavLayer) &&
                   layer.getSource().getFeatures().length === 0 &&
@@ -668,13 +668,13 @@ goog.require('gf_webdav_service');
 
           var deleteWebdav = function() {
             if (scope.drawingSave.value === 'custom') {
-              var req = gfWebdav['delete'](layer, map, scope.webdav.url,
+              var req = gf3Webdav['delete'](layer, map, scope.webdav.url,
                 scope.webdav.file, scope.webdav.user, scope.webdav.password);
               if (req) {
                 req.success(function() {
                   scope.statusMsgId = $translate.instant('draw_delete_success');
                 }).error(function(data, status) {
-                  scope.statusMsgId = gfWebdav.getWebdavErrorMessage(
+                  scope.statusMsgId = gf3Webdav.getWebdavErrorMessage(
                     $translate.instant('draw_delete_error'), status);
                 });
               }
@@ -872,7 +872,7 @@ goog.require('gf_webdav_service');
           var saveDebounced = gaDebounce.debounce(save, 133, false, false);
 
           var saveServer = function() {
-            var kmlString = gfWebdav.getKmlString(layer, map);
+            var kmlString = gf3Webdav.getKmlString(layer, map);
             var id = layer.adminId ||
                 gaFileStorage.getFileIdFromFileUrl(layer.url);
             gaFileStorage.save(id, kmlString,
@@ -896,7 +896,7 @@ goog.require('gf_webdav_service');
             if (scope.webdav.canOverrideFile) {
               performWebdavSave();
             } else {
-              gfWebdav.exists(scope.webdav.url, scope.webdav.file,
+              gf3Webdav.exists(scope.webdav.url, scope.webdav.file,
                   scope.webdav.user, scope.webdav.password)
               .success(function() {
                 var message =
@@ -914,12 +914,12 @@ goog.require('gf_webdav_service');
           };
 
           var performWebdavSave = function() {
-            gfWebdav.save(layer, map, scope.webdav.url, scope.webdav.file,
+            gf3Webdav.save(layer, map, scope.webdav.url, scope.webdav.file,
               scope.webdav.user, scope.webdav.password)
             .success(function() {
               scope.statusMsgId = 'draw_file_saved';
             }).error(function(data, status) {
-              scope.statusMsgId = gfWebdav.getErrorMessage(
+              scope.statusMsgId = gf3Webdav.getErrorMessage(
                 $translate.instant('draw_save_error'), status);
             });
           };
@@ -934,8 +934,8 @@ goog.require('gf_webdav_service');
             if (scope.webdav.url) {
               scope.statusMsgId = $translate.instant('draw_webdav_loading');
               var def = $q.defer();
-              gfWebdav.load(def, scope.map, scope.webdav.url, scope.webdav.file,
-                scope.webdav.user, scope.webdav.password);
+              gf3Webdav.load(def, scope.map, scope.webdav.url,
+                scope.webdav.file, scope.webdav.user, scope.webdav.password);
 
               def.promise.then(function(resp) {
                 scope.statusMsgId = resp.message;
