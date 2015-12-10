@@ -34,7 +34,7 @@ goog.require('ga_offline');
 goog.require('ga_placeholder_directive');
 goog.require('ga_popup');
 goog.require('gf3_print_controller');
-goog.require('ga_print_directive');
+goog.require('gf3_print_directive');
 goog.require('ga_profile');
 goog.require('ga_rotate');
 goog.require('ga_scaleline');
@@ -107,7 +107,7 @@ goog.require('gf3_webdav');
     'ga_mouseposition_controller',
     'ga_share_controller',
     'gf3_print_controller',
-    'ga_print_directive',
+    'gf3_print_directive',
     'ga_translation_controller',
     'ga_feedback_controller',
     'ga_contextpopup_controller',

@@ -1,12 +1,12 @@
-goog.provide('ga_print');
+goog.provide('gf3_print');
 
-goog.require('ga_print_directive');
+goog.require('gf3_print_directive');
 goog.require('ngeo.CreatePrint');
 goog.require('ngeo.PrintUtils');
 (function() {
 
-  angular.module('ga_print', [
-    'ga_print_directive',
+  angular.module('gf3_print', [
+    'gf3_print_directive',
     'ngeo.CreatePrint',
     'ngeo.PrintUtils'
   ]);

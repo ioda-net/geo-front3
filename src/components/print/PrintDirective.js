@@ -1,4 +1,4 @@
-goog.provide('ga_print_directive');
+goog.provide('gf3_print_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_map_service');
@@ -7,13 +7,13 @@ goog.require('ngeo.PrintUtils');
 goog.require('sigeom_plugins');
 (function() {
 
-  var module = angular.module('ga_print_directive', [
+  var module = angular.module('gf3_print_directive', [
     'ngeo',
     'ga_map_service',
     'sigeom'
   ]);
 
-  module.controller('GaPrintDirectiveController', function($scope,
+  module.controller('gf3PrintDirectiveController', function($scope,
           $window, $timeout, $translate, $q, gaLayers,
           ngeoCreatePrint, ngeoPrintUtils, sgPlugins) {
 
@@ -268,17 +268,17 @@ goog.require('sigeom_plugins');
     });
   });
 
-  module.directive('gaPrint',
+  module.directive('gf3Print',
           function() {
             return {
               restrict: 'A',
               scope: {
-                map: '=gaPrintMap',
-                options: '=gaPrintOptions',
-                active: '=gaPrintActive'
+                map: '=gf3PrintMap',
+                options: '=gf3PrintOptions',
+                active: '=gf3PrintActive'
               },
               templateUrl: 'components/print/partials/print.html',
-              controller: 'GaPrintDirectiveController',
+              controller: 'gf3PrintDirectiveController',
               link: function(scope, elt, attrs, controller) {
               }
             };
