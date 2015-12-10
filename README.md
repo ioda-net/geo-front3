@@ -96,13 +96,6 @@ Normally, they should be in the merge conflicts:
 
 ## How to update Open Layer
 
-We currently need a [custom patch](https://github.com/openlayers/ol3/pull/4045)
-in Open Layer for WMTS import to work correctly. So if swisstopo updates Open
-Layers, we must reapply it. Furthermore, the script from swisstopo that builds
-Open Layers for production `scripts/ol-geoadmin.json` doesn't export
-`ol.format.WMTSCapabilities` nor `ol.format.WMTSCapabilities#*` so we also need
-to patch this.
-
 So we need to build our own version of ol.js. In order to do this, we have a
 scrip called `update-open-layers.sh`. Before commiting the merge result, please
 launch it (you must be in the root folder of geo-front3):

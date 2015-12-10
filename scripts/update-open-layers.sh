@@ -70,3 +70,8 @@ node build/build.js "${geo_front_root}/scripts/ol3cesium-geoadmin.json" "${geo_f
 rm -rf "${geo_front_root}/src/lib/Cesium"
 cp -r cesium/Build/CesiumUnminified "${geo_front_root}/src/lib/Cesium"
 cp cesium/Build/Cesium/Cesium.js "${geo_front_root}/src/lib/Cesium.min.js"
+
+
+#### Build ol for WMTS
+cd ol3
+node tasks/build.js "${geo_front_root}/scripts/ol3.json" "${geo_front_root}/src/lib/ol3.js"

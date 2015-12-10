@@ -49,7 +49,7 @@ module.exports = function(config) {
 	       'lib/EPSG32631.js',
 	       'lib/EPSG32632.js',
            'lib/Cesium.js',
-           'lib/ol3cesium-debug.js',
+           'lib/ol3.js',
            ${js_files}
 	    {% endif %}
 	]),
