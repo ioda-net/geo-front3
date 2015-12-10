@@ -276,8 +276,8 @@ goog.require('gf3_webdav_service');
           var defineLayerToModify = function() {
 
             // Unregister the events attached to the previous source
-            for (var i in unSourceEvents) {
-              ol.Observable.unByKey(unSourceEvents[i]);
+            while (unSourceEvents.length) {
+              ol.Observable.unByKey(unSourceEvents.pop());
             }
             ol.Observable.unByKey(unLayerVisible);
 
@@ -410,10 +410,9 @@ goog.require('gf3_webdav_service');
             select.setActive(false);
 
             // Unregister the events attached to the source
-            for (var i in unSourceEvents) {
-              ol.Observable.unByKey(unSourceEvents[i]);
+            while (unSourceEvents.length) {
+              ol.Observable.unByKey(unSourceEvents.pop());
             }
-            unSourceEvents = [];
 
             // Remove the layer if no features added
             if (layer && layer.getSource().getFeatures().length == 0) {
