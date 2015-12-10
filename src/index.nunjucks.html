@@ -698,7 +698,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         module.constant('gaGlobalOptions', {
           //dev3d to be removed once 3d goes live
-          dev3d: !window.location.search.match(/(dev3d=false)/),
+          dev3d: false,
           buildMode: '${type}',
           externalWmsHostnames: ${front.default_values.external_wms_hostnames},
           mapUrl: location.origin + '${front.build.apache_base_path}',
