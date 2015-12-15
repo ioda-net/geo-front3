@@ -2,6 +2,7 @@ goog.provide('ga_offline_directive');
 
 goog.require('ga_map_service');
 goog.require('ga_networkstatus_service');
+goog.require('gf3');
 (function() {
 
   var module = angular.module('ga_offline_directive', [
@@ -12,8 +13,9 @@ goog.require('ga_networkstatus_service');
 
   module.controller('GaOfflineDirectiveController',
     function($scope, $timeout, $translate, gaBrowserSniffer, gaOffline,
-        gaNetworkStatus) {
+        gaNetworkStatus, gf3GlobalOptions) {
       $scope.isIE9 = (gaBrowserSniffer.msie == 9);
+      $scope.allowOffline = gf3GlobalOptions.allowOffline;
 
       // Initialize scope variables
       $scope.offline = gaNetworkStatus.offline;

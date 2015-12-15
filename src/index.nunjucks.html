@@ -801,6 +801,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         var module = angular.module('gf3');
         module.constant('gf3GlobalOptions', {
           allowWebdav: ${front.gf3.allow_webdav | lower},
+          allowOffline: ${front.gf3.allow_offline | lower},
           allowInfobox: ${front.gf3.allow_infobox | lower}
         });
       })();
