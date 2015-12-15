@@ -6,8 +6,7 @@ goog.provide('gf3_print_controller');
   module.controller('Gf3PrintController',
     function($scope, gaGlobalOptions) {
       var printPath = '/print/' + gaGlobalOptions.portalName;
-      var printPath = gaGlobalOptions.apiUrl + printPath;
-      var printCachedPath = gaGlobalOptions.cachedApiUrl + printPath;
+      var printCachedPath = printPath;
       
       $scope.options = {
         printPath: printPath,
