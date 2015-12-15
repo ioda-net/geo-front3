@@ -815,7 +815,7 @@ goog.require('gf3_webdav_service');
               scope.showProfileTab(feature)
             ];
             var cpt = 0;
-            for (var i in bools) {
+            for (var i = 0; i < bools.length; i++) {
               if (bools[i]) {
                  cpt++;
               }

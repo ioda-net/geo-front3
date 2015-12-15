@@ -954,7 +954,8 @@ goog.require('ga_urlutils_service');
         gaStylesFromLiterals, gaGlobalOptions, gaPermalink, gaTopic,
         gaLang, gaTime) {
 
-      var Layers = function(dfltWmsSubdomains, dfltWmtsMapProxySubdomains,
+      var Layers = function(dfltWmsSubdomains,
+          dfltWmtsNativeSubdomains, dfltWmtsMapProxySubdomains,
           wmsUrlTemplate, wmtsGetTileUrlTemplate,
           wmtsMapProxyGetTileUrlTemplate, terrainTileUrlTemplate,
           layersConfigUrlTemplate, legendUrlTemplate) {
@@ -967,25 +968,26 @@ goog.require('ga_urlutils_service');
           return wmsUrl;
         };
 
-        // Returns a list of WMS servers using a template
-        // (e.g. //wms{s}.geo.admin.ch) and an array of
+        // Returns a list of WMS or WMTS servers using a template
+        // (e.g. //wms{s}.geo.admin.ch or wmts{s}.geo.admin.ch) and an array of
         // subdomains (e.g. ['', '1', ...]).
-        var getWmsUrls = function(tpl, subdomains) {
-          var url = getWmsTpl(tpl);
+        var getImageryUrls = function(tpl, subdomains) {
           var urls = [];
           (subdomains || ['']).forEach(function(subdomain) {
-            urls.push(url.replace('{s}', subdomain));
+            urls.push(tpl.replace('{s}', subdomain));
           });
           return urls;
         };
 
-        var getWmtsGetTileTpl = function(tpl, layer, time, tileMatrixSet,
-            format, useMapProxyTpl) {
-          var dfltTpl = !useMapProxyTpl ? wmtsGetTileUrlTemplate :
-              wmtsMapProxyGetTileUrlTemplate;
-          var url = (tpl || dfltTpl)
-              .replace('{Layer}', layer)
-              .replace('{Format}', format);
+        var getWmtsGetTileTpl = function(layer, time, tileMatrixSet,
+            format, useNativeTpl) {
+          var tpl;
+          if (useNativeTpl) {
+              tpl = wmtsGetTileUrlTemplate;
+          } else {
+              tpl = wmtsMapProxyGetTileUrlTemplate;
+          }
+          var url = tpl.replace('{Layer}', layer).replace('{Format}', format);
           if (time) {
             url = url.replace('{Time}', time);
           }
@@ -1078,14 +1080,8 @@ goog.require('ga_urlutils_service');
         };
 
         this.getConfig3d = function(config) {
-          while (config.config3d) {
-            var config3d = layers[config.config3d];
-
-            config = angular.extend({}, config, config3d);
-            if (!config3d.config3d) {
-              // avoid infinite loop
-              config.config3d = undefined;
-            }
+          if (config.config3d) {
+            return layers[config.config3d];
           }
           return config;
         };
@@ -1115,12 +1111,18 @@ goog.require('ga_urlutils_service');
          */
         this.getCesiumImageryProviderById = function(bodId) {
           var provider, params, config = layers[bodId];
+          bodId = config.config3d || bodId;
           var config3d = this.getConfig3d(config);
-          var timestamp = this.getLayerTimestampFromYear(
-              config3d, gaTime.get());
+          // Only native tiles have a 3d config
+          var hasNativeTiles = !!config.config3d;
+          var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
           var requestedLayer = config3d.wmsLayers || config3d.serverLayerName ||
               bodId;
           var format = config3d.format || 'png';
+          // pngjpeg not supported by Cesium (zeitreihen)
+          if (format == 'pngjpeg') {
+              format = 'jpeg';
+          }
           if (config3d.type == 'aggregate') {
             var providers = [];
             config3d.subLayersIds.forEach(function(item) {
@@ -1135,10 +1137,11 @@ goog.require('ga_urlutils_service');
           }
           if (config3d.type == 'wmts') {
             params = {
-              url: getWmtsGetTileTpl(config3d.url, requestedLayer, timestamp,
-                  '4326', format, true),
+              url: getWmtsGetTileTpl(requestedLayer, timestamp,
+                  '4326', format, hasNativeTiles),
               tileSize: 256,
-              subdomains: config3d.subdomains || dfltWmtsMapProxySubdomains
+              subdomains: hasNativeTiles ? dfltWmtsNativeSubdomains :
+                  dfltWmtsMapProxySubdomains
             };
           } else if (config3d.type == 'wms') {
             var tileSize = 512;
@@ -1161,7 +1164,7 @@ goog.require('ga_urlutils_service');
             params = {
               url: getWmsTpl(config3d.wmsUrl, wmsParams),
               tileSize: tileSize,
-              subdomains: config3d.subdomains || dfltWmsSubdomains
+              subdomains: dfltWmsSubdomains
             };
           }
           var extent = gaMapUtils.intersectWithDefaultExtent(config3d.extent ||
@@ -1228,6 +1231,12 @@ goog.require('ga_urlutils_service');
           var olSource = (layer.timeEnabled) ? null : layer.olSource;
           if (layer.type == 'wmts') {
             if (!olSource) {
+              var wmtsTplUrl = getWmtsGetTileTpl(layer.serverLayerName, null,
+                  '21781', layer.format, true)
+                  .replace('{z}', '{TileMatrix}')
+                  .replace('{x}', '{TileCol}')
+                  .replace('{y}', '{TileRow}');
+              var subdomains = dfltWmtsNativeSubdomains;
               olSource = layer.olSource = new ol.source.WMTS({
                 dimensions: {
                   'Time': timestamp
@@ -1237,8 +1246,7 @@ goog.require('ga_urlutils_service');
                 tileGrid: gaTileGrid.get(layer.resolutions,
                     layer.minResolution),
                 tileLoadFunction: tileLoadFunction,
-                url: getWmtsGetTileTpl(layer.url, layer.serverLayerName, null,
-                  '21781', layer.format),
+                urls: getImageryUrls(wmtsTplUrl, subdomains),
                 crossOrigin: crossOrigin
               });
             }
@@ -1272,7 +1280,7 @@ goog.require('ga_urlutils_service');
             if (layer.singleTile === true) {
               if (!olSource) {
                 olSource = layer.olSource = new ol.source.ImageWMS({
-                  url: getWmsUrls(layer.wmsUrl)[0],
+                  url: getImageryUrls(getWmsTpl(layer.wmsUrl))[0],
                   params: wmsParams,
                   crossOrigin: crossOrigin,
                   ratio: 1
@@ -1287,9 +1295,9 @@ goog.require('ga_urlutils_service');
               });
             } else {
               if (!olSource) {
-                var subdomains = layer.subdomains || dfltWmsSubdomains;
+                var subdomains = dfltWmsSubdomains;
                 olSource = layer.olSource = new ol.source.TileWMS({
-                  urls: getWmsUrls(layer.wmsUrl, subdomains),
+                  urls: getImageryUrls(getWmsTpl(layer.wmsUrl), subdomains),
                   params: wmsParams,
                   gutter: layer.gutter || 0,
                   crossOrigin: crossOrigin,
@@ -1426,7 +1434,6 @@ goog.require('ga_urlutils_service');
             return (layer.type == 'wmts' || layer.type == 'terrain') ?
                 timestamps[0] : undefined;
           }
-
           if (!angular.isDefined(yearStr)) {
             var timeBehaviour = layer.timeBehaviour;
             //check if specific 4/6/8 digit timestamp is specified
@@ -1451,7 +1458,8 @@ goog.require('ga_urlutils_service');
         };
       };
 
-      return new Layers(this.dfltWmsSubdomains, this.dfltWmtsMapProxySubdomains,
+      return new Layers(this.dfltWmsSubdomains,
+          this.dfltWmtsNativeSubdomains, this.dfltWmtsMapProxySubdomains,
           this.wmsUrlTemplate, this.wmtsGetTileUrlTemplate,
           this.wmtsMapProxyGetTileUrlTemplate, this.terrainTileUrlTemplate,
           this.layersConfigUrlTemplate, this.legendUrlTemplate);
