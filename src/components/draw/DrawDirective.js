@@ -561,8 +561,10 @@ goog.require('gf3_webdav_service');
           // Watchers
           scope.$watch('isActive', function(active) {
             if (active) {
+              $('#pulldown-content').css('top', '50px');
               activate();
             } else {
+              $('#pulldown-content').css('top', '');
               deactivate();
             }
           });
