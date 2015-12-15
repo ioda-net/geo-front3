@@ -17,6 +17,7 @@ goog.require('sigeom_plugins');
           $window, $timeout, $translate, $q, gaLayers,
           ngeoCreatePrint, ngeoPrintUtils, sgPlugins) {
 
+    $scope.username = undefined;
     $scope.printError = false;
     $scope.printConfigLoaded = false;
 
@@ -121,6 +122,7 @@ goog.require('sigeom_plugins');
         // commune at given point. In this case, mapfish print expect an empty
         // string or will crash.
         var commune = (data && data.commune) ? data.commune : '';
+        var username = $scope.username || '';
         var name = $scope.options.title ? $scope.options.title :
             $translate.instant($scope.options.titlePlaceholder);
         var spec = print.createSpec(map, $scope.scale, $scope.dpi,
@@ -132,7 +134,8 @@ goog.require('sigeom_plugins');
             url: url,
             scale: $scope.scale,
             bottomLeftCornerCoords: coordsToPrint,
-            commune: commune
+            commune: commune,
+            username: username
         });
 
         spec.attributes.map.layers.forEach(function(layer) {
@@ -257,10 +260,11 @@ goog.require('sigeom_plugins');
         } else {
           canceler = $q.defer();
           print.getCapabilities({timeout: canceler.promise})
-              .success(function(data) {
-                updatePrintConfig(data);
+              .then(function(resp) {
+                $scope.username = resp.headers()['x-username'];
+                updatePrintConfig(resp.data);
                 activate();
-              }).error(handlePrintError);
+              }, handlePrintError);
         }
       } else {
         deactivate();
