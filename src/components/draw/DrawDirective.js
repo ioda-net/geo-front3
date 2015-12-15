@@ -561,8 +561,10 @@ goog.require('gf3_webdav_service');
           // Watchers
           scope.$watch('isActive', function(active) {
             if (active) {
+              $('#pulldown-content').css('top', '50px');
               activate();
             } else {
+              $('#pulldown-content').css('top', '');
               deactivate();
             }
           });
@@ -815,7 +817,7 @@ goog.require('gf3_webdav_service');
               scope.showProfileTab(feature)
             ];
             var cpt = 0;
-            for (var i in bools) {
+            for (var i = 0; i < bools.length; i++) {
               if (bools[i]) {
                  cpt++;
               }

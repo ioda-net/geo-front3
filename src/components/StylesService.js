@@ -1,13 +1,15 @@
 goog.provide('ga_styles_service');
 
 goog.require('ga_measure_service');
+goog.require('gf3');
 (function() {
 
   var module = angular.module('ga_styles_service', [
-    'ga_measure_service'
+    'ga_measure_service',
+    'gf3'
   ]);
 
-  module.provider('gaStyleFactory', function() {
+  module.provider('gaStyleFactory', function(gf3GlobalOptions) {
     var DEFAULT_FONT = 'normal 16px Helvetica',
         ZPOLYGON = 10,
         ZLINE = 20,
@@ -36,12 +38,12 @@ goog.require('ga_measure_service');
     });
 
     var hlStroke = new ol.style.Stroke({
-      color: [255, 128, 0, 1],
-      width: 6
+      color: gf3GlobalOptions.styles.hlStroke.color || [255, 128, 0, 1],
+      width: gf3GlobalOptions.styles.hlStroke.width || 6
     });
 
     var hlFill = new ol.style.Fill({
-      color: [255, 128, 0, 1]
+      color: gf3GlobalOptions.styles.hlFill.color || [255, 128, 0, 1]
     });
 
     var hlStyle = new ol.style.Style({

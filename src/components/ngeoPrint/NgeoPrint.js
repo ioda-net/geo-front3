@@ -362,18 +362,8 @@ ngeo.Print.prototype.encodeTileWmtsLayer_ = function(arr, layer) {
     }));
   }
 
-  // Dimensions must be capitalized in dimensionParams but only the first letter
-  // must be capitalized in dimensions.
-  var dimensions = {};
-  var sourceDimensions = source.getDimensions();
-  for (var dimension in sourceDimensions) {
-    dimensions[dimension.toUpperCase()] = sourceDimensions[dimension];
-  }
-  var dimensionKeys = goog.object.getKeys(dimensions)
-      .map(function(dimension) {
-        return dimension.charAt(0).toUpperCase() +
-            dimension.slice(1).toLowerCase();
-      });
+  var dimensions = source.getDimensions();
+  var dimensionKeys = goog.object.getKeys(dimensions);
 
   var object = /** @type {MapFishPrintWmtsLayer} */ ({
     baseURL: this.getWmtsUrl_(source),
