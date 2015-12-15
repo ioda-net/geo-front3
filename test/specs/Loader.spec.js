@@ -47,7 +47,16 @@ beforeEach(function() {
 
     $provide.constant('gf3GlobalOptions', {
       allowWebdav: true,
-      allowInfobox: true
+      allowInfobox: true,
+      styles: {
+        hlFill: {
+          color: [255, 128, 0, 1]
+        },
+        hlStroke: {
+          color: [255, 128, 0, 1],
+          width: 6
+        }
+      }
     });
   });
 

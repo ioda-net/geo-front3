@@ -802,7 +802,16 @@ itemscope itemtype="http://schema.org/WebApplication"
         module.constant('gf3GlobalOptions', {
           allowWebdav: ${front.gf3.allow_webdav | lower},
           allowOffline: ${front.gf3.allow_offline | lower},
-          allowInfobox: ${front.gf3.allow_infobox | lower}
+          allowInfobox: ${front.gf3.allow_infobox | lower},
+          styles: {
+            hlFill: {
+              color: ${front.gf3.styles.hlFill.color}
+            },
+            hlStroke: {
+              color: ${front.gf3.styles.hlStroke.color},
+              width: ${front.gf3.styles.hlStroke.width}
+            }
+          }
         });
       })();
 
