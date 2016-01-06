@@ -35,13 +35,9 @@ describe('search', function() {
         .sendKeys('bâtiments').then(function() {
       var locationSearchContainer = $$('#search-container div.ga-search-results').get(2);
       var locationSearchResults = locationSearchContainer.$$('div.ga-search-result');
-      expect(locationSearchResults.count()).toBe(1);
+      expect(locationSearchResults.count()).toBe(2);
 
       return locationSearchResults.get(0).click();
-    }).then(function() {
-      return browser.getCurrentUrl();
-    }).then(function(url) {
-      expect(url).toContain('BATIMENTS');
     });
   });
 });
