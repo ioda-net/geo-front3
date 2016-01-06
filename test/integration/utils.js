@@ -7,6 +7,8 @@ function importKmlFromUrl(url, close) {
     if (!isDisplayed) {
       return $("#toolsHeading").click();
     }
+  }).then(function () {
+    return browser.sleep(5000);
   }).then(function() {
     // Click on "KML Import"
     return kmlImportTool.click();

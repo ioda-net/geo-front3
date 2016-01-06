@@ -1,9 +1,14 @@
 /* global browser, $$, protractor */
 
 describe('draw', function() {
+  var originalTimeout;
+
   function enableDraw() {
-    return $('#drawHeading').click();
-  }
+    browser.ignoreSynchronization = true;
+    return $('#drawHeading').click().then(function () {
+          return browser.sleep(5000);
+      });
+    }
 
   function draw() {
     var map = $('.ol-viewport canvas');
@@ -16,15 +21,24 @@ describe('draw', function() {
           .click()
           .perform();
 
-      return browser.sleep(1000);
+      return browser.sleep(3000);
     });
   }
 
   function disableDraw() {
     return $$('#drawModeHeader button').first().click().then(function() {
-      return browser.sleep(1000);
+      return browser.sleep(3000);
     });
   }
+
+  beforeEach(function() {
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+  });
+
+  afterEach(function() {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+  });
 
   it('should add a drawnig layer', function() {
     enableDraw().then(function() {
@@ -56,7 +70,9 @@ describe('draw', function() {
     }).then(function(drawStatusText) {
       expect(drawStatusText).toBe('Carte sauvegardée.');
     }).then(disableDraw).then(function() {
-      return $('#selectionHeading').click();
+      return $$('#selectionHeading span').get(0).click();
+    }).then(function() {
+      return browser.sleep(2000);
     }).then(function() {
       expect($$('#selection li').count()).toBe(2);
     });
@@ -70,10 +86,14 @@ describe('draw', function() {
         .then(draw)
         .then(disableDraw)
         .then(function() {
-          return $('#selectionHeading').click();
-        }).then(function() {
-      expect($$('#selection li').count()).toBe(2);
-    });
+          return $$('#selectionHeading span').get(0).click();
+        })
+        .then(function() {
+          return browser.sleep(2000);
+        })
+        .then(function() {
+          expect($$('#selection li').count()).toBe(2);
+        });
   });
 
 
@@ -103,6 +123,6 @@ describe('draw', function() {
       return webdavConnect.isDisplayed();
     }).then(function(isWebdavConnectDisplayed) {
       expect(isWebdavConnectDisplayed).toBe(true);
-    });
+    }).then(disableDraw);
   });
 });

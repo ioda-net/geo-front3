@@ -16,7 +16,7 @@ describe('features', function() {
               .mouseMove(map, {x: size.width / 2, y: size.height / 2})
               .click()
               .perform();
-          return browser.sleep(2000);
+          return browser.sleep(5000);
         });
   }
 

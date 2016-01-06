@@ -12,6 +12,8 @@ describe('wms', function () {
   it('imports wms with popup', function () {
     // Click on "Werkzeuge"
     $("#toolsHeading").click().then(function () {
+      return browser.sleep(2000);
+    }).then(function () {
       // Click on "WMS Import"
       return $("#tools [data-original-title*='WMS'").click();
     }).then(function () {
@@ -42,11 +44,11 @@ describe('wms', function () {
       // Close popup
       return $("#import-ows-popup[ga-popup='globals.importWmsPopupShown'] button.icon-remove").click();
     }).then(function () {
-      return $$("#toptools a").get(3).getAttribute('href');
+      return $$("#toptools a").get(4).getAttribute('href');
     }).then(function (value) {
       expect(value).toContain(QUERYSTRING_WMS);
     }).then(function() {
-      return $('#selectionHeading').click();
+      return $$('#selectionHeading span').get(0).click();
     }).then(function() {
       return $$("#selection label").get(0).getText();
     }).then(function(text) {
@@ -57,6 +59,8 @@ describe('wms', function () {
   it('imports WMS directly by URL', function () {
     // Go to the WMS layer page
     browser.get(config.testPortalAddress.replace('{portal}', browser.params.portal) + '?layers=' + QUERYSTRING_WMS).then(function () {
+      return $$('#selectionHeading span').get(0).click();
+    }).then(function () {
       // Check if the WMS Layer is loaded
       return $$("#selection label").get(0).getText();
     }).then(function(text) {

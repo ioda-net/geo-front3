@@ -26,7 +26,7 @@ describe('kml', function () {
       // Close popup
       return $("#import-kml-popup .ga-buttons button.icon-remove").click();
     }).then(function () {
-      return $('#selectionHeading').click();
+      return $$('#selectionHeading span').get(0).click();
     }).then(function () {
       return $$("#selection label").get(0).getText();
     }).then(function (text) {
@@ -36,6 +36,9 @@ describe('kml', function () {
 
   it('imports KML directly with permalink', function () {
     browser.get(config.testPortalAddress.replace('{portal}', browser.params.portal) + '?layers=' + QUERYSTRING_KML)
+        .then(function() {
+          return $$('#selectionHeading span').get(0).click();
+        })
         .then(function () {
           return $$("#selection label").get(0).getText();
         })
