@@ -73,6 +73,11 @@ goog.require('ga_topic_service');
             }
           };
 
+          // Get the first background with the loadConfig promise: this
+          // directive may not be listening to the first broadcast.
+          gaBackground.loadConfig().then(function() {
+            scope.currentLayer = gaBackground.get();
+          });
           /* istanbul ignore next */
           scope.$on('gaBgChange', function(evt, newBg) {
             if (!scope.currentLayer || newBg.id != scope.currentLayer.id) {
