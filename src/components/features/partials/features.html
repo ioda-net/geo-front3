@@ -3,7 +3,8 @@
   <div class="gf3-features-popup">
     <div class="htmlpopup-content">
       <ul class="nav-tabs nav">
-        <li ng-repeat="(layerId, v) in options.features">
+        <li ng-repeat="(layerId, features) in options.features"
+            ng-if="features.length > 0">
           <a href=""
              ng-class="{'ga-active': options.currentTab === layerId}"
              ng-click="options.currentTab = layerId"
@@ -17,12 +18,7 @@
         <div class="grid"
              ng-repeat="(layerId, properties) in options.gridsOptions"
              ng-if="options.currentTab === layerId"
-             ui-grid="options.gridsOptions[layerId]"
-             ui-grid-exporter
-             ui-grid-selection
-             ui-grid-move-columns
-             ui-grid-resize-columns
-             ui-i18n></div>
+             ultimate-datatable="options.gridsOptions[layerId]"></div>
       </div>
     </div>
   </div>
