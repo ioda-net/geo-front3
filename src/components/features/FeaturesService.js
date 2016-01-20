@@ -94,7 +94,7 @@ goog.require('ga_map_service');
     function isVectorLayer(olLayer) {
       return (olLayer instanceof ol.layer.Vector ||
           (olLayer instanceof ol.layer.Image &&
-          olLayer.getSource() instanceof ol.source.ImageVector));
+              olLayer.getSource() instanceof ol.source.ImageVector));
     }
 
     // Test if the layer is a queryable bod layer
@@ -106,7 +106,7 @@ goog.require('ga_map_service');
       }
       return (bodId &&
           gaLayers.getLayerProperty(bodId, 'queryable'));
-    };
+    }
 
     // Get all the queryable layers
     function getLayersToQuery(map) {
@@ -165,114 +165,100 @@ goog.require('ga_map_service');
   });
 
   module.factory('gf3FeaturesGrid', function($translate, $window,
-      uiGridConstants, gaPreviewFeatures, gaGlobalOptions) {
+      gaPreviewFeatures, gaGlobalOptions) {
     var parser = new ol.format.GeoJSON();
     var isHiddenRegexp = /_hidden$/;
+    var map,
+        featuresIdToIndex,
+        featurePropertiesToDisplay,
+        features;
     var globalGridOptions = {
-      enableGridMenu: true,
-      enableSelectAll: true,
-      exporterHeaderFilter: $translate.instant,
-      exporterMenuPdf: false,
-      exporterPdfPageSize: 'A4',
-      exporterPdfOrientation: 'landscape',
-      gridMenuTitleFilter: $translate,
-      exporterPdfFooter: function(currentPage, pageCount) {
-        return {text: currentPage.toString() + ' / ' + pageCount.toString()};
+      name: 'features_datatable',
+      hide: {
+        active: true,
+        showButton: true,
+        byDefault: []
       },
-      exporterCsvLinkElement:
-              angular.element(
-                document.querySelectorAll('.custom-csv-link-location')),
-      rowTemplate: '<div ng-mouseover="grid.appScope.highlight(row)" ' +
-              'ng-mouseleave="grid.appScope.clearHighlight()">' +
-              '<div ' +
-                'ng-repeat="(colRenderIndex, col) in ' +
-                  'colContainer.renderedColumns track by col.uid" ' +
-              'class="ui-grid-cell ng-scope ui-grid-coluiGrid-007" ' +
-              'ng-class="{ \'ui-grid-row-header-cell\': col.isRowHeader }" ' +
-              'ui-grid-cell="">' +
-              '</div></div>',
-      onRegisterApi: function(gridApi) {
-        gridApi.core.on.renderingComplete(null, function() {
-          $('.gf3-features-popup').trigger('resize');
-        });
+      mouseevents: {
+        active: true,
+        overCallback: highlight,
+        leaveCallback: function() {
+          gaPreviewFeatures.clearHighlight(map);
+        },
+        clickCallback: function(line, data) {
+          if (line.selected) {
+            highlight(line, data);
+          } else {
+            clearHighlight();
+          }
+        }
+      },
+      pagination: {
+        mode: 'local',
+        active: true,
+        numberRecordsPerPage: 5,
+        numberRecordsPerPageList: [
+          {number: 5, clazz: ''},
+          {number: 10, clazz: ''},
+          {number: 20, clazz: ''},
+          {number: 30, clazz: ''}
+        ]
+      },
+      order: {
+        mode: 'local'
+      },
+      compact: true,
+      exportCSV: {
+        active: true,
+        showButton: true,
+        delimiter: ','
       }
     };
 
     var cellTemplates = {
-      grudis: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="grudis" href="{{COL_FIELD}}">[G]</a></div>',
-
-      hinni: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a ng-if="COL_FIELD.length>0" target="hinni" href="{{COL_FIELD}}">' +
-          '<img src="img/dbh.png" style="width:18px;height:18px" /></a></div>',
-
-      photo: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a ng-if="COL_FIELD.length>0" target="photo" href="{{COL_FIELD}}">' +
+      grudis: '<a target="grudis" href="{{cellValue}}">[G]</a>',
+      hinni: '<a target="hinni" href="{{cellValue}}">' +
+          '<img src="img/dbh.png" style="width:18px;height:18px" /></a>',
+      photo: '<a target="photo" href="{{cellValue}}">' +
           '<img src="img/camera.png" style="width:18px;height:18px"/>' +
-          '</a></div>',
-
-      protocol: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="protocol" href="{{\'{api}\' + COL_FIELD}}">' +
+          '</a>',
+      protocol: '<a target="protocol" href="{{\'{api}\' + cellValue}}">' +
           '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
-          '</a></div>',
-
-      pdf: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="pdf" href="{{COL_FIELD}}">' +
+          '</a>',
+      pdf: '<a target="pdf" href="{{cellValue}}">' +
           '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
-          '</a></div>',
-
-      url: '<div class="ui-grid-cell-contents" title="TOOLTIP">' +
-          '<a target="_blank" href="{{COL_FIELD}}">' +
-          '{{COL_FIELD CUSTOM_FILTERS}}</a></div>'
+          '</a>',
+      url: '<div ng-click="console.log(\'toto\')">' +
+          '<a target="_blank" href="{{cellValue}}">' +
+          '{{cellValue | translate  }}</a></div>'
     };
 
     return {
+      init: init,
       getLayerOptions: getLayerOptions,
       setSize: setSize,
       close: close,
       updateLang: updateLang
     };
 
-    function getLayerOptions(feature, featuresToDisplay, featuresIdToIndex,
-        map, onRegisterApi) {
-      onRegisterApi = onRegisterApi || function() {};
-      var exporterCsvFilename = feature.layerId.replace(/,/g, '_') + '.csv';
-      var layerGridOptions = {
-        data: [],
-        exporterCsvFilename: exporterCsvFilename,
-        exporterPdfHeader: {
-          text: feature.layerId
-        },
-        appScopeProvider: {
-          highlight: function(row) {
-            var geometry;
-            var currentIndex =
-                featuresIdToIndex[feature.layerId][row.entity.label];
-            var currentFeature =
-                featuresToDisplay[feature.layerId][currentIndex];
-            if (currentFeature instanceof ol.Feature) {
-              geometry = currentFeature;
-            } else {
-              geometry = parser.readFeature(currentFeature);
-            }
-            gaPreviewFeatures.highlight(map, geometry);
-          },
-          clearHighlight: function() {
-            gaPreviewFeatures.clearHighlight(map);
-          }
-        }
-      };
-      angular.merge(layerGridOptions, globalGridOptions);
-      // To be able to print, we must execute the onRegisterApi function from
-      // passed as argument. For the size of the feature table to be correct on
-      // Internet Explorer, we must call globalGridOptions.onRegisterApi.
-      layerGridOptions.onRegisterApi = function(gridApi) {
-        onRegisterApi(gridApi);
-        globalGridOptions.onRegisterApi(gridApi);
-      };
+    function init(
+        olmap,
+        dFeatures,
+        dFeaturePropertiesToDisplay,
+        dFeaturesIdToIndex) {
+      featuresIdToIndex = dFeaturesIdToIndex;
+      featurePropertiesToDisplay = dFeaturePropertiesToDisplay;
+      features = dFeatures;
+      map = olmap;
+    }
 
+    function getLayerOptions(feature) {
+      var layerGridOptions = {};
+      angular.merge(layerGridOptions, globalGridOptions);
+
+      layerGridOptions.name = feature.layerBodId;
       // Must initialize all columns to translate them.
-      layerGridOptions.columnDefs = [];
+      layerGridOptions.columns = [];
       Object.keys(feature.properties).forEach(function(name) {
         var cellTemplate;
         if (goog.string.endsWith(name, '_url')) {
@@ -283,14 +269,18 @@ goog.require('ga_map_service');
         if (name === 'protocol') {
           cellTemplate = cellTemplate.replace('{api}', gaGlobalOptions.apiUrl);
         }
-        layerGridOptions.columnDefs.push({
-          field: name,
+
+        if (!_visible(name)) {
+          layerGridOptions.hide.byDefault.push(name);
+        }
+
+        layerGridOptions.columns.push({
+          header: $translate.instant(_displayName(name)),
           name: name,
-          displayName: _displayName(name),
-          visible: _visible(name),
-          headerCellFilter: 'translate',
-          cellFilter: 'translate',
-          cellTemplate: cellTemplate
+          property: name,
+          order: true,
+          hide: true,
+          render: cellTemplate
         });
       });
       return layerGridOptions;
@@ -358,8 +348,8 @@ goog.require('ga_map_service');
       if (table.length > 0) {
         var popupContent = popup.find('.ga-popup-content');
         var newWidth = $window.innerWidth -
-                parseInt(popupContent.css('padding-left'), 10) -
-                parseInt(popupContent.css('padding-right'), 10);
+            parseInt(popupContent.css('padding-left'), 10) -
+            parseInt(popupContent.css('padding-right'), 10);
         table.css('width', newWidth);
       }
     }
@@ -372,18 +362,17 @@ goog.require('ga_map_service');
       var table = $('.gf3-features-popup .grid');
       var popupTitle = popup.find('.popover-title');
       var heightTitle = parseInt(
-              popupTitle.outerHeight(), 10);
+          popupTitle.outerHeight(), 10);
       // On some browsers (eg Firefox), the DOM will be updated
       // multiple times and the CSS may not have been applied yet.
       if (popupTitle.length > 0 && heightTitle !== 0 && table.length > 0) {
         var popupContent = popup.find('.ga-popup-content');
         var popupNav = popupContent.find('.nav');
         var newHeight = parseInt(popup.height(), 10) -
-                heightTitle -
-                parseInt(popupContent.css('padding-top'), 10) -
-                parseInt(popupContent.css('padding-bottom'), 10) -
-                parseInt(popupNav.height(), 10);
-        table.css('height', newHeight);
+            heightTitle -
+            parseInt(popupContent.css('padding-top'), 10) -
+            parseInt(popupContent.css('padding-bottom'), 10) -
+            parseInt(popupNav.height(), 10) - 10;
         tableContainer.css('height', newHeight);
       }
     }
@@ -394,13 +383,41 @@ goog.require('ga_map_service');
       popup.off('resize');
     }
 
-    function updateLang(gridApi, gridOptions) {
+    function updateLang(gridOptions) {
       for (var layer in gridOptions) {
-        gridOptions[layer].columnDefs.forEach(function(columnDef) {
-          columnDef.visible = _visible(columnDef.name);
+        var datatable = gridOptions[layer];
+        datatable.getColumnsConfig().forEach(function(column) {
+          var name = column.name;
+          column.header = $translate.instant(_displayName(name));
+
+          if (!_visible(name) && !datatable.isHide(column.id)) {
+            // Hide columns that must not be visible in the new language.
+            // Note that setHideColumn toggle the hidden status.
+            datatable.setHideColumn(column);
+          } else if (_visible(name) && datatable.isHide(column.id)) {
+            // Show columns that must be visible in the new language.
+            datatable.setHideColumn(column);
+          }
         });
       }
-      gridApi.core.notifyDataChange(uiGridConstants.dataChange.COLUMN);
+    }
+
+    function highlight(line, data) {
+      var geometry;
+      var currentIndex =
+          featuresIdToIndex[data.layerLabel][data.label];
+      var currentFeature =
+          features[data.layerLabel][currentIndex];
+      if (currentFeature instanceof ol.Feature) {
+        geometry = currentFeature;
+      } else {
+        geometry = parser.readFeature(currentFeature);
+      }
+      gaPreviewFeatures.highlight(map, geometry);
+    }
+
+    function clearHighlight() {
+      gaPreviewFeatures.clearHighlight(map);
     }
   });
 })();

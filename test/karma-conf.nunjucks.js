@@ -36,11 +36,9 @@ module.exports = function(config) {
 	    {% if not prod %}
 	       'lib/jquery-2.1.4.js',
 	       'lib/angular.js',
-           'lib/angular-load.js',
 	       'lib/angular-translate.js',
 	       'lib/angular-translate-loader-static-files.js',
-           'lib/csv.js',
-           'lib/ui-grid.js',
+           'lib/ultimate-datatable-3.2.2-SNAPSHOT.js',
 	       'lib/bootstrap-3.3.1.js',
 	       'lib/typeahead-0.9.3.js',
 	       'lib/proj4js-compressed.js',
@@ -48,7 +46,6 @@ module.exports = function(config) {
 	       'lib/EPSG2056.js',
 	       'lib/EPSG32631.js',
 	       'lib/EPSG32632.js',
-           'lib/Cesium.js',
            'lib/ol3.js',
            ${js_files}
 	    {% endif %}
