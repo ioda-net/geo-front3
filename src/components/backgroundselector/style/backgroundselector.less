@@ -4,7 +4,7 @@
   .ga-bg-layer-bt, .ga-bg-layer, .ga-bg-layer-bt-close {
     overflow: hidden;
     cursor: pointer;
-    position: absolute; 
+    position: absolute;
     background: transparent no-repeat center;
     transition: right 0.5s ease, bottom 0.5s ease, width 0.5s ease;
   }
@@ -38,7 +38,7 @@
       display: none;
     }
   }
-   
+
   .ga-bg-layer-text {
     background-color: rgba(255, 255, 255, 0.95);
    }
@@ -46,41 +46,6 @@
   .ga-bg-layer-bt-text {
     color: white;
     background-color: rgba(0, 0, 0, 0.7);
-  }
-
-  .ga-SITU5_MOSAIC {
-    background-image: data-uri('SITU5_MOSAIC.png');
-    background-size: auto auto;
-  }
-
-  .ga-ORTHOPHOTOS_2011 {
-    background-image: data-uri('ORTHOPHOTOS_2011.png');
-    background-size: auto auto;
-  }
-
-  .ga-ORTHOPHOTOS_2008 {
-    background-image: data-uri('ORTHOPHOTOS_2008.png');
-    background-size: auto auto;
-  }
-
-  .ga-PLAN_25000_COULEUR {
-    background-image: data-uri('PLAN_25000_COULEUR.png');
-    background-size: auto auto;
-  }
-
-  .ga-PLAN_25000_GRIS {
-    background-image: data-uri('SITU5_MOSAIC.png');
-    background-size: auto auto;
-  }
-
-  .ga-DTM_2011 {
-    background-image: data-uri('DTM_2011.png');
-    background-size: auto auto;
-  }
-
-  .ga-voidLayer {
-    background-image: data-uri('voidLayer.png');
-    background-size: auto auto;
   }
 
   &.ga-bg-mobile {
@@ -125,23 +90,55 @@
 
     .ga-pixelkarte-farbe {
       background-image: data-uri('pixelkarte-farbe.png');
-      background-size: auto auto;
+      background-size: 38px 38px;
     }
 
     .ga-pixelkarte-grau {
       background-image: data-uri('pixelkarte-grau.png');
-      background-size: auto auto;
-    } 
+      background-size: 38px 38px;
+    }
 
     .ga-swissimage {
       background-image: data-uri('swissimage.png');
-      background-size: auto auto;
+      background-size: 38px 38px;
     }
 
     .ga-voidLayer {
       background-image: data-uri('voidLayer.png');
-      background-size: auto auto;
+      background-size: 38px 38px;
     }
+
+    /* SIGEOM Addition  BEGIN */
+    .ga-SITU5_MOSAIC {
+      background-image: data-uri('SITU5_MOSAIC.png');
+      background-size: 38px 38px;
+    }
+
+    .ga-ORTHOPHOTOS_2008 {
+      background-image: data-uri('ORTHOPHOTOS_2008.png');
+      background-size: 38px 38px;
+    }
+
+    .ga-ORTHOPHOTOS_2011 {
+      background-image: data-uri('ORTHOPHOTOS_2011.png');
+      background-size: 38px 38px;
+    }
+
+    .ga-PLAN_25000_COULEUR {
+      background-image: data-uri('PLAN_25000_COULEUR.png');
+      background-size: 38px 38px;
+    }
+
+    .ga-PLAN_25000_GRIS {
+      background-image: data-uri('SITU5_MOSAIC.png');
+      background-size: 38px 38px;
+    }
+
+    .ga-DTM_2011 {
+      background-image: data-uri('DTM_2011.png');
+      background-size: 38px 38px;
+    }
+    /* SIGEOM addition END */
 
     .ga-bg-layer-0 {
       bottom: 101px;
@@ -149,20 +146,19 @@
         bottom: 76px;
       }
     }
-  }
 
-  .ga-bg-layer-bt {
-    width: 96px;
-    height: 64px;
-    bottom: 52px;
-    right: 10px;
-    background: #ffffff data-uri('ORTHOPHOTOS_2011-rect.png') no-repeat center;
-   
-    @media (max-width: @screen-tablet) {
-      width: 48px;
-      height: 32px;
-      bottom: 24px;
-      background-size: 44px 28px;
+    .ga-bg-layer-1 {
+      bottom: 150px;
+      @media (max-width: @screen-tablet) {
+        bottom: 125px;
+      }
+    }
+
+    .ga-bg-layer-2 {
+      bottom: 199px;
+      @media (max-width: @screen-tablet) {
+        bottom: 174px;
+      }
     }
 
     .ga-bg-layer-3 {
@@ -181,7 +177,7 @@
   }
 
   &.ga-bg-desktop {
-    
+
     .icon-chevron-sign-right {
       line-height: 64px;
       text-align: center;
@@ -198,7 +194,7 @@
       bottom: 52px;
       right: 10px;
       background: #ffffff data-uri('swissimage-rect.png') no-repeat center;
-     
+
       @media (max-width: @screen-tablet) {
         width: 48px;
         height: 32px;
@@ -253,39 +249,35 @@
       background-image: data-uri('swissimage-rect.png');
     }
 
-  .ga-3d {
-    background-image: data-uri('terrain-rect.png');
-  }
+    .ga-voidLayer {
+      background-image: data-uri('voidLayer-rect.png');
+    }
 
-  .ga-SITU5_MOSAIC {
-    background-image: data-uri('SITU5_MOSAIC-rect.png');
-  }
+    /* SIGEOM Addition  BEGIN */
+    .ga-SITU5_MOSAIC {
+      background-image: data-uri('SITU5_MOSAIC-rect.png');
+    }
 
-  .ga-ORTHOPHOTOS_2008 {
-    background-image: data-uri('ORTHOPHOTOS_2008-rect.png');
-  }
+    .ga-ORTHOPHOTOS_2008 {
+      background-image: data-uri('ORTHOPHOTOS_2008-rect.png');
+    }
 
-  .ga-ORTHOPHOTOS_2011 {
-    background-image: data-uri('ORTHOPHOTOS_2011-rect.png');
-  }
+    .ga-ORTHOPHOTOS_2011 {
+      background-image: data-uri('ORTHOPHOTOS_2011-rect.png');
+    }
 
-  .ga-PLAN_25000_COULEUR {
-    background-image: data-uri('PLAN_25000_COULEUR-rect.png');
-  }
+    .ga-PLAN_25000_COULEUR {
+      background-image: data-uri('PLAN_25000_COULEUR-rect.png');
+    }
 
-  .ga-PLAN_25000_GRIS {
-    background-image: data-uri('SITU5_MOSAIC-rect.png');
-  }
+    .ga-PLAN_25000_GRIS {
+      background-image: data-uri('SITU5_MOSAIC-rect.png');
+    }
 
-  .ga-DTM_2011 {
-    background-image: data-uri('DTM_2011-rect.png');
-  }
-  .ga-bg-layer-0 {
-    right: 35px;
-  }
-  .ga-voidLayer {
-    background-image: data-uri('voidLayer-rect.png');
-  }
+    .ga-DTM_2011 {
+      background-image: data-uri('DTM_2011-rect.png');
+    }
+    /* SIGEOM addition END */
 
     .ga-bg-layer-0 {
       right: 35px;
