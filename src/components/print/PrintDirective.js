@@ -138,6 +138,8 @@ goog.require('sigeom_plugins');
             username: username
         });
 
+        correctTextAlign(spec);
+
         spec.attributes.map.layers.forEach(function(layer) {
           if (layer.customParams) {
             layer.customParams['MAP.RESOLUTION'] = $scope.dpi;
@@ -150,6 +152,25 @@ goog.require('sigeom_plugins');
         print.createReport(spec, {timeout: canceler.promise}).then(
                 handleCreateReportSuccess,
                 handleCreateReportError);
+      }
+
+      function correctTextAlign(spec) {
+        spec.attributes.map.layers.forEach(function(layer) {
+          if ('geoJson' in layer) {
+            Object.keys(layer.style).forEach(function(key) {
+              var styleValue = layer.style[key];
+              if (typeof styleValue === 'object' &&
+                    'symbolizers' in styleValue) {
+                styleValue.symbolizers.forEach(function(symbolizer) {
+                    if (symbolizer.type === 'Text' ||
+                        symbolizer.type === 'text') {
+                      symbolizer.labelAlign = 'cm';
+                    }
+                });
+              }
+            });
+          }
+        });
       }
     };
 

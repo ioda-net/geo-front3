@@ -248,7 +248,9 @@ button.ga-btn, .ol-control button {
     display: none;
   }
 
-  #pulldown {
+  #pulldown-content {
+    top: unit(@small-header-height, px);
+
     @media (max-width: @screen-phone) {
       top: 0px;
     }
@@ -775,6 +777,7 @@ a .ga-icon-separator {
 #pulldown-content {
   position: absolute;
   width: unit(@pulldown-width, px);
+  z-index: 600;
   top: unit(@header-height, px);
   .box-shadow(6px 6px 12px rgba(0, 0, 0, 0.175));
   .transition-transform(~".3s, width 0s .3s, top 1s");
@@ -864,7 +867,7 @@ a .ga-icon-separator {
   bottom: -34px;
   width: 75%;
   height: 34px;
-  z-index: 1200;
+  z-index: 990; /* Under dropdown-menu */
   margin-left: 12.5%;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -1094,6 +1097,11 @@ a .ga-icon-separator {
     li.selected a {
       color: #f00;
     }
+
+    .ga-query-more-results {
+      font-weight: bold;
+      color: red;
+    }
   }
 }
 
@@ -1106,7 +1114,7 @@ a .ga-icon-separator {
   }
 }
 
-[ga-context-popup], [ga-offline-menu], .homescreen, [ga-share], .ga-draw-modify {
+[ga-context-popup], [ga-offline-menu], .homescreen, #gaEmbedModal, .ga-draw-modify {
   .popover-title, .modal-header {
     position: relative;
     padding-right: 0px;
@@ -1709,11 +1717,15 @@ body:not(.embed) {
 /* Different positions */
 
 .corner-ribbon.top-left{
-  top: 130px;
+  top: 150px;
   left: -50px;
   .rotate(-45deg);
 
   @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+    top: 108px;
+  }
+
+  @media (max-width: @screen-phone) {
     top: 70px;
   }
 }
