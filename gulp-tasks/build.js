@@ -12,8 +12,8 @@ var utils = require('./utils');
 function load(src, dest, config) {
   gulp.task('build.js', ['closure-compiler'], function () {
     return gulp.src([
-      'src/lib/jquery-2.1.4.js',
-      'src/lib/bootstrap-3.3.1.js',
+      'src/lib/jquery.js',
+      'src/lib/bootstrap.js',
       'src/lib/moment-with-customlocales.js',
       'src/lib/typeahead-0.9.3.js',
       'src/lib/angular.js',

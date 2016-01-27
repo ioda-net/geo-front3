@@ -1,5 +1,5 @@
 describe('ga_contextpopup_directive', function() {
-  var element, handlers = {}, viewport, map, originalEvt, mapEvt, plugins;
+  var element, handlers = {}, viewport, map, mapEvt, plugins;
 
   var expectedHeightUrl = '//api.geo.admin.ch/height' +
       '?easting=661473&elevationModel=COMB' +
@@ -24,7 +24,6 @@ describe('ga_contextpopup_directive', function() {
         offline: true
       });
     });
-    originalEvt = {originalEvent:{}};
     element = angular.element(
       '<div>' +
         '<div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options"></div>' +
@@ -96,7 +95,10 @@ describe('ga_contextpopup_directive', function() {
       if (plugins.communes) {
         $httpBackend.expectGET(expecteCommunesUrl);
       }
-      viewport.trigger($.Event("contextmenu", originalEvt));
+      var evt = $.Event("contextmenu");
+      evt.coordinate = [661473, 188192];
+      evt.pixel = [25, 50];
+      viewport.trigger(evt);
       $httpBackend.flush();
 
       var tables = element.find('div.popover-content table');
@@ -195,7 +197,11 @@ describe('ga_contextpopup_directive', function() {
 
         element.find('.icon-remove').click();
 
-        expect(popover.css('display')).to.be('none');
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          expect(popover.css('display')).to.be('');
+        } else {
+          expect(popover.css('display')).to.be('block');
+        }
       });
     });
   });
@@ -232,7 +238,10 @@ describe('ga_contextpopup_directive', function() {
     it('Should be like Swisstopo', function () {
       $httpBackend.expectGET(expectedHeightUrl);
       $httpBackend.expectGET(expectedReframeUrl);
-      viewport.trigger($.Event("contextmenu", originalEvt));
+      var evt = $.Event("contextmenu");
+      evt.coordinate = [661473, 188192];
+      evt.pixel = [25, 50];
+      viewport.trigger(evt);
       $httpBackend.flush();
 
       var tables = element.find('div.popover-content table');

@@ -252,7 +252,7 @@ goog.require('gf3');
         }
 
         // Toggle layer tools for small screen
-        element.on('click', '.icon-gear', function() {
+        element.on('click', '.fa-gear', function() {
           var li = $(this).closest('li');
           li.toggleClass('ga-layer-folded');
           $(this).closest('ul').find('li').each(function(i, el) {
@@ -265,7 +265,7 @@ goog.require('gf3');
         if (!scope.mobile) {
           // Display the third party data tooltip
           element.tooltip({
-            selector: '.icon-user',
+            selector: '.fa-user',
             container: 'body',
             placement: 'right',
             title: function(elm) {
