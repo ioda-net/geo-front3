@@ -38,7 +38,7 @@ module.exports = function(config) {
 	       'lib/angular.js',
 	       'lib/angular-translate.js',
 	       'lib/angular-translate-loader-static-files.js',
-           'lib/ultimate-datatable-3.2.2-SNAPSHOT.js',
+           'lib/ultimate-datatable.js',
 	       'lib/bootstrap-3.3.1.js',
 	       'lib/typeahead-0.9.3.js',
 	       'lib/proj4js-compressed.js',

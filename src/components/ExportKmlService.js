@@ -14,7 +14,7 @@ goog.require('ga_browsersniffer_service');
    */
   module.provider('gaExportKml', function() {
     this.$get = function($translate, $window, $document, $http,
-                         gaBrowserSniffer) {
+                         gaBrowserSniffer, gaGlobalOptions) {
 
       var downloadUrl = this.downloadKmlUrl;
       var isBlobSupported = false;
@@ -117,7 +117,8 @@ goog.require('ga_browsersniffer_service');
         this.createAndDownload = function(layer, projection) {
           var now = dateFormat(new Date());
           var saveAs = $window.saveAs;
-          var filename = 'map.geo.admin.ch_KML_' + now + '.kml';
+          var filename = gaGlobalOptions.portalName + '_' + now + '.kml';
+          console.log(filename);
           var charset = $document.characterSet || 'UTF-8';
           var type = 'application/vnd.google-earth.kml+xml';
           type = type + ';charset=' + charset;
