@@ -8,7 +8,6 @@ goog.require('ga_map_service');
   module.provider('gf3DragBox', function() {
     this.$get = function(gaStyleFactory, gaBrowserSniffer) {
       var DragBox = function(map, onDragBoxEnd) {
-        var dragBox, boxOverlay;
         var dragBoxStyle = gaStyleFactory.getStyle('selectrectangle');
         var boxFeature = new ol.Feature();
 
@@ -23,7 +22,7 @@ goog.require('ga_map_service');
         });
         boxOverlay.getSource().addFeature(boxFeature);
 
-        dragBox = new ol.interaction.DragBox({
+        var dragBox = new ol.interaction.DragBox({
           condition: function(evt) {
             //MacEnvironments don't get here because the event is not
             //recognized as mouseEvent on Mac by the google closure.

@@ -66,10 +66,14 @@ goog.require('ga_permalink');
                     '[feedback-' + gaGlobalOptions.portalName + '-' + id +
                         '] ' + scope.subject;
 
+                var feedbackMessage = scope.feedback;
+                feedbackMessage += '\n\n\n---------------------------------\n';
+                feedbackMessage += 'Message created with version: ';
+                feedbackMessage += gaGlobalOptions.version;
                 if (!scope.isIE || gaBrowserSniffer.msie > 9) {
                     formData = new FormData();
                     formData.append('email', scope.email);
-                    formData.append('feedback', scope.feedback);
+                    formData.append('feedback', feedbackMessage);
                     formData.append('ua', navigator.userAgent);
                     formData.append('permalink', scope.permalinkValue);
                     formData.append('attachment', scope.file || '');
@@ -80,7 +84,7 @@ goog.require('ga_permalink');
                 } else {
                     formData = {
                       email: scope.email,
-                      feedback: scope.feedback,
+                      feedback: feedbackMessage,
                       ua: navigator.userAgent,
                       permalink: scope.permalinkValue,
                       attachment: '',

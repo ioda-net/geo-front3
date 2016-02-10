@@ -4,7 +4,7 @@ CACHE MANIFEST
 CACHE:
 ${version}/lib/build.js	
 ${version}/style/app.css
-${version}/style/font-awesome-3.2.1/font/fontawesome-webfont.woff?v=3.2.1
+${version}/style/font-awesome-3.2.1/font/fontawesome-webfont.woff
 ${version}/img/logo.ch.small.png
 ${version}/json/services.json
 {% for lang in geoportal.langs -%}
