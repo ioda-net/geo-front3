@@ -2,7 +2,7 @@
   <form ng-class="{'has-error': error}">
     <input type="url" name="url" autocomplete="off" placeholder="{{'choose_wms_url' | translate}}"
       ng-model="fileUrl" required class="form-control"/>
-    <div class="gf3-import-ows-open icon-collapse"></div>
+    <div class="gf3-import-ows-open fa fa-collapse"></div>
     <button type="button" class="btn btn-default gf3-import-ows-connect"
             ng-click="handleFileUrl()" translate>connect</button>
     <div class="ga-message">{{userMessage}}</div>
@@ -10,9 +10,9 @@
   <div class="gf3-import-ows-container">
     <div class="gf3-import-ows-header" ng-click="reverse = !reverse">
       <label translate>title</label>
-      <button class="pull-right" ng-class="{
-        'icon-sort-by-alphabet': !reverse,
-        'icon-sort-by-alphabet-alt': reverse
+      <button class="pull-right fa" ng-class="{
+        'fa-sort-by-alphabet': !reverse,
+        'fa-sort-by-alphabet-alt': reverse
       }"></button>
     </div>
     <div class="gf3-import-ows-content">

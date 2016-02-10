@@ -1,5 +1,5 @@
 @import "ga_bootstrap.less";
-@import "font-awesome-3.2.1/less/font-awesome.less";
+@import "font-awesome-4.5.0/less/font-awesome.less";
 @import "bootstrap-datetimepicker.less";
 @import "../components/map/style/map.less";
 @import "../components/map/style/cesiuminspector.less";
@@ -22,6 +22,7 @@
 @import "../components/slider/style/slider.less";
 @import "../components/timeselector/style/timeselector.less";
 @import "../components/backgroundselector/style/backgroundselector.less";
+@import "../components/backgroundselector/style/backgroundselector-sigeom.less";
 @import "../components/swipe/style/swipe.less";
 @import "../components/measure/style/measure.less";
 @import "../components/layermanager/style/layermanager.less";
@@ -34,6 +35,7 @@
 @import "../components/controls3d/style/controls3d.less";
 
 
+@cdbund-margin: 12;
 @header-height: 89;
 @footer-height: 26;
 @small-header-height: 50;
@@ -43,6 +45,7 @@
 @tooltip-bg: #999;
 @pulldown-width: 320;
 @control-btn-size: 44;
+@control-btn-size-px: unit(@control-btn-size, px);
 @control-btn-space: 7;
 @control-btn-next: @control-btn-size + @control-btn-space;
 @control-btns-top: @control-btn-space;
@@ -72,6 +75,7 @@ html, body {
     z-index: 3000;
   }
 }
+
 
 .ga-visible-3d {
   display: none !important;
@@ -130,12 +134,52 @@ form {
 }
 
 
+button.ga-btn, .ol-control button {
+  position: relative;
+
+  i {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 0;
+    color: #343434;
+  }
+  
+  .fa-ga-circle-bg {
+    color: #fff;
+  }
+
+  &.ga-btn-disabled {
+
+    i {
+      color: #545454;
+    }
+
+    .fa-ga-circle-bg {
+      color: #d3d3d3;
+    }
+  }
+
+  &.ga-btn-active {
+
+    i {
+      color: #ed1c24;
+    }
+
+    .fa-ga-circle-bg {
+      color: #fff;
+    }  
+  }
+}
+
+
+
 /* This allow the display of not-allowed cursor on hover */
-.btn[disabled] {
+.btn[disabled], &.ga-btn-disabled {
   pointer-events: auto;
 }
 
-button.ga-icon {
+button.ga-icon, &.ga-btn-disabled {
   width: 1.3em;
   margin: 0;
   padding: 0;
@@ -158,7 +202,7 @@ button.ga-icon {
 
 button.ga-btn, .ol-control button {
 
-  &[disabled] {
+  &[disabled], &.ga-btn-disabled {
     cursor: not-allowed;
   }
 
@@ -179,6 +223,10 @@ button.ga-btn, .ol-control button {
     &:hover {
       opacity: 1;
     }
+  }
+
+  &.webkit {
+    position: absolute; // iOS: Hide the menu so we can't see it when the rubberband effect happens
   }
 }
 
@@ -360,7 +408,6 @@ input[type=text][readonly] {
   .box-shadow(6px 6px 12px rgba(0, 0, 0, 0.175));
 }
 
-// ***** HEADER
 #header {
   top: 0px;
   height: unit(@header-height, px);
@@ -404,13 +451,16 @@ input[type=text][readonly] {
     position: absolute;
     text-align: center;
     top: unit(-@header-height, px);
-    transition: top ease 1s;
-  }
-}
+    .transition-transform(.5s);
+    z-index: 200;
+    padding: 0;
+    margin: 0;
+    line-height: unit(@header-height - 5, px);
 
-.offline #header .alert {
-  top: 0px;
-  z-index: 100;
+    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+       line-height: unit(@small-header-height - 5, px);
+    }
+  }
 }
 
 #search-container {
@@ -464,11 +514,11 @@ input[type=text][readonly] {
       margin-left: 2%;
     }
 
-    input, .icon-search {
+    input, .fa-search {
       margin-left: 2%;
     }
 
-    .icon-remove-sign {
+    .fa-remove-sign {
       margin-right: 2%;
     }
       
@@ -480,40 +530,77 @@ input[type=text][readonly] {
   }
 }
 
-.logo-small(){
-  background-image: data-uri('../img/logo.ch-19x21.png');
+.fa-ga-logo-bund {
+  color: #f00;
 }
 
 .ga-logo {
+  position: relative;
+  width: 329px;
+  height: unit(@header-height, px);
   background: white no-repeat left center;
+
+  @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+    width: 44px;
+    height: unit(@small-header-height, px);
+  }
+
+  .fa-ga-logo-bund, .ga-logo-text {
+    position: absolute;
+    top: unit(@cdbund-margin/2, px);
+  }
+
+  .fa-ga-logo-bund {
+    font-size: 33px;
+    left: unit(@cdbund-margin, px);
+  }
+
+  .ga-logo-text {
+    left: unit(30 + @cdbund-margin*2, px);
+    width: 185px;
+    height: 57px;
+    background: data-uri('../img/logo.textx2.png') no-repeat top left;
+    background-size: 187px 135px;
+
+    &[class^="ga-subtitle-"], &[class*=" ga-subtitle-"] {
+      top: unit(57 + @cdbund-margin, px);
+      height: 12px;
+    }
+  }
+
+  .ga-subtitle-de {
+    background-position: 0 -64px;
+  }
+
+  .ga-subtitle-en {
+    background-position: 0 -78px;
+  }
+
+  .ga-subtitle-fr {
+    background-position: 0 -93px;
+  }
+
+  .ga-subtitle-it {
+    background-position: 0 -107px;
+  }
+
+  .ga-subtitle-rm {
+    background-position: 0 -120px;
+  }
 }
 
 #logo {
   display: inline-block;
-  width: 329px;
-  height: 100%;
 
-  &.ga-logo-de {
-    background-image: data-uri('../img/logo.ch.de.png');
-  }
-  &.ga-logo-fr {
-    background-image: data-uri('../img/logo.ch.fr.png');
-  }
-  &.ga-logo-it {
-    background-image: data-uri('../img/logo.ch.it.png');
-  }
-  &.ga-logo-rm {
-    background-image: data-uri('../img/logo.ch.rm.png');
-  }
-  &.ga-logo-en {
-    background-image: data-uri('../img/logo.ch.en.png');
-  }
+  @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
 
-  &[class^="ga-logo-"], &[class*=" ga-logo-"] {
-    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
-      width: 44px;
-      .logo-small();
-      background-position: center;
+    .fa-ga-logo-bund {
+      font-size: 21px;
+      line-height: 39px;
+    }
+
+    .ga-logo-text, .ga-logo-subtitle {
+      display: none;
     }
   }
 }
@@ -542,6 +629,11 @@ input[type=text][readonly] {
   }
 }
 
+// ***** MAP
+[ga-map], [ga-background-selector] .ga-voidLayer{
+  background: #fff data-uri('../img/mapbg.png') !important;
+}
+
 // ***** DRAW MODE HEADER
 #drawModeHeader {
   top: -100px;
@@ -555,7 +647,7 @@ input[type=text][readonly] {
   .btn-primary {
     margin-top: 1px;
   } 
-  .btn-primary .icon-arrow-left{
+  .btn-primary .fa-arrow-left{
     vertical-align: middle;
   }
 
@@ -585,7 +677,7 @@ input[type=text][readonly] {
     }
   }
 
-  .icon-arrow-left + span {
+  .fa-arrow-left + span {
     padding-left: 5px;
 
     @media (max-width: @screen-phone) {
@@ -695,7 +787,7 @@ a .ga-icon-separator {
     }
   }
 
-  .icon-caret-down {
+  .fa-caret-down {
     display: inline-block;
     width: 14px;
     height: 14px;
@@ -705,7 +797,7 @@ a .ga-icon-separator {
     vertical-align: -2px;
   }
 
-  .collapsed .icon-caret-down {   
+  .collapsed .fa-caret-down {   
     .rotate(-90deg);   
   }
 
@@ -743,7 +835,7 @@ a .ga-icon-separator {
     @media (max-width: @screen-phone) {
       background-color: rgba(255,255,255,0.9);
       font-size: 14px;
-      max-height: 250px;
+      max-height: none;
     }
     .panel-body {
       padding: 0;
@@ -757,14 +849,14 @@ a .ga-icon-separator {
         max-height: 150px;
     }
       @media (max-width: @screen-phone) {
-        max-height: 250px;
+        max-height: none;
       }
     }
   }
 }
 
 .pulldown-hover() {
-  &:hover, &:focus {
+  &:hover, &:active {
     text-decoration: none;
     color: #666;
     background: #fff;
@@ -793,7 +885,9 @@ a .ga-icon-separator {
     top: 0;
     right: 0;
     width: 0;
-    overflow: hidden;
+    max-height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     .translate3d(100%, 0, 0);
 
     #shareHeading {
@@ -877,7 +971,7 @@ a .ga-icon-separator {
   font-weight: bold;
   .box-shadow(6px 6px 12px rgba(0, 0, 0, 0.175));
 
-  .icon-caret-down {
+  .fa-caret-down {
     display: inline-block;
     vertical-align: middle;
     .transition-transform(.2s ease);
@@ -894,6 +988,7 @@ a .ga-icon-separator {
     height: 50px;
     margin: 0;
     padding: 0 5px;
+    border-bottom-right-radius: 0;
 
     .ga-visible-mobile {
       display: inline;
@@ -907,7 +1002,7 @@ a .ga-icon-separator {
 
 .ga-pulldown-shown #menu-button {
 
-  .icon-caret-down {
+  .fa-caret-down {
     .rotate(-180deg);
   } 
 
@@ -939,13 +1034,13 @@ a .ga-icon-separator {
     text-decoration: none;
   }
   &.open {
-    .icon-chevron-sign-right {
+    .fa-chevron-sign-right {
       .rotate(180deg);
     }
   }
-  i.icon-chevron-sign-right {
+  i.fa-chevron-sign-right {
     vertical-align: middle;
-    height: 14px;
+    height: 12px;
   }
   .dropdown-menu {
     top: 0;
@@ -1119,7 +1214,7 @@ a .ga-icon-separator {
     position: relative;
     padding-right: 0px;
 
-    .icon-remove {
+    .fa-remove {
       position: absolute;
       top: 0px;
       right: 0px;
@@ -1207,7 +1302,7 @@ ul.panel-body-wide {
 }
 
 // ***** ICONS
-.icon-plus, .icon-minus {
+.fa-plus, .fa-minus {
   padding: 1px 1px 0;
   border: 1px solid #afafaf;
   border-radius: 2em;
@@ -1627,14 +1722,8 @@ body:not(.embed) {
     top: 5px;
     left: 5px;
 
-    .ga-logo {
-      .logo-small();
-      background-size: 14px;
-      background-position-x: 5px; 
-
-      span {
-        padding-left: 19px;
-      }
+    .fa-ga-logo-bund {
+      vertical-align: middle;
     }
 
     > div {
@@ -1656,7 +1745,8 @@ body:not(.embed) {
   #buttonGroup {
     top: 0px;
     right: 5px;
-    button {
+
+    > div, > button, .ol-zoom-out {
       margin-top: 5px;
     }
   }
@@ -1768,3 +1858,4 @@ body:not(.embed) {
 
 
 @import "print.less";
+@import "offline.less";

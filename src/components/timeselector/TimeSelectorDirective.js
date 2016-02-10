@@ -95,7 +95,7 @@ goog.require('ga_time_service');
   });
 
   module.directive('gaTimeSelector',
-    function(gaDebounce, gaLayers, gaTime) {
+    function(gaDebounce, gaLayers, gaTime, $timeout) {
 
       // Magnetize a year to the closest available year
       var magnetize = function(currentYear, availableYears) {
@@ -124,6 +124,50 @@ goog.require('ga_time_service');
         controller: 'GaTimeSelectorDirectiveController',
         link: function(scope, elt, attrs, controller) {
           scope.years = [];
+          var promise;
+
+          // Copy from slider
+          var nextValue = function(value, list) {
+            if (list && list.length > 0) {
+              for (var i = list.length - 1; i >= 0; i--) {
+                var elt = list[i];
+                if (elt.value === value) {
+                  value = magnetize(value, list.slice(i + 1, list.length));
+
+                  // if we have reached the end of the list restart from the
+                  // beginning
+                  if (value == elt.value && list.length > 1) {
+                    value = list[0].value;
+                  }
+                  break;
+                }
+              }
+            }
+            return value;
+          };
+
+          var applyNextYear = function() {
+            var nextYear = nextValue(scope.currentYear, scope.availableYears);
+            if (nextYear != scope.currentYear) {
+              scope.currentYear = nextYear;
+              promise = $timeout(applyNextYear, 1000);
+            } else {
+              scope.stop();
+            }
+          };
+
+          scope.play = function() {
+            scope.isPlaying = true;
+            applyNextYear();
+          };
+
+          scope.stop = function() {
+            scope.isPlaying = false;
+            if (promise) {
+              $timeout.cancel(promise);
+              promise = undefined;
+            }
+          };
 
           // Update the status of the directive
           var timeEnabledLayers = [];
@@ -146,6 +190,9 @@ goog.require('ga_time_service');
               scope.currentYear = time;
             }
             updateStatus();
+            if (!scope.isActive) {
+              scope.stop();
+            }
           });
 
           // Update then magnetize the current year
@@ -166,6 +213,7 @@ goog.require('ga_time_service');
           scope.$watch(function() {
             return scope.ol3d && scope.ol3d.getEnabled();
           }, function(active) {
+            scope.stop();
             scope.is3dActive = active;
             elt.toggle(scope.isActive && !scope.is3dActive);
           });

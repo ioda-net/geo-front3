@@ -102,7 +102,8 @@ gulp.task('prod', function (cb) {
             'copy-IE',
             'copy-pdfmake-prod',
             'appcache',
-            'build.js'
+            'build.js',
+            'copy-d3-min'
           ],
           'clean-tmp',
           cb);

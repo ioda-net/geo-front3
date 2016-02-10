@@ -64,12 +64,10 @@ describe('ga_backgroundselector_directive', function() {
       });
 
       $rootScope.map = map;
-      html = '<div>' +
+      element = angular.element(
           '<div ga-background-selector ' +
-          'ga-background-selector-map="map">' +
-          '</div>' +
-          '</div>';
-      element = angular.element(html);
+            'ga-background-selector-map="map">' +
+          '</div>');
       gaBackground.init(map);
       $compile(element)($rootScope);
       def.resolve();
@@ -78,51 +76,28 @@ describe('ga_backgroundselector_directive', function() {
 
     describe('toggle activation', function() {
       it('shows and hides bgselectors div', function() {
-        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer')).to.be(true);
-        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer-0')).to.be(false);
+        $rootScope.$digest();
+
+        expect(element.hasClass('ga-open')).to.be(false);
 
         element.find('.ga-bg-layer-bt').click();
-        $rootScope.$digest();
-        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer-0')).to.be(true);
+        expect(element.hasClass('ga-open')).to.be(true);
 
         element.find('.ga-bg-layer-bt').click();
-        $rootScope.$digest();
-        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer')).to.be(true);
+        expect(element.hasClass('ga-open')).to.be(false);
 
         element.find('.ga-bg-layer-bt').click();
-        $rootScope.$digest();
-        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer-0')).to.be(true);
+        expect(element.hasClass('ga-open')).to.be(true);
 
         element.find('.ga-swissimage').click();
         $rootScope.$digest();
-        expect(element.find('.ga-swissimage').hasClass('ga-bg-layer')).to.be(true);
+        expect(element.hasClass('ga-open')).to.be(false);
+        expect(element.find('.ga-swissimage').hasClass('ga-bg-highlight')).to.be(true);
       });
 
       it('creates 4 layer bgselectors div', function() {
         var divsBg = element.find('.ga-bg-layer');
         expect(divsBg.length).to.equal(4);
-      });
-
-      it('has correct class on desktop', function() {
-        gaBrowserSniffer.mobile = false;
-        var element2 = angular.element(html);
-        $compile(element2)($rootScope);
-        $rootScope.$digest();
-
-        var content = element2.find('.ng-isolate-scope');
-        expect(content.hasClass('ga-bg-desktop')).to.be(true);
-        expect(content.hasClass('ga-bg-mobile')).to.be(false);
-      });
-
-      it('has correct class on mobile', function() {
-        gaBrowserSniffer.mobile = true;
-        var element2 = angular.element(html);
-        $compile(element2)($rootScope);
-        $rootScope.$digest();
-
-        var content = element2.find('.ng-isolate-scope');
-        expect(content.hasClass('ga-bg-desktop')).to.be(false);
-        expect(content.hasClass('ga-bg-mobile')).to.be(true);
       });
     });
   });
@@ -189,11 +164,9 @@ describe('ga_backgroundselector_directive', function() {
 
       $rootScope.map = map;
       element = angular.element(
-        '<div>' +
-            '<div ga-background-selector ' +
-                'ga-background-selector-map="map">' +
-            '</div>' +
-        '</div>');
+          '<div ga-background-selector ' +
+              'ga-background-selector-map="map">' +
+          '</div>');
       gaBackground.init(map);
       $compile(element)($rootScope);
       def.resolve();

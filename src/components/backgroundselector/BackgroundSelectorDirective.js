@@ -41,23 +41,17 @@ goog.require('ga_topic_service');
           });
 
           scope.activateBackgroundLayer = function(bgLayer) {
-            /* istanbul ignore if */
-            if (scope.isBackgroundSelectorClosed) {
-              scope.isBackgroundSelectorClosed = false;
-            } else {
-              scope.isBackgroundSelectorClosed = true;
-              if (scope.currentLayer != bgLayer) {
-                var ol3dEnabled = scope.ol3d && scope.ol3d.getEnabled();
-                if (!(bgLayer.disable3d && ol3dEnabled)) {
-                  scope.currentLayer = bgLayer;
-                }
+            if (scope.currentLayer != bgLayer) {
+              var ol3dEnabled = scope.ol3d && scope.ol3d.getEnabled();
+              if (!(bgLayer.disable3d && ol3dEnabled)) {
+                scope.currentLayer = bgLayer;
               }
             }
+            scope.toggleMenu();
           };
 
           scope.toggleMenu = function() {
-            scope.isBackgroundSelectorClosed =
-                !scope.isBackgroundSelectorClosed;
+            elt.toggleClass('ga-open');
           };
 
           scope.getClass = function(layer, index) {
@@ -67,8 +61,7 @@ goog.require('ga_topic_service');
               var splitLayer = layer.id.split('.');
               return (selected ? 'ga-bg-highlight ' : '') +
                 'ga-' + splitLayer[splitLayer.length - 1] +
-                ' ' + ((!scope.isBackgroundSelectorClosed) ?
-                'ga-bg-layer-' + index : '') +
+                ' ' + 'ga-bg-layer-' + index +
                 ' ' + (layer.disable3d ? 'ga-disable3d' : '');
             }
           };
@@ -85,6 +78,8 @@ goog.require('ga_topic_service');
               scope.currentLayer = newBg;
             }
           });
+
+          elt.find('.ga-bg-layer-bt').click(scope.toggleMenu);
         }
       };
     }

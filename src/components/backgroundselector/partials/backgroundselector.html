@@ -3,8 +3,7 @@
      class="ga-bg-layer {{getClass(layer, $index)}}">
   <div ng-if="::desktop" class="ga-bg-layer-text" translate>{{layer.label}}</div>
 </div>
-<div ng-click="toggleMenu()" class="ga-bg-layer-bt"
-     ng-class="{'ga-bg-layer-bt-close': !isBackgroundSelectorClosed}">
+<div class="ga-bg-layer-bt">
   <div ng-if="::desktop" class="ga-bg-layer-bt-text" translate>bg_chooser_label</div>
-  <i ng-if="::desktop" class="icon-chevron-sign-right"></i>
-</div> 
+  <i ng-if="::desktop" class="fa fa-chevron-sign-right"></i>
+</div>

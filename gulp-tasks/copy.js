@@ -59,6 +59,11 @@ function load(src, dest, config) {
             .pipe(extReplace('.min.js', '.js'))
             .pipe(gulp.dest(dest.lib_ie));
   });
+
+  gulp.task('copy-d3-min', function () {
+    return gulp.src('src/lib/d3.min.js')
+        .pipe(gulp.dest(dest.lib));
+  });
 }
 
 
