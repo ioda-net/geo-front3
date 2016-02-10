@@ -1249,7 +1249,9 @@ goog.require('ga_urlutils_service');
                     layer.minResolution),
                 tileLoadFunction: tileLoadFunction,
                 urls: getImageryUrls(wmtsTplUrl, subdomains),
-                crossOrigin: crossOrigin
+                crossOrigin: crossOrigin,
+                matrixSet: layer.matrixSet,
+                layer: layer.serverLayerName
               });
             }
             olLayer = new ol.layer.Tile({
