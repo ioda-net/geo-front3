@@ -2,6 +2,11 @@
   &.ga-bg-mobile {
 
     &.ga-open {
+      .ga-voidLayer {
+        .translate3d(0, 0, 0);
+        -ms-transform: translateY(0); /* IE 9*/
+      }
+
       .ga-bg-layer-0 {
         bottom: 101px;
         @media (max-width: @screen-tablet) {
