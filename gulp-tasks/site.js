@@ -1,6 +1,6 @@
 var extend = require('extend');
 var gulp = require('gulp');
-var extReplace = require('gulp-ext-replace');
+var rename = require('gulp-rename');
 var data = require('gulp-data');
 var nunjucksRender = require('./nunjucks');
 var less = require('gulp-less');
@@ -25,14 +25,14 @@ function load (src, dest, config) {
 
   gulp.task('appcache', function () {
     var appcacheConfig = extend({}, config);
-    config.version = new Date().getTime();
+    appcacheConfig.version = '';
 
     return gulp.src(src.appcache)
             .pipe(data(function () {
               return appcacheConfig;
             }))
             .pipe(nunjucksRender())
-            .pipe(extReplace('.appcache', '.nunjucks.html'))
+            .pipe(rename('geoadmin.' + config.version + '.appacache'))
             .pipe(gulp.dest(dest.output));
   });
 }

@@ -54,6 +54,7 @@ goog.require('ga_permalink');
                   }
                 }
               }
+
             }
           });
           topic = getTopicById(gaPermalink.getParams().topic, true);

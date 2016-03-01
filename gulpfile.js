@@ -11,6 +11,7 @@ var utils = require('./gulp-tasks/utils');
 
 // Define global variables
 var config = JSON.parse(fs.readFileSync('/dev/stdin').toString());
+config.version = (new Date()).toISOString().split('T')[0];
 var tempDir;
 if (config.prod) {
   tempDir = utils.createTmpDir();

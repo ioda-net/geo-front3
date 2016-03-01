@@ -19,6 +19,7 @@ function load(src, dest, config) {
       '--externs externs/angular.js',
       '--externs externs/jquery.js',
       '--externs externs/spinner.js',
+      '--externs externs/slip.js',
       '--js_output_file ' + dest.closure
     ]);
 

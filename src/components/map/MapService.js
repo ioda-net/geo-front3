@@ -354,7 +354,7 @@ goog.require('ga_urlutils_service');
    */
   module.provider('gaWms', function() {
     this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils,
-        gaGlobalOptions, $q) {
+        gaGlobalOptions, $q, gaLang) {
       var getCesiumImageryProvider = function(layer) {
         var params = layer.getSource().getParams();
         var proxy;
@@ -368,18 +368,26 @@ goog.require('ga_urlutils_service');
         }
         var wmsParams = {
           layers: params.LAYERS,
-          format: 'image/png',
+          format: params.FORMAT || 'image/png',
           service: 'WMS',
-          version: '1.3.0',
+          version: params.VERSION || '1.3.0',
           request: 'GetMap',
-          crs: 'CRS:84',
-          bbox: '{westProjected},{southProjected},' +
-                '{eastProjected},{northProjected}',
+          crs: 'EPSG:4326',
+          bbox: '{southProjected},{westProjected},' +
+                '{northProjected},{eastProjected}',
           width: '256',
           height: '256',
-          styles: 'default',
+          styles: params.STYLES || 'default',
           transparent: 'true'
         };
+
+        if (wmsParams.version == '1.1.1') {
+          wmsParams.srs = wmsParams.crs;
+          delete wmsParams.crs;
+          wmsParams.bbox = '{westProjected},{southProjected},' +
+                           '{eastProjected},{northProjected}';
+        }
+
         var extent = gaGlobalOptions.defaultExtent;
         return new Cesium.UrlTemplateImageryProvider({
           minimumRetrievingLevel: window.minimumRetrievingLevel,
@@ -390,22 +398,30 @@ goog.require('ga_urlutils_service');
           hasAlphaChannel: true,
           availableLevels: window.imageryAvailableLevels
         });
+
       };
 
       var Wms = function() {
 
+        // Test WMS 1.1.1 with  https://wms.geo.bs.ch/wmsBS
         var createWmsLayer = function(params, options, index) {
+          params.VERSION = params.VERSION || '1.3.0';
           options = options || {};
-
+          options.id = 'WMS||' + options.label + '||' + options.url + '||' +
+              params.LAYERS + '||' + params.VERSION;
+          if (options.useReprojection) {
+            options.projection = 'EPSG:4326';
+            options.id += '||true';
+          }
           var source = new ol.source.ImageWMS({
             params: params,
             url: options.url,
-            ratio: options.ratio || 1
+            ratio: options.ratio || 1,
+            projection: options.projection
           });
 
           var layer = new ol.layer.Image({
-            id: 'WMS||' + options.label + '||' + options.url + '||' +
-                params.LAYERS,
+            id: options.id,
             url: options.url,
             type: 'WMS',
             opacity: options.opacity,
@@ -434,7 +450,8 @@ goog.require('ga_urlutils_service');
           var wmsOptions = {
             url: getCapLayer.wmsUrl,
             label: getCapLayer.Title,
-            extent: gaMapUtils.intersectWithDefaultExtent(getCapLayer.extent)
+            extent: gaMapUtils.intersectWithDefaultExtent(getCapLayer.extent),
+            useReprojection: getCapLayer.useReprojection
           };
           return createWmsLayer(wmsParams, wmsOptions);
         };
@@ -458,11 +475,12 @@ goog.require('ga_urlutils_service');
               gaUrlUtils.append(layer.url, gaUrlUtils.toKeyValue({
             request: 'GetLegendGraphic',
             layer: params.LAYERS,
-            style: params.style || 'default',
+            style: params.STYLES || 'default',
             service: 'WMS',
-            version: params.version || '1.3.0',
+            version: params.VERSION || '1.3.0',
             format: 'image/png',
-            sld_version: '1.1.0'
+            sld_version: '1.1.0',
+            lang: gaLang.get()
           })) + '"></img>';
           defer.resolve({data: html});
           return defer.promise;
@@ -1180,6 +1198,9 @@ goog.require('ga_urlutils_service');
               maxLod = gaMapUtils.getLodFromRes(
                   config3d.resolutions[config3d.resolutions.length - 1]);
             }
+
+            var terrainTimestamp = this.getLayerTimestampFromYear(
+                gaGlobalOptions.defaultTerrain, gaTime.get());
             provider = new Cesium.UrlTemplateImageryProvider({
               url: params.url,
               subdomains: params.subdomains,
@@ -1193,10 +1214,9 @@ goog.require('ga_urlutils_service');
               tileHeight: params.tileSize,
               hasAlphaChannel: (format == 'png'),
               availableLevels: window.imageryAvailableLevels,
-              // Experimental
-              metadataUrl: config3d.has3dMetadata ?
-                  getTerrainTileUrl(requestedLayer, timestamp) + '/' :
-                  undefined
+              // Experimental: restrict all rasters to terrain availability
+              metadataUrl: getTerrainTileUrl(
+                  gaGlobalOptions.defaultTerrain, terrainTimestamp) + '/'
             });
           }
           if (provider) {
@@ -1571,10 +1591,16 @@ goog.require('ga_urlutils_service');
         },
 
         flyToAnimation: function(ol3d, center, destination, defer) {
+          // In degrees
+          var pitch = 50;
+          // Default camera field of view
+          // https://cesiumjs.org/Cesium/Build/Documentation/Camera.html
+          var cameraFieldOfView = 60;
           var scene = ol3d.getCesiumScene();
-          var camera = scene.camera;
           var globe = scene.globe;
           var carto = globe.ellipsoid.cartesianToCartographic(destination);
+          var camera = scene.camera;
+
           $http.get(gaGlobalOptions.apiUrl + '/rest/services/height', {
             params: {
               easting: center[0],
@@ -1582,12 +1608,15 @@ goog.require('ga_urlutils_service');
             }
           }).then(function(response) {
             var height = carto.height - response.data.height;
-            var offset = Math.tan(Cesium.Math.toRadians(50)) * (height + 50);
-            destination.x += offset * 2;
+            var magnitude = Math.tan(
+                Cesium.Math.toRadians(pitch + cameraFieldOfView / 2)) * height;
+            // Approx. direction on x and y (only valid for Swiss extent)
+            destination.x += (7 / 8) * magnitude;
+            destination.y += (1 / 8) * magnitude;
             camera.flyTo({
               destination: destination,
               orientation: {
-                pitch: Cesium.Math.toRadians(-50)
+                pitch: Cesium.Math.toRadians(-pitch)
               },
               complete: defer.resolve,
               cancel: defer.resolve
@@ -1737,7 +1766,7 @@ goog.require('ga_urlutils_service');
           }
           if (angular.isString(olLayerOrId)) {
             return /^WMS\|\|/.test(olLayerOrId) &&
-                olLayerOrId.split('||').length == 4;
+                olLayerOrId.split('||').length >= 4;
           }
           return olLayerOrId.type == 'WMS';
         },
@@ -2204,7 +2233,6 @@ goog.require('ga_urlutils_service');
                 false : true;
             var timestamp = (timestamps && index < timestamps.length &&
                 timestamps != '') ? timestamps[index] : '';
-
             var bodLayer = gaLayers.getLayer(layerSpec);
             if (bodLayer) {
               // BOD layer.
@@ -2266,14 +2294,16 @@ goog.require('ga_urlutils_service');
               try {
                 gaWms.addWmsToMap(map,
                   {
-                    LAYERS: infos[3]
+                    LAYERS: infos[3],
+                    VERSION: infos[4]
                   },
                   {
                     url: infos[2],
                     label: infos[1],
                     opacity: opacity || 1,
                     visible: visible,
-                    extent: gaGlobalOptions.defaultExtent
+                    extent: gaGlobalOptions.defaultExtent,
+                    useReprojection: infos[5]
                   },
                   index + 1);
               } catch (e) {
@@ -2359,7 +2389,7 @@ goog.require('ga_urlutils_service');
           gaTime.allowStatusUpdate = true;
           registerLayersPermalink(scope, map);
           // Listen for next topic change events
-          $rootScope.$on('gaTopicChange', addTopicSelectedLayers);
+          $rootScope.$on('gaPostTopicChange', addTopicSelectedLayers);
         });
       };
     };

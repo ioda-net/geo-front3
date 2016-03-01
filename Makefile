@@ -9,6 +9,7 @@ LAST_APACHE_BASE_PATH := $(shell if [ -f .build-artefacts/last-apache-base-path 
 API_URL ?= //mf-chsdi3.dev.bgdi.ch
 LAST_API_URL := $(shell if [ -f .build-artefacts/last-api-url ]; then cat .build-artefacts/last-api-url 2> /dev/null; else echo '-none-'; fi)
 PUBLIC_URL ?= //public.dev.bgdi.ch
+E2E_TARGETURL ?= https://mf-geoadmin3.dev.bgdi.ch
 PUBLIC_URL_REGEXP ?= ^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*
 ADMIN_URL_REGEXP ?= ^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)
 MAPPROXY_URL ?= //wmts{s}.dev.bgdi.ch
@@ -19,12 +20,13 @@ LAST_VERSION := $(shell if [ -f .build-artefacts/last-version ]; then cat .build
 VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else date '+%s'; fi)
 GIT_BRANCH := $(shell git rev-parse --symbolic-full-name --abbrev-ref HEAD)
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
+BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= ccdb189e774db75b04b62e856fc813475523acba # tag v3.13.0, 20 january 2016
-OL3_CESIUM_VERSION ?= 62631d2e6820b5d08e836a336782052f1f59123b # tag v1.12, 30 january 2015
-CESIUM_VERSION ?= b4da72d63ca6df06dd4af513fdef15f5ff94ce0c # camptocamp/c2c_patches (cesium 1.17), 13 january 2015
+OL3_VERSION ?= 9baa296a49a75045e756089516f610c58cdc82eb # master, 17 february 2016
+OL3_CESIUM_VERSION ?= 30ed9504286a3d88365e900ab242279f588d5898 # master, 17 february 2016
+CESIUM_VERSION ?= e9d3a04697a902b8cce772e9bd3d5116d8a895b2 # camptocamp/c2c_patches (cesium 1.18), 5 january 2016
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"en\", \"fr\", \"it\", \"rm\"]'
@@ -42,6 +44,7 @@ DEFAULT_EPSG ?= EPSG:21781
 DEFAULT_EPSG_EXTEND ?= '[420000, 30000, 900000, 350000]'
 DEFAULT_ELEVATION_MODEL ?= COMB
 DEFAULT_TERRAIN ?= ch.swisstopo.terrain.3d
+SAUCELABS_TESTS ?=
 
 ## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd
@@ -52,6 +55,8 @@ PIP_CMD=${PYTHON_VENV}/bin/pip
 MAKO_CMD=${PYTHON_VENV}/bin/mako-render 
 HTMLMIN_CMD=${PYTHON_VENV}/bin/htmlmin
 GJSLINT_CMD=${PYTHON_VENV}/bin/gjslint
+FLAKE8_CMD=${PYTHON_VENV}/bin/flake8
+AUTOPEP8_CMD=${PYTHON_VENV}/bin/autopep8
 
 
 .PHONY: help
@@ -63,11 +68,15 @@ help:
 	@echo "- prod             Build app for prod (/prd)"
 	@echo "- dev              Build app for dev (/src)"
 	@echo "- lint             Run the linter"
+	@echo "- lintpy           Run the linter for the python files"
+	@echo "- autolintpy       Run the auto-corrector for python files"
 	@echo "- testdev          Run the JavaScript tests in dev mode"
 	@echo "- testprod         Run the JavaScript tests in prod mode"
-	@echo "- teste2e          Run browserstack tests"
+	@echo "- teste2e          Run browserstack and saucelabs tests"
+	@echo "- browserstack     Run browserstack tests"
+	@echo "- saucelabs        Run saucelabs tests"
+	@echo "- saucelabssingle  Run saucelabs tests but only with single platform/browser"
 	@echo "- apache           Configure Apache (restart required)"
-	@echo "- appcache         Update appcache file"
 	@echo "- fixrights        Fix rights in common folder"
 	@echo "- all              All of the above (target to run prior to creating a PR)"
 	@echo "- clean            Remove generated files"
@@ -76,6 +85,7 @@ help:
 	@echo "- deployint        Deploys snapshot specified with SNAPSHOT=xxx to int."
 	@echo "- deployprod       Deploys snapshot specified with SNAPSHOT=xxx to prod."
 	@echo "- deploydemo       Deploys snapshot specified with SNAPSHOT=xxx to demo."
+	@echo "- deletebranch     List deployed branches or delete a deployed branch (BRANCH_TO_DELETE=...)"
 	@echo "- deploybranch     Deploys current branch to test (note: takes code from github)"
 	@echo "- deploybranchint  Deploys current branch to test and int (note: takes code from github)"
 	@echo "- deploybranchdemo Deploys current branch to test and demo (note: takes code from github)"
@@ -118,6 +128,14 @@ dev: src/deps.js src/style/app.css src/index.html src/mobile.html src/embed.html
 .PHONY: lint
 lint: node_modules .build-artefacts/lint.timestamp
 
+.PHONY: lintpy
+lintpy: ${FLAKE8_CMD}
+	${FLAKE8_CMD} --max-line-length=110 $(PYTHON_FILES)
+
+.PHONY: autolintpy
+autolintpy: ${AUTOPEP8_CMD}
+	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --max-line-lengt=110 $(PYTHON_FILES)
+
 .PHONY: testdev
 testdev: .build-artefacts/app-whitespace.js test/karma-conf-dev.js node_modules
 	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-dev.js --single-run
@@ -127,14 +145,22 @@ testprod: prd/lib/build.js test/karma-conf-prod.js node_modules
 	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-prod.js --single-run
 
 .PHONY: teste2e
-teste2e: guard-BROWSERSTACK_TARGETURL guard-BROWSERSTACK_USER guard-BROWSERSTACK_KEY
-	node test/selenium/tests.js -t ${BROWSERSTACK_TARGETURL}
+teste2e: saucelabs browserstack
+
+.PHONY: browserstack
+browserstack: guard-BROWSERSTACK_USER guard-BROWSERSTACK_KEY
+	node test/selenium/tests.js -t ${E2E_TARGETURL}
+
+.PHONY: saucelabs
+saucelabs: guard-SAUCELABS_USER guard-SAUCELABS_KEY .build-artefacts/requirements.timestamp lintpy
+	${PYTHON_CMD} test/saucelabs/test.py ${E2E_TARGETURL} ${SAUCELABS_TESTS}
+
+.PHONY: saucelabssingle
+saucelabssingle: guard-SAUCELABS_USER guard-SAUCELABS_KEY .build-artefacts/requirements.timestamp lintpy
+	${PYTHON_CMD} test/saucelabs/test.py ${E2E_TARGETURL} all true
 
 .PHONY: apache
 apache: apache/app.conf
-
-.PHONY: appcache
-appcache: cleanappcache prd/geoadmin.appcache prd/index.html prd/mobile.html prd/embed.html
 
 .PHONY: deploydev
 deploydev:
@@ -166,6 +192,10 @@ deploybranch: deploy/deploy-branch.cfg $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)/.git/con
 	make preparebranch; \
 	cp scripts/00-$(GIT_BRANCH).conf /var/www/vhosts/mf-geoadmin3/conf; \
 	bash -c "source rc_branch && make cleanall all";
+
+.PHONY: deletebranch
+deletebranch:
+	./scripts/delete_branch.sh $(BRANCH_TO_DELETE)
 
 .PHONY: deploybranchint
 deploybranchint: deploybranch
@@ -226,6 +256,14 @@ fastclick: .build-artefacts/fastclick
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
 	    --js_output_file  src/lib/fastclick.min.js
 
+.PHONY: slipjs
+slipjs: node_modules
+	java -jar node_modules/google-closure-compiler/compiler.jar \
+	    src/lib/slip.js \
+	    --compilation_level SIMPLE_OPTIMIZATIONS \
+	    --language_in ECMASCRIPT5 \
+	    --js_output_file src/lib/slip.min.js
+
 .PHONY: typeahead
 typeahead:
 	java -jar node_modules/google-closure-compiler/compiler.jar \
@@ -244,6 +282,11 @@ update-datepicker:
 	cp node_modules/bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js src/lib/
 	cp node_modules/bootstrap-datetimepicker/src/less/bootstrap-datetimepicker.less src/style/
 	cp node_modules/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js src/lib/
+
+.PHONY: polyfill
+polyfill: .build-artefacts/polyfill 
+	cp $</polyfill.js src/lib/
+	cp $</polyfill.min.js src/lib/
 
 .PHONY: translate
 translate:
@@ -269,7 +312,8 @@ prd/robots.txt: scripts/robots.mako-dot-txt .build-artefacts/last-deploy-target
 	${PYTHON_CMD} ${MAKO_CMD} \
 	    --var "deploy_target=$(DEPLOY_TARGET)" $< > $@
 
-prd/lib/: src/lib/d3.min.js \
+prd/lib/: src/lib/polyfill.min.js \
+      src/lib/d3.min.js \
 	    src/lib/bootstrap-datetimepicker.min.js  \
 	    src/lib/IE9Fixes.js \
 	    src/lib/jquery.xdomainrequest.min.js \
@@ -280,6 +324,7 @@ prd/lib/: src/lib/d3.min.js \
 	cp -rf  $^ $@
 
 prd/lib/build.js: src/lib/jquery.min.js \
+	    src/lib/slip.min.js \
 	    src/lib/bootstrap.min.js \
 	    src/lib/moment-with-customlocales.min.js \
 	    src/lib/typeahead-0.9.3.min.js \
@@ -306,6 +351,7 @@ prd/style/app.css: $(SRC_LESS_FILES)
 prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 			${MAKO_CMD} \
 			.build-artefacts/last-version
+	rm -f prd/*.appcache
 	mkdir -p $(dir $@);
 	${PYTHON_CMD} ${MAKO_CMD} \
 	    --var "version=$(VERSION)" \
@@ -314,6 +360,13 @@ prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 	    --var "languages=$(LANGUAGES)" \
 	    --var "api_url=$(API_URL)" \
 	    --var "public_url=$(PUBLIC_URL)" $< > $@
+	mv $@ prd/geoadmin.$(VERSION).appcache
+
+prd/cache/: .build-artefacts/last-version \
+			.build-artefacts/last-api-url
+	mkdir -p $@
+	curl -q -o prd/cache/services http:$(API_URL)/rest/services
+	$(foreach lang, $(LANGS), curl -s --retry 3 -o prd/cache/layersConfig.$(lang) http:$(API_URL)/rest/services/all/MapServer/layersConfig?lang=$(lang);)
 
 prd/cache/: .build-artefacts/last-version \
 			.build-artefacts/last-api-url
@@ -461,12 +514,14 @@ node_modules: JQUERY = jquery.js jquery.min.js
 node_modules: JQUERYXDOMAIN = jQuery.XDomainRequest.js  jquery.xdomainrequest.min.js
 node_modules: D3 = d3.js  d3.min.js
 node_modules: BOOTSTRAP = bootstrap.js bootstrap.min.js
+node_modules: SLIPJS = slip.js
 node_modules: package.json
 	npm install
 	cp $(addprefix node_modules/angular/,$(ANGULAR_JS)) src/lib/;
 	cp $(addprefix node_modules/angular-translate/dist/,$(ANGULAR_TRANSLATE_JS)) src/lib/;
 	cp $(addprefix node_modules/angular-translate/dist/angular-translate-loader-static-files/,$(ANGULAR_TRANSLATE_LOADER_JS)) src/lib/;
 	cp $(addprefix node_modules/localforage/dist/,$(LOCALFORAGE)) src/lib/;
+	cp $(addprefix node_modules/slipjs/,$(SLIPJS)) src/lib;
 	cp $(addprefix node_modules/jquery/dist/,$(JQUERY)) src/lib/;
 	cp $(addprefix node_modules/jquery-ajax-transport-xdomainrequest/,$(JQUERYXDOMAIN)) src/lib/;
 	cp $(addprefix node_modules/d3/,$(D3)) src/lib/;
@@ -486,6 +541,7 @@ node_modules: package.json
 	    --externs externs/ol.js \
 	    --externs externs/ol3-cesium.js \
 	    --externs externs/Cesium.externs.js \
+	    --externs externs/slip.js \
 	    --externs externs/angular.js \
 	    --externs externs/jquery.js \
 	    --js_output_file $@
@@ -519,7 +575,7 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	touch $@
 
 ${MAKO_CMD}: ${PYTHON_VENV}
-	${PYTHON_CMD} ${PIP_CMD} install "Mako==1.0.0"
+	${PIP_CMD} install "Mako==1.0.0"
 	touch $@
 	@ if [[ ! -e ${PYTHON_VENV}/local ]]; then \
 	    ln -s . ${PYTHON_VENV}/local; \
@@ -527,12 +583,22 @@ ${MAKO_CMD}: ${PYTHON_VENV}
 	cp scripts/cmd.py ${PYTHON_VENV}/local/lib/python2.7/site-packages/mako/cmd.py
 
 ${HTMLMIN_CMD}: ${PYTHON_VENV}
-	${PYTHON_CMD} ${PIP_CMD} install "htmlmin==0.1.6"
+	${PIP_CMD} install "htmlmin==0.1.6"
 	touch $@
 
 ${GJSLINT_CMD}: ${PYTHON_VENV}
-	${PYTHON_CMD} ${PIP_CMD} install \
+	${PIP_CMD} install \
 	    "http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz"
+	touch $@
+
+${FLAKE8_CMD}: ${PYTHON_VENV}
+	${PIP_CMD} install flake8
+
+${AUTOPEP8_CMD}: ${PYTHON_VENV}
+	${PIP_CMD} install autopep8
+
+.build-artefacts/requirements.timestamp: ${PYTHON_VENV} requirements.txt
+	${PIP_CMD} install -r requirements.txt
 	touch $@
 
 ${PYTHON_VENV}:
@@ -612,14 +678,6 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 cleanall: clean
 	rm -rf node_modules
 	rm -rf .build-artefacts
-
-
-.PHONY: cleanappcache
-cleanappcache:
-	rm -f prd/geoadmin.appcache
-	rm -f prd/index.html
-	rm -f prd/mobile.html
-	rm -f prd/embed.html
 
 
 .PHONY: clean

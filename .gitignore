@@ -51,3 +51,4 @@ rc_branch
 /test/deps
 /test/protractor-conf.dev.js
 /test/protractor-conf.prod.js
+*.pyc

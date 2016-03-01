@@ -60,7 +60,7 @@ describe('ga_contextpopup_directive', function() {
     expect(tables.length).to.be(1);
 
     var tds = $(tables[0]).find('td');
-    expect(tds.length).to.be(12);
+    expect(tds.length).to.be(14);
   });
 
   describe('ga_contextpopup_directive handling of popupcontext', function() {
@@ -107,10 +107,12 @@ describe('ga_contextpopup_directive', function() {
       expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
       expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
       if (plugins.communes) {
-        expect($(tds[11]).text()).to.be('Moutier');
-        expect($(tds[13]).text()).to.be('1233 m');
+        expect($(tds[11]).text()).to.be('32TMS 42396 87887 ');
+        expect($(tds[13]).text()).to.be('Moutier');
+        expect($(tds[15]).text()).to.be('1233 m');
       } else {
-        expect($(tds[11]).text()).to.be('1233 m');
+        expect($(tds[11]).text()).to.be('32TMS 42396 87887 ');
+        expect($(tds[13]).text()).to.be('1233 m');
       }
     });
 
@@ -142,10 +144,12 @@ describe('ga_contextpopup_directive', function() {
         expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
         expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
         if (plugins.communes) {
-          expect($(tds[11]).text()).to.be('Moutier');
-          expect($(tds[13]).text()).to.be('1233 m');
+          expect($(tds[11]).text()).to.be('32TMS 42396 87887 ');
+          expect($(tds[13]).text()).to.be('Moutier');
+          expect($(tds[15]).text()).to.be('1233 m');
         } else {
-          expect($(tds[11]).text()).to.be('1233 m');
+          expect($(tds[11]).text()).to.be('32TMS 42396 87887 ');
+          expect($(tds[13]).text()).to.be('1233 m');
         }
       });
 
@@ -249,7 +253,8 @@ describe('ga_contextpopup_directive', function() {
 
       expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
       expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
-      expect($(tds[11]).text()).to.be('1233 m');
+      expect($(tds[11]).text()).to.be('32TMS 42396 87887 ');
+      expect($(tds[13]).text()).to.be('1233 m');
     });
   });
 });

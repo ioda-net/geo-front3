@@ -64,6 +64,7 @@
     "q": "~1.4.1",
     "run-sequence": "~1.1.0",
     "sinon": "1.17.2",
+    "slipjs": "pornel/slip#0626afc",
     "toml": "~2.2.3"
   },
   "dependencies": {

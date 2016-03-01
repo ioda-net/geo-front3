@@ -21,7 +21,7 @@ goog.require('ga_permalink');
    */
   module.directive('gaFeedback',
       function($http, $translate, gaPermalink, gaBrowserSniffer, gaExportKml,
-              gaGlobalOptions) {
+               gaGlobalOptions) {
           return {
             restrict: 'A',
             replace: true,

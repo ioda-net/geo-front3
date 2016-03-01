@@ -2,7 +2,7 @@
 <html ng-app="geoadmin" ng-controller="GaMainController"
 itemscope itemtype="http://schema.org/WebApplication"
 {% if device == 'mobile' and prod %}
- manifest="geoadmin.appcache"
+ manifest="geoadmin.${version}.appcache"
 {% endif %}
 >
   <head>
@@ -184,9 +184,9 @@ itemscope itemtype="http://schema.org/WebApplication"
         </div>
       </div>
   {% endif %}
-      <button class="btn btn-default ga-menu-bt" ng-click="globals.pulldownShown=true" translate>menu</button>
+      <button class="btn ga-menu-bt" ng-click="globals.pulldownShown=true" translate>menu</button>
       {# css animation doesnt work on pseudo element, let use this instead #}
-      <div class="alert alert-danger" translate>offline_sorry</div>
+      <div class="ga-offline-msg alert-danger" translate>offline_sorry</div>
     </div> <!-- #header -->
 
     <div id="drawModeHeader" class="navbar navbar-fixed-top">
@@ -196,7 +196,9 @@ itemscope itemtype="http://schema.org/WebApplication"
         <span translate>draw_back</span>
       </button>
       <span ga-help="66"></span>
-
+      <button class="btn ga-menu-bt" ng-click="globals.pulldownShown=true" translate>menu</button>
+      {# css animation doesnt work on pseudo element, let use this instead #}
+      <div class="ga-offline-msg alert-danger" translate>offline_sorry</div>
     </div><!-- #drawModeHeader -->
 
 {% endif %}
@@ -624,6 +626,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <!-- in source, we need to load it here because IE9 ignores it in
          the comments for reasons unknown to me. In prod, it's only
          loaded in IE9 -->
+    <script src="lib/polyfill.js"></script>
     <script src="lib/IE/IE9Fixes.js"></script>
     <script>
       //This call only affects browser <= IE9
@@ -631,6 +634,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     </script>
     <script src="lib/jquery.js"></script>
     <script src="lib/IE/jQuery.XDomainRequest.js"></script>
+    <script src="lib/slip.js"></script>
     <script src="lib/angular.js"></script>
     <script src="lib/angular-translate.js"></script>
     <script src="lib/angular-translate-loader-static-files.js"></script>
@@ -691,7 +695,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         });
 
         var module = angular.module('geoadmin');
-        var cacheAdd = '${version}' != '' ? '/' + '${version}' : '';
+        var cacheAdd = '';// '${version}' != '' ? '/' + '${version}' : '';
         var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
 
         module.constant('gaGlobalOptions', {
