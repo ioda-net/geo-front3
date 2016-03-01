@@ -18,6 +18,7 @@ function load(src, dest, config) {
       '--externs externs/Cesium.externs.js',
       '--externs externs/angular.js',
       '--externs externs/jquery.js',
+      '--externs externs/spinner.js',
       '--js_output_file ' + dest.closure
     ]);
 

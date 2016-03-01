@@ -23,6 +23,7 @@ function load(src, dest, config) {
       'src/lib/EPSG32631.js',
       'src/lib/EPSG32632.js',
       'src/lib/ol3.js',
+      'src/lib/spin.js',
       'src/lib/angular-load.js',
       'src/lib/angular-translate.js',
       'src/lib/angular-translate-loader-static-files.js',

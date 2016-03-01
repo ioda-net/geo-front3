@@ -58,7 +58,8 @@
     </div>
   </div>
   <div class="ga-print-progress" ng-if="options.printing && options.progress != ''">{{options.progress}}</div>
-  <button ng-show="options.printing && !printError" class="btn btn-danger col-xs-12 spin-bg"
+  <button id="print_abort"
+          ng-show="options.printing && !printError" class="btn btn-danger col-xs-12"
           ng-click="abort()"
           translate>abort</button>
   <button type="submit"
@@ -67,7 +68,8 @@
           ng-hide="options.printing || printError || !printConfigLoaded"
           ng-disabled="!printConfigLoaded"
           ng-click="submit()" translate>print_action</button>
-  <button class="btn btn-default col-xs-12 spin-bg"
+  <button id="loading_print_config"
+          class="btn btn-default col-xs-12"
           ng-show="!printConfigLoaded"
           ng-disabled="true"
           translate>loading_print_config</button>

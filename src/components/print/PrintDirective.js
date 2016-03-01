@@ -25,6 +25,15 @@ goog.require('sigeom_plugins');
     var print = ngeoCreatePrint($scope.options.printPath);
     var deregister = [];
 
+    function initSpinner() {
+      var spinner = new Spinner({
+        scale: 0.5,
+        left: '95%'
+      }).spin();
+      $('#loading_print_config').get(0).appendChild(spinner.el);
+      $('#print_abort').get(0).appendChild(spinner.el);
+    }
+
     // Get print config
     var updatePrintConfig = function(data) {
       $scope.capabilities = data;
@@ -280,6 +289,7 @@ goog.require('sigeom_plugins');
           activate();
         } else {
           canceler = $q.defer();
+          initSpinner();
           print.getCapabilities({timeout: canceler.promise})
               .then(function(resp) {
                 $scope.username = resp.headers()['x-username'];
