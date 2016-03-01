@@ -309,7 +309,7 @@ goog.require('gf3_features_service');
                 if (foundFeatures.length > 0) {
                   var seenId = [];
                   foundFeatures.forEach(function(feature) {
-                    var layerId = feature.layerId;
+                    var layerId = feature.layerId || feature.get('layerId');
                     if (seenId.indexOf(layerId) === -1) {
                       var data = featurePropertiesToDisplay[layerId];
                       gridsOptions[layerId].setData(data);
