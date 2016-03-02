@@ -585,6 +585,8 @@ goog.require('ga_urlutils_service');
           layer.useThirdPartyData =
               gaUrlUtils.isThirdPartyValid(wmtsSourceOptions.urls[0]);
           layer.label = wmtsSourceOptions.Title;
+          layer.url = wmtsSourceOptions.attributionUrl;
+          layer.attributions = wmtsSourceOptions.attributions;
 
           return layer;
         };
