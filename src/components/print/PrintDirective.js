@@ -134,6 +134,30 @@ goog.require('sigeom_plugins');
         var username = $scope.username || '';
         var name = $scope.options.title ? $scope.options.title :
             $translate.instant($scope.options.titlePlaceholder);
+        var attributions = [];
+        map.getLayers().getArray().forEach(function(layer) {
+          var attribution, attributionUrl;
+          if (layer.bodId) {
+            layer = gaLayers.getLayer(layer.bodId);
+            attribution = layer.attribution;
+            attributionUrl = layer.attributionUrl;
+          } else {
+            attributionUrl = layer.url;
+          }
+
+          if (attribution && attributionUrl) {
+            var value = attribution + ' (' + attributionUrl + ')';
+
+            if (attributions.indexOf(value) === -1) {
+              attributions.push(value);
+            }
+          } else if (attribution && attributions.indexOf(attribution) === -1) {
+            attributions.push(attribution);
+          } else if (attributionUrl &&
+              attributions.indexOf(attributionUrl) === -1) {
+            attributions.push(attributionUrl);
+          }
+        });
         var spec = print.createSpec(map, $scope.scale, $scope.dpi,
           $scope.layout.name, {
             legend: legend,
@@ -144,7 +168,8 @@ goog.require('sigeom_plugins');
             scale: $scope.scale,
             bottomLeftCornerCoords: coordsToPrint,
             commune: commune,
-            username: username
+            username: username,
+            attributions: attributions.join(', ')
         });
 
         correctTextAlign(spec);
