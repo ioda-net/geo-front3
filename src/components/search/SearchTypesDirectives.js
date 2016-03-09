@@ -23,7 +23,9 @@ goog.require('ga_urlutils_service');
   };
 
   var addOverlay = function(gaOverlay, map, res) {
-    var visible = originToZoomLevel.hasOwnProperty(res.attrs.origin);
+    // Unlike swisstopo, we don't rely on originToZoomLevel to determine if the
+    // marker is visible. It is always visible.
+    var visible = true;
     var center = [res.attrs.y, res.attrs.x];
     if (!res.attrs.y || !res.attrs.x) {
       center = ol.proj.transform([res.attrs.lon, res.attrs.lat],
