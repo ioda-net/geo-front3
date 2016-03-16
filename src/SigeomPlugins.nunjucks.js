@@ -12,8 +12,8 @@ goog.provide('sigeom_plugins');
 (function() {
   sigeomModule.factory('sgPlugins', function($http, gaGlobalOptions) {
       var plugins  = {};
-{% for pluginName in activatedPlugins %}
-  plugins['${pluginName}'] = ${availablePlugins[pluginName]}
+{% for plugin_name in activated_plugins %}
+  plugins['${plugin_name}'] = ${available_plugins[plugin_name]}
 {% endfor %}
 
   return plugins;
