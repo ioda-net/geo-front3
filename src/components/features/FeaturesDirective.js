@@ -255,7 +255,7 @@ goog.require('gf3_features_service');
                   var features =
                       findVectorFeatures(coordinates, layerToQuery, geometry);
                   if (features) {
-                    showFeatures(features);
+                    showFeatures(features, layerToQuery.get('label'));
                   }
                 } else { // queryable bod layers
                   findQueryableLayerFeatures(coordinates, size, mapExtent,
@@ -292,7 +292,7 @@ goog.require('gf3_features_service');
             }
 
             // Highlight the features found
-            function showFeatures(foundFeatures) {
+            function showFeatures(foundFeatures, /* optional */ layerName) {
               if (foundFeatures && foundFeatures.length > 0) {
 
                 // Remove the tooltip, if a layer is removed, we don't care
@@ -305,7 +305,9 @@ goog.require('gf3_features_service');
                   }
                 );
 
-                angular.forEach(foundFeatures, displayFeature);
+                angular.forEach(foundFeatures, function(value) {
+                  displayFeature(value, layerName);
+                });
                 if (foundFeatures.length > 0) {
                   var seenId = [];
                   foundFeatures.forEach(function(feature) {
@@ -319,20 +321,28 @@ goog.require('gf3_features_service');
               }
             }
 
-            function displayFeature(value) {
+            function displayFeature(value, /* optional */ layerName) {
               if (value instanceof ol.Feature) {
-                displayVectorFeature(value);
+                displayVectorFeature(value, layerName);
               } else {
                 displayQueryableLayerFeature(value);
               }
             }
 
-            function displayVectorFeature(value) {
+            function displayVectorFeature(value, /* optional */ layerName) {
               var feature = new ol.Feature(value.getGeometry());
               feature.layerId = value.get('layerId');
               feature.featureId = value.get('featureId');
+              var name = value.get('name');
+
+              if (name && layerName) {
+                name += ' (' + layerName + ')';
+              } else if (!name) {
+                name = layerName;
+              }
+
               feature.properties = {
-                name: value.get('name'),
+                name: name,
                 description: value.get('description'),
                 type: value.get('type'),
                 label: value.get('featureId'),
