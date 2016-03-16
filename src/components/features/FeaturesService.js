@@ -216,19 +216,20 @@ goog.require('ga_map_service');
 
     var cellTemplates = {
       grudis: '<a target="grudis" href="{{cellValue}}">[G]</a>',
-      hinni: '<a target="hinni" href="{{cellValue}}">' +
+      hinni: '<a target="hinni" href="{{cellValue}}" ng-if="cellValue">' +
           '<img src="img/dbh.png" style="width:18px;height:18px" /></a>',
-      photo: '<a target="photo" href="{{cellValue}}">' +
+      photo: '<a target="photo" href="{{cellValue}}" ng-if="cellValue">' +
           '<img src="img/camera.png" style="width:18px;height:18px"/>' +
           '</a>',
-      protocol: '<a target="protocol" href="{{\'{api}\' + cellValue}}">' +
+      protocol: '<a target="protocol" href="{{\'{api}\' + cellValue}}" ' +
+                    'ng-if="cellValue">' +
           '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
           '</a>',
-      pdf: '<a target="pdf" href="{{cellValue}}">' +
+      pdf: '<a target="pdf" href="{{cellValue}}" ng-if="cellValue">' +
           '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
           '</a>',
       url: '<div ng-click="console.log(\'toto\')">' +
-          '<a target="_blank" href="{{cellValue}}">' +
+          '<a target="_blank" href="{{cellValue}}" ng-if="cellValue">' +
           '{{cellValue | translate  }}</a></div>'
     };
 
