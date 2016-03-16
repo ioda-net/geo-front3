@@ -51,7 +51,6 @@ goog.require('gf3');
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
       gaLayerMetadataPopup, gaLayers, gaAttribution, gaUrlUtils, gaMapUtils,
       gf3GlobalOptions) {
-
     // Timestamps list template
     var tpl =
       '<div class="ga-layer-timestamps">' +
