@@ -1,5 +1,6 @@
 goog.provide('ga_search_directive');
 
+goog.require('ga_kml_service');
 goog.require('ga_map_service');
 goog.require('ga_marker_overlay_service');
 goog.require('ga_permalink');
@@ -11,6 +12,7 @@ goog.require('gf3');
 (function() {
 
   var module = angular.module('ga_search_directive', [
+    'ga_kml_service',
     'ga_map_service',
     'ga_marker_overlay_service',
     'ga_permalink',

@@ -168,7 +168,7 @@ goog.require('ga_urlutils_service');
               var dh = h2 - h1;
               var ds = s2 - s1;
               //Pythagorean theorem (hypotenuse: the slope/surface distance)
-              sumSlopeDist += Math.abs((dh ^ 2 + ds ^ 2) ^ (1 / 2));
+              sumSlopeDist += Math.sqrt(Math.pow(dh, 2) + Math.pow(ds, 2));
             }
             return sumSlopeDist;
           }
@@ -255,7 +255,7 @@ goog.require('ga_urlutils_service');
           return res;
         };
 
-        this.get = function(feature, callback) {
+        this.get = function(feature) {
           var coordinates = feature.getGeometry().getCoordinates();
 
           // TODO: manage all kind of geometry
@@ -298,24 +298,24 @@ goog.require('ga_urlutils_service');
             params.headers = {'Content-Type':
                 'application/x-www-form-urlencoded'};
           }
-          var defaultElevationModel = gaGlobalOptions.defaultElevationModel;
-          $http(params).success(function(data, status) {
+          return $http(params).then(function(response) {
+            var data = response.data;
             // When all the geometry is outside switzerland
             if (data.length == 0) {
               data = [{alts: {}, dist: 0}];
               data[0].alts[elevationModel] = 0;
             }
-            callback(data, status);
-          }).error(function(data, status) {
-              // If request is canceled, statuscode is 0 and we don't announce
-              // it
-              if (status !== 0) {
-                // Display an empty profile
-                data = [{alts: {}, dist: 0}];
-                data[0].alts[elevationModel] = 0;
-                callback(data, status);
-              }
-            });
+            return data;
+          }, function(response) {
+            // If request is canceled, statuscode is 0 and we don't announce
+            // it
+            if (response.status !== 0) {
+              // Display an empty profile
+              var data = [{alts: {}, dist: 0}];
+              data[0].alts[elevationModel] = 0;
+              return data;
+            }
+          });
         };
 
         this.create = function(data) {
@@ -394,7 +394,7 @@ goog.require('ga_urlutils_service');
 
           group.append('text')
               .attr('class', 'ga-profile-legend')
-              .attr('x', width - 113)
+              .attr('x', width - 118)
               .attr('y', 11)
               .attr('width', 100)
               .attr('height', 30)
@@ -521,23 +521,29 @@ goog.require('ga_urlutils_service');
               .attr('x', 400)
               .attr('y', elevLabelY + 2)
               .attr('text-anchor', 'start')
+              .text(' \uf22e');
+
+          group.append('text')
+              .attr('class', 'ga-profile-dist')
+              .attr('x', 415)
+              .attr('y', elevLabelY + 2)
+              .attr('text-anchor', 'start')
               .text(' \uf220');
 
           //Number for the distance
           group.append('text')
               .attr('class', 'ga-profile-distance')
               .attr('font-size', '0.9em')
-              .attr('x', 415)
+              .attr('x', 430)
               .attr('y', elevLabelY)
               .style('text-anchor', 'start')
               .text(measureFilter(this.dist, 'distance',
                     ['km', 'm'], 2, true));
 
-          //Icon for the sum of the slope/surface distances
-          //Need new icon!!!
+          //Icons for the sum of the slope/surface distances
           group.append('text')
               .attr('class', 'ga-profile-dist')
-              .attr('x', 480)
+              .attr('x', 490)
               .attr('y', elevLabelY + 2)
               .attr('text-anchor', 'start')
               .text(' \uf220');
@@ -546,7 +552,7 @@ goog.require('ga_urlutils_service');
           group.append('text')
               .attr('class', 'ga-profile-slopeDist')
               .attr('font-size', '0.9em')
-              .attr('x', 495)
+              .attr('x', 505)
               .attr('y', elevLabelY)
               .style('text-anchor', 'start')
               .text(measureFilter(this.slopeDist, 'distance',
@@ -555,7 +561,7 @@ goog.require('ga_urlutils_service');
           //Icon for the hiking time
           group.append('text')
               .attr('class', 'ga-profile-icon')
-              .attr('x', 560)
+              .attr('x', 570)
               .attr('y', elevLabelY + 1)
               .attr('text-anchor', 'start')
               .text(' \uf219');
@@ -564,7 +570,7 @@ goog.require('ga_urlutils_service');
           group.append('text')
               .attr('class', 'ga-profile-hikTime')
               .attr('font-size', '0.9em')
-              .attr('x', 575)
+              .attr('x', 585)
               .attr('y', elevLabelY)
               .style('text-anchor', 'start')
               .text(gaTimeFormatFilter(this.hikTime));
@@ -617,7 +623,7 @@ goog.require('ga_urlutils_service');
             width = size[0] - marginHoriz;
             height = size[1] - marginVert;
             this.svg.transition().duration(transitionTime)
-              .attr('width', width + marginHoriz + 0)
+              .attr('width', width + marginHoriz)
               .attr('height', height + marginVert)
               .attr('class', 'ga-profile-svg');
             this.group.select('text.ga-profile-label-x')
@@ -627,7 +633,7 @@ goog.require('ga_urlutils_service');
                 .style('text-anchor', 'middle');
             this.group.select('text.ga-profile-legend')
               .transition().duration(transitionTime)
-                .attr('x', width - 113)
+                .attr('x', width - 118)
                 .attr('y', 11)
                 .text(elevationModel);
           } else {
@@ -671,20 +677,20 @@ goog.require('ga_urlutils_service');
               );
         };
       }
-      return function(options, lazyLoadCB) {
-        // Gain some more space for the profile labels
-        options.margin.bottom = options.margin.bottom + 10;
+      return function(options) {
+        var deferred = $q.defer();
+        var profile = new ProfileChart(options);
         // Lazy load of D3 library
         var onD3Loaded = function() {
           d3 = $window.d3;
-          lazyLoadCB();
+          deferred.resolve(new ProfileChart(options));
         };
         if (!$window.d3) {
-          $.getScript(d3LibUrl, onD3Loaded);
+          $.getScript(d3LibUrl).then(onD3Loaded);
         } else {
-          $timeout(onD3Loaded, 0);
+          onD3Loaded();
         }
-        return new ProfileChart(options);
+        return deferred.promise;
       };
     };
   });

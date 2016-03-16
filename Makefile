@@ -18,15 +18,15 @@ LESS_PARAMETERS ?= -ru
 KEEP_VERSION ?= 'false'
 LAST_VERSION := $(shell if [ -f .build-artefacts/last-version ]; then cat .build-artefacts/last-version 2> /dev/null; else echo '-none-'; fi)
 VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else date '+%s'; fi)
-GIT_BRANCH := $(shell git rev-parse --symbolic-full-name --abbrev-ref HEAD)
+GIT_BRANCH := $(shell if [ -f .build-artefacts/deployed-git-branch ]; then cat .build-artefacts/deployed-git-branch 2> /dev/null; else git rev-parse --symbolic-full-name --abbrev-ref HEAD; fi)
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
 BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= 9baa296a49a75045e756089516f610c58cdc82eb # master, 17 february 2016
-OL3_CESIUM_VERSION ?= 30ed9504286a3d88365e900ab242279f588d5898 # master, 17 february 2016
-CESIUM_VERSION ?= e9d3a04697a902b8cce772e9bd3d5116d8a895b2 # camptocamp/c2c_patches (cesium 1.18), 5 january 2016
+OL3_VERSION ?= 34d8d77344ee0b653770f065c593d4ab7b5d102b # master, 2 mars 2016
+OL3_CESIUM_VERSION ?= 81f0bfc43c3fb9d3a93f11b9cf4fb2d03ce477be # master, 3 mars 2016
+CESIUM_VERSION ?= 00face25bbb9fbc9b281d1d4b0932cf174db0a8e # camptocamp/c2c_patches (cesium 1.19), 2 mars 2016
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"en\", \"fr\", \"it\", \"rm\"]'
@@ -249,8 +249,8 @@ ol3cesium: .build-artefacts/ol3-cesium
 	cp cesium/Build/Cesium/Cesium.js ../../src/lib/Cesium.min.js;
 
 .PHONY: fastclick
-fastclick: .build-artefacts/fastclick
-	cp .build-artefacts/fastclick/lib/fastclick.js src/lib/fastclick.js
+fastclick: node_modules
+	git apply --directory=src scripts/fastclick.patch
 	java -jar node_modules/google-closure-compiler/compiler.jar \
 	    src/lib/fastclick.js \
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
@@ -258,6 +258,7 @@ fastclick: .build-artefacts/fastclick
 
 .PHONY: slipjs
 slipjs: node_modules
+	git apply --directory=src/lib scripts/slipjs.patch
 	java -jar node_modules/google-closure-compiler/compiler.jar \
 	    src/lib/slip.js \
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
@@ -577,7 +578,7 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 ${MAKO_CMD}: ${PYTHON_VENV}
 	${PIP_CMD} install "Mako==1.0.0"
 	touch $@
-	@ if [[ ! -e ${PYTHON_VENV}/local ]]; then \
+	@if [ ! -e ${PYTHON_VENV}/local ]; then \
 	    ln -s . ${PYTHON_VENV}/local; \
 	fi
 	cp scripts/cmd.py ${PYTHON_VENV}/local/lib/python2.7/site-packages/mako/cmd.py

@@ -143,7 +143,6 @@
     "ol.tilegrid.WMTS",
     "ol.tilegrid.WMTS#*"
   ],
-  "umd": true,
   "compile": {
     "externs": [
       "externs/olcsx.js",
@@ -159,8 +158,6 @@
     ],
     "define": [
       "goog.array.ASSUME_NATIVE_FUNCTIONS=true",
-      "goog.dom.ASSUME_STANDARDS_MODE=true",
-      "goog.json.USE_NATIVE_JSON=true",
       "goog.DEBUG=false",
       "ol.ENABLE_DOM=false",
       "ol.ENABLE_WEBGL=false"
@@ -171,7 +168,8 @@
     "jscomp_off": [
       "useOfGoogBase",
       "unnecessaryCasts",
-      "lintChecks"
+      "lintChecks",
+      "analyzerChecks"
     ],
     "extra_annotation_name": [
       "api", "observable"

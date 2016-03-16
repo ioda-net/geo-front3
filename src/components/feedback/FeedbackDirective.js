@@ -1,13 +1,13 @@
 goog.provide('ga_feedback_directive');
 
 goog.require('ga_browsersniffer_service');
-goog.require('ga_export_kml_service');
+goog.require('ga_exportkml_service');
 goog.require('ga_permalink');
 (function() {
 
   var module = angular.module('ga_feedback_directive', [
     'ga_browsersniffer_service',
-    'ga_export_kml_service',
+    'ga_exportkml_service',
     'ga_permalink',
     'pascalprecht.translate'
   ]);
@@ -80,17 +80,19 @@ goog.require('ga_permalink');
                     formData.append('kml', kml);
                     formData.append('subject', subject);
                     formData.append('to', gaGlobalOptions.feedbackRecipient);
+                    formData.append('version', gaGlobalOptions.version + '');
                     return formData;
                 } else {
                     formData = {
                       email: scope.email,
-                      feedback: feedbackMessage,
+                      feedback: scope.feedback,
                       ua: navigator.userAgent,
                       permalink: scope.permalinkValue,
                       attachment: '',
                       kml: kml,
                       subject: subject,
-                      to: gaGlobalOptions.feedbackRecipient
+                      to: gaGlobalOptions.feedbackRecipient,
+                      version: gaGlobalOptions.version + ''
                     };
                     return $.param(formData);
                 }
