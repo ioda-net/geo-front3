@@ -351,14 +351,6 @@ goog.require('gf3');
           });
         }
 
-        // Remove non topic layer
-        scope.$on('gaTopicChange', function(evt, newTopic) {
-          scope.filteredLayers.forEach(function(l) {
-            scope.removeLayer(l);
-          });
-          $rootScope.$broadcast('gaPostTopicChange', newTopic);
-        });
-
         // Change layers label when topic changes
         scope.$on('gaLayersTranslationChange', function(evt) {
           map.getLayers().forEach(function(olLayer) {
