@@ -1,7 +1,8 @@
 SRC_JS_FILES := $(shell find src/components src/js -type f -name '*.js')
 SRC_JS_FILES_FOR_COMPILER = $(shell sed -e ':a' -e 'N' -e '$$!ba' -e 's/\n/ --js /g' .build-artefacts/js-files | sed 's/^.*base\.js //')
 SRC_LESS_FILES := $(shell find src -type f -name '*.less')
-SRC_COMPONENTS_PARTIALS_FILES = $(shell find src/components -type f -path '*/partials/*' -name '*.html')
+SRC_COMPONENTS_PARTIALS_FILES := $(shell find src/components -type f -path '*/partials/*' -name '*.html')
+PYTHON_FILES := $(shell find test/saucelabs -type f -name "*.py" -print)
 APACHE_BASE_DIRECTORY ?= $(CURDIR)
 LAST_APACHE_BASE_DIRECTORY := $(shell if [ -f .build-artefacts/last-apache-base-directory ]; then cat .build-artefacts/last-apache-base-directory 2> /dev/null; else echo '-none-'; fi)
 APACHE_BASE_PATH ?= /$(shell id -un)
@@ -52,7 +53,7 @@ SAUCELABS_TESTS ?=
 PYTHON_VENV=.build-artefacts/python-venv
 PYTHON_CMD=${PYTHON_VENV}/bin/python
 PIP_CMD=${PYTHON_VENV}/bin/pip
-MAKO_CMD=${PYTHON_VENV}/bin/mako-render 
+MAKO_CMD=${PYTHON_VENV}/bin/mako-render
 HTMLMIN_CMD=${PYTHON_VENV}/bin/htmlmin
 GJSLINT_CMD=${PYTHON_VENV}/bin/gjslint
 FLAKE8_CMD=${PYTHON_VENV}/bin/flake8
@@ -91,7 +92,6 @@ help:
 	@echo "- deploybranchdemo Deploys current branch to test and demo (note: takes code from github)"
 	@echo "- ol               Update ol.js and ol-debug.js "
 	@echo "- translate        Generate the translation files (requires db user pwd in ~/.pgpass: dbServer:dbPort:*:dbUser:dbUserPwd)"
-	@echo "- update-datetimepicker Update bootstrap-datetimepicker"
 	@echo "- help             Display this help"
 	@echo
 	@echo "Variables:"
@@ -277,15 +277,14 @@ filesaver: .build-artefacts/filesaver
 	cp .build-artefacts/filesaver/FileSaver.js src/lib/filesaver.js
 	cp .build-artefacts/filesaver/FileSaver.min.js src/lib/filesaver.min.js
 
-.PHONY: update-datepicker
-update-datepicker:
-	npm install https://github.com/Eonasdan/bootstrap-datetimepicker/archive/v3.1.3.tar.gz
-	cp node_modules/bootstrap-datetimepicker/src/js/bootstrap-datetimepicker.js src/lib/
-	cp node_modules/bootstrap-datetimepicker/src/less/bootstrap-datetimepicker.less src/style/
-	cp node_modules/bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js src/lib/
+.PHONY: datepicker
+datepicker: .build-artefacts/datepicker
+	cp .build-artefacts/datepicker/src/js/bootstrap-datetimepicker.js src/lib/
+	cp .build-artefacts/datepicker/src/less/bootstrap-datetimepicker.less src/style/
+	cp .build-artefacts/datepicker/build/js/bootstrap-datetimepicker.min.js src/lib/
 
 .PHONY: polyfill
-polyfill: .build-artefacts/polyfill 
+polyfill: .build-artefacts/polyfill
 	cp $</polyfill.js src/lib/
 	cp $</polyfill.min.js src/lib/
 
@@ -313,8 +312,7 @@ prd/robots.txt: scripts/robots.mako-dot-txt .build-artefacts/last-deploy-target
 	${PYTHON_CMD} ${MAKO_CMD} \
 	    --var "deploy_target=$(DEPLOY_TARGET)" $< > $@
 
-prd/lib/: src/lib/polyfill.min.js \
-      src/lib/d3.min.js \
+prd/lib/: src/lib/d3.min.js \
 	    src/lib/bootstrap-datetimepicker.min.js  \
 	    src/lib/IE9Fixes.js \
 	    src/lib/jquery.xdomainrequest.min.js \
@@ -324,7 +322,8 @@ prd/lib/: src/lib/polyfill.min.js \
 	mkdir -p $@
 	cp -rf  $^ $@
 
-prd/lib/build.js: src/lib/jquery.min.js \
+prd/lib/build.js: src/lib/polyfill.min.js \
+	    src/lib/jquery.min.js \
 	    src/lib/slip.min.js \
 	    src/lib/bootstrap.min.js \
 	    src/lib/moment-with-customlocales.min.js \
@@ -362,12 +361,6 @@ prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 	    --var "api_url=$(API_URL)" \
 	    --var "public_url=$(PUBLIC_URL)" $< > $@
 	mv $@ prd/geoadmin.$(VERSION).appcache
-
-prd/cache/: .build-artefacts/last-version \
-			.build-artefacts/last-api-url
-	mkdir -p $@
-	curl -q -o prd/cache/services http:$(API_URL)/rest/services
-	$(foreach lang, $(LANGS), curl -s --retry 3 -o prd/cache/layersConfig.$(lang) http:$(API_URL)/rest/services/all/MapServer/layersConfig?lang=$(lang);)
 
 prd/cache/: .build-artefacts/last-version \
 			.build-artefacts/last-api-url
@@ -664,16 +657,23 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 .build-artefacts/ol3-cesium:
 	git clone --recursive https://github.com/openlayers/ol3-cesium.git $@
 
-# No npm module 
+# No npm module
 .build-artefacts/filesaver:
 	git clone https://github.com/eligrey/FileSaver.js.git $@
 
-# No npm module for version 3 
+# No npm module for version 3
 # datepicker needs custom build of moment js with specific locales
 # don't use version 4 the uncompresssed file is twice bigger
 .build-artefacts/datepicker:
 	git clone https://github.com/Eonasdan/bootstrap-datetimepicker.git $@ && \
 	    cd $@ && git checkout 3.1.4
+
+# No npm module
+# We use the service to get only the minimal polyfill file for ie9
+.build-artefacts/polyfill:
+	mkdir -p $@
+	curl -q -o $@/polyfill.js 'https://cdn.polyfill.io/v2/polyfill.js?features=Array.isArray,requestAnimationFrame&flags=always,gated&unknown=polyfill'
+	curl -q -o $@/polyfill.min.js 'https://cdn.polyfill.io/v2/polyfill.min.js?features=Array.isArray,requestAnimationFrame&flags=always,gated&unknown=polyfill'
 
 .PHONY: cleanall
 cleanall: clean
