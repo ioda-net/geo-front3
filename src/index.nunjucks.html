@@ -710,6 +710,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           adminUrlRegexp: new RegExp('${front.build.admin_url_regexp}'),
           cachedApiUrl: location.protocol + '${front.build.api_url}' + cacheAdd,
           resourceUrl: location.origin + pathname + '${versionslashed}',
+          publicResourceUrl: '${front.build.public_resource_url}',
           ogcproxyUrl : location.protocol + '${front.build.api_url}' + '/ogcproxy?url=',
           whitelist: [
             'https://' + window.location.host + '/**'

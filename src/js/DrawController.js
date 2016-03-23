@@ -227,7 +227,7 @@ goog.require('ga_styles_service');
     // Define icons properties
     for (var i = 0, ii = $scope.options.icons.length; i < ii; i++) {
       var icon = $scope.options.icons[i];
-      icon.url = gaGlobalOptions.resourceUrl + 'img/maki/' + icon.id +
+      icon.url = gaGlobalOptions.publicResourceUrl + 'img/maki/' + icon.id +
           '-24@2x.png';
     }
     $scope.getIconUrl = function(i) {
