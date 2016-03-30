@@ -4,6 +4,7 @@ describe('ga_permalinklayers_service', function() {
   var addLayerToMap = function(bodId) {
     var layer = new ol.layer.Tile();
     layer.bodId = bodId;
+    layer.id = bodId;
     layer.displayInLayerManager = true;
     map.addLayer(layer);
     return layer;
@@ -114,6 +115,7 @@ describe('ga_permalinklayers_service', function() {
           getOlLayerById: function(bodId) {
             var layer = new ol.layer.Tile();
             layer.bodId = bodId;
+            layer.id = bodId;
             layer.displayInLayerManager = true;
             return layer;
           }
@@ -370,6 +372,40 @@ describe('ga_permalinklayers_service', function() {
         // For next test
         topic = undefined;
         layersPermalink = undefined;
+      }));
+    });
+
+    describe('keep external layers on topic change', function() {
+      it('keep KML layer', inject(function($rootScope, gaDefinePropertiesForLayer) {
+        topic = topicLoaded2;
+        def.resolve();
+        $rootScope.$digest();
+        var kmlLayer = addKmlLayerToMap();
+        gaDefinePropertiesForLayer(kmlLayer);
+        $rootScope.$digest();
+        expect(permalink.getParams().layers).to.eql('bar,foo,KML||http://foo.ch/bar.kml');
+        topic = topicLoaded3;
+        $rootScope.$broadcast('gaTopicChange', {});
+        $rootScope.$digest();
+        expect(permalink.getParams().layers).to.eql('bar2,foo2,KML||http://foo.ch/bar.kml');
+        map.removeLayer(kmlLayer);
+        $rootScope.$digest();
+      }));
+
+      it('keep WMS layer', inject(function($rootScope, gaDefinePropertiesForLayer) {
+        topic = topicLoaded3;
+        def.resolve();
+        $rootScope.$digest();
+        var wmsLayer = addExternalWmsLayerToMap();
+        gaDefinePropertiesForLayer(wmsLayer);
+        $rootScope.$digest();
+        expect(permalink.getParams().layers).to.eql('foo2,bar2,WMS||The wms layer||http://foo.ch/wms||ch.wms.name');
+        topic = topicLoaded4;
+        $rootScope.$broadcast('gaTopicChange', {});
+        $rootScope.$digest();
+        expect(permalink.getParams().layers).to.eql('bar3,foo3,WMS||The wms layer||http://foo.ch/wms||ch.wms.name');
+        map.removeLayer(wmsLayer);
+        $rootScope.$digest();
       }));
     });
   });

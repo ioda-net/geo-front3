@@ -123,6 +123,13 @@ goog.require('ga_wms_service');
         }
       }
 
+      function isExternal(layer) {
+        var id = layer.id;
+        return id.indexOf('KML||') === 0 ||
+            id.indexOf('WMS||') === 0 ||
+            id.indexOf('WMTS||') === 0;
+      }
+
       // Update permalink on layer's modification
       var registerLayersPermalink = function(scope, map) {
         var deregFns = [];
@@ -186,10 +193,10 @@ goog.require('ga_wms_service');
                           p.layers_timestamp.split(',') : undefined
             );
           } else {
-            addLayers(topic.selectedLayers.slice(0).reverse());
+            addLayers(topic.selectedLayers.slice(0));
             var activatedLayers = topic.activatedLayers;
             if (activatedLayers.length) {
-              addLayers(activatedLayers.slice(0).reverse(), null, false);
+              addLayers(activatedLayers.slice(0), null, false);
             }
           }
         };
@@ -242,7 +249,8 @@ goog.require('ga_wms_service');
                   }
                   layer.time = timestamp;
                 }
-                map.addLayer(layer);
+                //map.addLayer(layer);
+                map.getLayers().insertAt(0, layer);
               }
 
             } else if (gaMapUtils.isKmlLayer(layerSpec)) {
@@ -366,7 +374,7 @@ goog.require('ga_wms_service');
             // First we remove all layers that are selected
             var toDelete = [];
             angular.forEach(map.getLayers().getArray(), function(l) {
-              if (gaLayerFilters.selected(l)) {
+              if (gaLayerFilters.selected(l) && !isExternal(l)) {
                 toDelete.push(l);
               }
             });
