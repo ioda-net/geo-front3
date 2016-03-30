@@ -6,4 +6,4 @@ function communes(mapCenter) {
       y: mapCenter[1]
     }
   });
-}
+};

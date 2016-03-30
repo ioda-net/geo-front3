@@ -8,41 +8,9 @@ Checkout the source code:
     $ git clone https://github.com/ioda-net/mf-geoadmin3.git
 
 
-The build process relies on gulp and closure. Before building the project, you
+The build process relies on [mapinfra](https://github.com/ioda-net/mapinfra). Before building the project, you
 must run `npm install` in the root folder of the project in order to download
-all the dependencies.
-
-You must use `gulp dev --portal <portalname>` to build the given portal for
-development. The output will be produced in `dev/portalname`. If portalname is
-not precised, it will default to geojb.
-
-You must use `gulp prod --portal <portalname>` to build the specified portal for
-production. The output will be produced in `prod/protalname`.
-
-
-
-# Launch test
-
-## Unit tests
-
-You can use `gulp test` to launch the unit tests. To launch tests automatically when a file is
-modify, you can use `karma start test/karma-conf.dev.js` (you may need to adapt the path to the
-karma executable).
-
-## Integration tests
-
-### setup integration tests
-
-1. You must install protractor in order for the integration tests to work with
-   `npm install -g protractor`.
-2. You must then install the webdriver with `webdriver-manager update`
-3. Copy the `config/test.dist.toml` into `config/test.toml` and update it to your needs.
-
-### Launching integration tests
-
-1. Start webdriver: `webdriver-manager start`
-2. Launch the test with `gulp testintegration`
-
+all the dependencies. This is required to have some commands in `node_modules/.bin` to build the project.
 
 
 # Update from map.geo.admin.ch
