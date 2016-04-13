@@ -1,5 +1,4 @@
 *.kdev4
-gulp
 /node_modules
 /coverage
 /src/deps.js
@@ -22,6 +21,10 @@ gulp
 /scripts/00-*.conf
 /config
 /src/lib/angular*.js
+/test/karma-conf-*.js
+/deploy/deploy-branch.cfg
+/src/locales/*.csv
+/scripts/00-*.conf
 /src/lib/Cesium/Assets/Textures/NaturalEarthII
 /src/lib/Cesium/Assets/Textures/SkyBox
 /src/lib/Cesium/Assets/Textures/maki
@@ -29,7 +32,6 @@ gulp
 /src/lib/Cesium/Assets/Textures/pin.svg
 /src/lib/Cesium/Widgets
 /re3-translations.json
-rc_branch
 # FIXME
 # The following are developer-specific and should probably be in the
 # developers' .gitconfig file.

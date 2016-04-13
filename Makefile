@@ -1,3 +1,4 @@
+SHELL = /bin/bash
 SRC_JS_FILES := $(shell find src/components src/js -type f -name '*.js')
 SRC_JS_FILES_FOR_COMPILER = $(shell sed -e ':a' -e 'N' -e '$$!ba' -e 's/\n/ --js /g' .build-artefacts/js-files | sed 's/^.*base\.js //')
 SRC_LESS_FILES := $(shell find src -type f -name '*.less')
@@ -25,6 +26,7 @@ GIT_BRANCH := $(shell if [ -f .build-artefacts/deployed-git-branch ]; then cat .
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
 BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
+DEPLOYCONFIG ?=
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
 OL3_VERSION ?= 34d8d77344ee0b653770f065c593d4ab7b5d102b # master, 2 mars 2016
@@ -48,6 +50,7 @@ DEFAULT_EPSG_EXTEND ?= '[420000, 30000, 900000, 350000]'
 DEFAULT_ELEVATION_MODEL ?= COMB
 DEFAULT_TERRAIN ?= ch.swisstopo.terrain.3d
 SAUCELABS_TESTS ?=
+USER_SOURCE ?= rc_user
 
 ## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd
@@ -60,6 +63,7 @@ HTMLMIN_CMD=${PYTHON_VENV}/bin/htmlmin
 GJSLINT_CMD=${PYTHON_VENV}/bin/gjslint
 FLAKE8_CMD=${PYTHON_VENV}/bin/flake8
 AUTOPEP8_CMD=${PYTHON_VENV}/bin/autopep8
+CLOSURE_COMPILER=node_modules/google-closure-compiler/compiler.jar
 
 
 .PHONY: help
@@ -68,33 +72,33 @@ help:
 	@echo
 	@echo "Possible targets:"
 	@echo
-	@echo "- prod             Build app for prod (/prd)"
-	@echo "- dev              Build app for dev (/src)"
-	@echo "- lint             Run the linter"
-	@echo "- lintpy           Run the linter for the python files"
-	@echo "- autolintpy       Run the auto-corrector for python files"
-	@echo "- testdev          Run the JavaScript tests in dev mode"
-	@echo "- testprod         Run the JavaScript tests in prod mode"
-	@echo "- teste2e          Run browserstack and saucelabs tests"
-	@echo "- browserstack     Run browserstack tests"
-	@echo "- saucelabs        Run saucelabs tests"
-	@echo "- saucelabssingle  Run saucelabs tests but only with single platform/browser"
-	@echo "- apache           Configure Apache (restart required)"
-	@echo "- fixrights        Fix rights in common folder"
-	@echo "- all              All of the above (target to run prior to creating a PR)"
-	@echo "- clean            Remove generated files"
-	@echo "- cleanall         Remove all the build artefacts"
-	@echo "- deploydev        Deploys current github master to dev. Specify SNAPSHOT=true to create snapshot as well."
-	@echo "- deployint        Deploys snapshot specified with SNAPSHOT=xxx to int."
-	@echo "- deployprod       Deploys snapshot specified with SNAPSHOT=xxx to prod."
-	@echo "- deploydemo       Deploys snapshot specified with SNAPSHOT=xxx to demo."
-	@echo "- deletebranch     List deployed branches or delete a deployed branch (BRANCH_TO_DELETE=...)"
-	@echo "- deploybranch     Deploys current branch to test (note: takes code from github)"
-	@echo "- deploybranchint  Deploys current branch to test and int (note: takes code from github)"
-	@echo "- deploybranchdemo Deploys current branch to test and demo (note: takes code from github)"
-	@echo "- ol               Update ol.js and ol-debug.js "
-	@echo "- translate        Generate the translation files (requires db user pwd in ~/.pgpass: dbServer:dbPort:*:dbUser:dbUserPwd)"
-	@echo "- help             Display this help"
+	@echo "- user               Build the app with user specific configuration"
+	@echo "- all                Build the app with current environment"
+	@echo "- release            Build app for release (/prd)"
+	@echo "- debug              Build app for debug (/src)"
+	@echo "- lint               Run the linter"
+	@echo "- lintpy             Run the linter for the python files"
+	@echo "- autolintpy         Run the auto-corrector for python files"
+	@echo "- testdebug          Run the JavaScript tests in debug mode"
+	@echo "- testrelease        Run the JavaScript tests in release mode"
+	@echo "- teste2e            Run saucelabs tests"
+	@echo "- saucelabssingle    Run saucelabs tests but only with single platform/browser"
+	@echo "- apache             Configure Apache (restart required)"
+	@echo "- fixrights          Fix rights in common folder"
+	@echo "- clean              Remove generated files"
+	@echo "- cleanall           Remove all the build artefacts"
+	@echo "- deploydev          Deploys current github master to dev. Specify SNAPSHOT=true to create snapshot as well."
+	@echo "- deployint          Deploys snapshot specified with SNAPSHOT=xxx to int."
+	@echo "- deployprod         Deploys snapshot specified with SNAPSHOT=xxx to prod."
+	@echo "- deploydemo         Deploys snapshot specified with SNAPSHOT=xxx to demo."
+	@echo "- deletebranch       List deployed branches or delete a deployed branch (BRANCH_TO_DELETE=...)"
+	@echo "- deploybranch       Deploys current branch to test (note: takes code from github)"
+	@echo "- deploybranchint    Deploys current branch to test and int (note: takes code from github)"
+	@echo "- deploybranchdemo   Deploys current branch to test and demo (note: takes code from github)"
+	@echo "- ol3cesium          Update ol3cesium.js, ol3cesium-debug.js, Cesium.min.js and Cesium folder"
+	@echo "- libs               Update js librairies used in index.html, see npm packages defined in section 'dependencies' of package.json"
+	@echo "- translate          Generate the translation files (requires db user pwd in ~/.pgpass: dbServer:dbPort:*:dbUser:dbUserPwd)"
+	@echo "- help               Display this help"
 	@echo
 	@echo "Variables:"
 	@echo
@@ -107,11 +111,16 @@ help:
 
 	@echo
 
-.PHONY: all
-all: lint dev prod apache testdev testprod deploy/deploy-branch.cfg fixrights
+.PHONY: user
+user:
+	source $(USER_SOURCE) && make all
 
-.PHONY: prod
-prod: prd/lib/ \
+.PHONY: all
+all: lint debug release apache testdebug testrelease deploy/deploy-branch.cfg fixrights
+
+.PHONY: release
+release: devlibs \
+	prd/lib/ \
 	prd/lib/build.js \
 	prd/style/app.css \
 	prd/geoadmin.appcache \
@@ -125,11 +134,11 @@ prod: prd/lib/ \
 	prd/cache/ \
 	prd/robots.txt
 
-.PHONY: dev
-dev: src/deps.js src/style/app.css src/index.html src/mobile.html src/embed.html
+.PHONY: debug
+debug: devlibs src/deps.js src/style/app.css src/index.html src/mobile.html src/embed.html
 
 .PHONY: lint
-lint: node_modules .build-artefacts/lint.timestamp
+lint: devlibs .build-artefacts/lint.timestamp
 
 .PHONY: lintpy
 lintpy: ${FLAKE8_CMD}
@@ -139,20 +148,17 @@ lintpy: ${FLAKE8_CMD}
 autolintpy: ${AUTOPEP8_CMD}
 	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --max-line-lengt=110 $(PYTHON_FILES)
 
-.PHONY: testdev
-testdev: .build-artefacts/app-whitespace.js test/karma-conf-dev.js node_modules
-	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-dev.js --single-run
+.PHONY: testdebug
+testdebug: .build-artefacts/app-whitespace.js test/karma-conf-debug.js 
+	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-debug.js --single-run;
+	cat .build-artefacts/coverage.txt; echo;
 
-.PHONY: testprod
-testprod: prd/lib/build.js test/karma-conf-prod.js node_modules
-	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-prod.js --single-run
+.PHONY: testrelease
+testrelease: prd/lib/build.js test/karma-conf-release.js devlibs
+	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-release.js --single-run
 
 .PHONY: teste2e
-teste2e: saucelabs browserstack
-
-.PHONY: browserstack
-browserstack: guard-BROWSERSTACK_USER guard-BROWSERSTACK_KEY
-	node test/selenium/tests.js -t ${E2E_TARGETURL}
+teste2e: saucelabs 
 
 .PHONY: saucelabs
 saucelabs: guard-SAUCELABS_USER guard-SAUCELABS_KEY .build-artefacts/requirements.timestamp lintpy
@@ -179,11 +185,11 @@ deploydemo: guard-SNAPSHOT
 
 .PHONY: deployint
 deployint: guard-SNAPSHOT
-	./scripts/deploysnapshot.sh $(SNAPSHOT) int
+	./scripts/deploysnapshot.sh $(SNAPSHOT) int $(DEPLOYCONFIG)
 
 .PHONY: deployprod
 deployprod: guard-SNAPSHOT
-	./scripts/deploysnapshot.sh $(SNAPSHOT) prod
+	./scripts/deploysnapshot.sh $(SNAPSHOT) prod $(DEPLOYCONFIG)
 
 .PHONY: deploybranch
 deploybranch: deploy/deploy-branch.cfg $(DEPLOY_ROOT_DIR)/$(GIT_BRANCH)/.git/config
@@ -250,30 +256,6 @@ ol3cesium: .build-artefacts/ol3-cesium
 	rm -rf ../../src/lib/Cesium; \
 	cp -r cesium/Build/CesiumUnminified ../../src/lib/Cesium; \
 	cp cesium/Build/Cesium/Cesium.js ../../src/lib/Cesium.min.js;
-
-.PHONY: fastclick
-fastclick: node_modules
-	git apply --directory=src scripts/fastclick.patch
-	java -jar node_modules/google-closure-compiler/compiler.jar \
-	    src/lib/fastclick.js \
-	    --compilation_level SIMPLE_OPTIMIZATIONS \
-	    --js_output_file  src/lib/fastclick.min.js
-
-.PHONY: slipjs
-slipjs: node_modules
-	git apply --directory=src/lib scripts/slipjs.patch
-	java -jar node_modules/google-closure-compiler/compiler.jar \
-	    src/lib/slip.js \
-	    --compilation_level SIMPLE_OPTIMIZATIONS \
-	    --language_in ECMASCRIPT5 \
-	    --js_output_file src/lib/slip.min.js
-
-.PHONY: typeahead
-typeahead:
-	java -jar node_modules/google-closure-compiler/compiler.jar \
-	    src/lib/typeahead-0.9.3.js \
-	    --compilation_level SIMPLE_OPTIMIZATIONS \
-	    --js_output_file  src/lib/typeahead-0.9.3.min.js
 
 .PHONY: filesaver
 filesaver: .build-artefacts/filesaver
@@ -399,6 +381,18 @@ define buildpage
 		--var "staging"="$(DEPLOY_TARGET)" $< > $@
 endef
 
+define applypatches
+	git apply --directory=src/lib scripts/fastclick.patch;
+	git apply --directory=src/lib scripts/slipjs.patch;
+endef
+
+define compilejs
+	java -jar ${CLOSURE_COMPILER} \
+		src/lib/$1.js \
+		--compilation_level SIMPLE_OPTIMIZATIONS \
+		--js_output_file  src/lib/$1.min.js;
+endef
+
 prd/index.html: src/index.mako.html \
 	    ${MAKO_CMD} \
 	    ${HTMLMIN_CMD} \
@@ -504,42 +498,43 @@ apache/app.conf: apache/app.mako-dot-conf \
 	    --var "apache_base_directory=$(APACHE_BASE_DIRECTORY)" \
 	    --var "version=$(VERSION)" $< > $@
 
-test/karma-conf-dev.js: test/karma-conf.mako.js ${MAKO_CMD}
-	${PYTHON_CMD} ${MAKO_CMD} $< > $@
+test/karma-conf-debug.js: test/karma-conf.mako.js ${MAKO_CMD}
+	${PYTHON_CMD} ${MAKO_CMD} --var "mode=debug" $< > $@
 
-test/karma-conf-prod.js: test/karma-conf.mako.js ${MAKO_CMD}
-	${PYTHON_CMD} ${MAKO_CMD} --var "mode=prod" $< > $@
+test/karma-conf-release.js: test/karma-conf.mako.js ${MAKO_CMD}
+	${PYTHON_CMD} ${MAKO_CMD} --var "mode=release" $< > $@
 
-node_modules: ANGULAR_JS = angular.js angular.min.js
-node_modules: ANGULAR_TRANSLATE_JS = angular-translate.js angular-translate.min.js
-node_modules: ANGULAR_TRANSLATE_LOADER_JS = angular-translate-loader-static-files.js angular-translate-loader-static-files.min.js
-node_modules: LOCALFORAGE = localforage.js localforage.min.js
-node_modules: JQUERY = jquery.js jquery.min.js
-node_modules: JQUERYXDOMAIN = jQuery.XDomainRequest.js  jquery.xdomainrequest.min.js
-node_modules: D3 = d3.js  d3.min.js
-node_modules: BOOTSTRAP = bootstrap.js bootstrap.min.js
-node_modules: SLIPJS = slip.js
-node_modules: package.json
-	npm install
-	cp $(addprefix node_modules/angular/,$(ANGULAR_JS)) src/lib/;
-	cp $(addprefix node_modules/angular-translate/dist/,$(ANGULAR_TRANSLATE_JS)) src/lib/;
-	cp $(addprefix node_modules/angular-translate/dist/angular-translate-loader-static-files/,$(ANGULAR_TRANSLATE_LOADER_JS)) src/lib/;
-	cp $(addprefix node_modules/localforage/dist/,$(LOCALFORAGE)) src/lib/;
-	cp $(addprefix node_modules/slipjs/,$(SLIPJS)) src/lib;
-	cp $(addprefix node_modules/jquery/dist/,$(JQUERY)) src/lib/;
-	cp $(addprefix node_modules/jquery-ajax-transport-xdomainrequest/,$(JQUERYXDOMAIN)) src/lib/;
-	cp $(addprefix node_modules/d3/,$(D3)) src/lib/;
-	cp $(addprefix node_modules/bootstrap/dist/js/,$(BOOTSTRAP)) src/lib/;
-	cp node_modules/fastclick/lib/fastclick.js src/lib/;
-	cp node_modules/angular-mocks/angular-mocks.js test/lib/;
-	cp node_modules/expect.js/index.js test/lib/expect.js;
-	cp node_modules/sinon/pkg/sinon.js test/lib/;
-	cp node_modules/google-closure-compiler/contrib/externs/angular-1.4.js externs/angular.js;
-	cp node_modules/google-closure-compiler/contrib/externs/jquery-1.9.js externs/jquery.js;
+test/lib/angular-mocks.js test/lib/expect.js test/lib/sinon.js externs/angular.js externs/jquery.js: package.json
+	npm install --only=dev;
+	cp -f node_modules/angular-mocks/angular-mocks.js test/lib/;
+	cp -f node_modules/expect.js/index.js test/lib/expect.js;
+	cp -f node_modules/sinon/pkg/sinon.js test/lib/;
+	cp -f node_modules/google-closure-compiler/contrib/externs/angular-1.4.js externs/angular.js;
+	cp -f node_modules/google-closure-compiler/contrib/externs/jquery-1.9.js externs/jquery.js;
+
+devlibs: test/lib/angular-mocks.js test/lib/expect.js test/lib/sinon.js externs/angular.js externs/jquery.js
+
+.PHONY: libs
+libs:
+	npm install --only=production;
+	cp -f $(addprefix node_modules/angular/, angular.js angular.min.js) src/lib/;
+	cp -f $(addprefix node_modules/angular-translate/dist/, angular-translate.js angular-translate.min.js) src/lib/;
+	cp -f $(addprefix node_modules/angular-translate/dist/angular-translate-loader-static-files/, angular-translate-loader-static-files.js angular-translate-loader-static-files.min.js) src/lib/;
+	cp -f $(addprefix node_modules/localforage/dist/, localforage.js localforage.min.js) src/lib/;
+	cp -f $(addprefix node_modules/jquery/dist/, jquery.js jquery.min.js) src/lib/;
+	cp -f $(addprefix node_modules/jquery-ajax-transport-xdomainrequest/, jQuery.XDomainRequest.js  jquery.xdomainrequest.min.js) src/lib/;
+	cp -f $(addprefix node_modules/d3/, d3.js d3.min.js) src/lib/;
+	cp -f $(addprefix node_modules/bootstrap/dist/js/, bootstrap.js bootstrap.min.js) src/lib/;
+	cp -f node_modules/slipjs/slip.js src/lib;
+	cp -f node_modules/fastclick/lib/fastclick.js src/lib/;
+	$(call applypatches)
+	$(call compilejs fastclick)
+	$(call compilejs slip)
+	$(call compilejs typeahead-0.9.3)
 
 .build-artefacts/app.js: .build-artefacts/js-files
 	mkdir -p $(dir $@)
-	java -jar node_modules/google-closure-compiler/compiler.jar $(SRC_JS_FILES_FOR_COMPILER) \
+	java -jar ${CLOSURE_COMPILER} $(SRC_JS_FILES_FOR_COMPILER) \
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
 	    --jscomp_error checkVars \
 	    --externs externs/ol.js \
@@ -551,12 +546,12 @@ node_modules: package.json
 	    --js_output_file $@
 
 $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule.js): \
-	    .build-artefacts/annotated/%.js: %.js node_modules
+	    .build-artefacts/annotated/%.js: %.js devlibs
 	mkdir -p $(dir $@)
 	./node_modules/.bin/ng-annotate -a $< > $@
 
 .build-artefacts/app-whitespace.js: .build-artefacts/js-files
-	java -jar node_modules/google-closure-compiler/compiler.jar  $(SRC_JS_FILES_FOR_COMPILER) \
+	java -jar ${CLOSURE_COMPILER} $(SRC_JS_FILES_FOR_COMPILER) \
 	    --compilation_level WHITESPACE_ONLY \
 	    --formatting PRETTY_PRINT \
 	    --js_output_file $@
@@ -635,37 +630,37 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 
 .build-artefacts/last-version::
 	mkdir -p $(dir $@)
-	test $(VERSION) != $(LAST_VERSION) && echo $(VERSION) > .build-artefacts/last-version || :
+	test "$(VERSION)" != "$(LAST_VERSION)" && echo $(VERSION) > .build-artefacts/last-version || :
 
 .build-artefacts/last-git-branch::
 	mkdir -p $(dir $@)
-	test $(GIT_BRANCH) != $(GIT_LAST_BRANCH) && echo $(GIT_BRANCH) > .build-artefacts/last-git-branch || :
+	test "$(GIT_BRANCH)" != "$(GIT_LAST_BRANCH)" && echo $(GIT_BRANCH) > .build-artefacts/last-git-branch || :
 
 .build-artefacts/last-api-url::
 	mkdir -p $(dir $@)
-	test $(API_URL) != $(LAST_API_URL) && echo $(API_URL) > .build-artefacts/last-api-url || :
+	test "$(API_URL)" != "$(LAST_API_URL)" && echo $(API_URL) > .build-artefacts/last-api-url || :
 
 .build-artefacts/last-mapproxy-url::
 	mkdir -p $(dir $@)
-	test $(MAPPROXY_URL) != $(LAST_MAPPROXY_URL) && echo $(MAPPROXY_URL) > .build-artefacts/last-mapproxy-url || :
+	test "$(MAPPROXY_URL)" != "$(LAST_MAPPROXY_URL)" && echo $(MAPPROXY_URL) > .build-artefacts/last-mapproxy-url || :
 
 .build-artefacts/last-shop-url::
 	mkdir -p $(dir $@)
-	test $(SHOP_URL) != $(LAST_SHOP_URL) && echo $(SHOP_URL) > .build-artefacts/last-shop-url || :
+	test "$(SHOP_URL)" != "$(LAST_SHOP_URL)" && echo $(SHOP_URL) > .build-artefacts/last-shop-url || :
 
 .build-artefacts/last-apache-base-path::
 	mkdir -p $(dir $@)
-	test $(APACHE_BASE_PATH) != $(LAST_APACHE_BASE_PATH) && \
+	test "$(APACHE_BASE_PATH)" != "$(LAST_APACHE_BASE_PATH)" && \
 	    echo $(APACHE_BASE_PATH) > .build-artefacts/last-apache-base-path || :
 
 .build-artefacts/last-apache-base-directory::
 	mkdir -p $(dir $@)
-	test $(APACHE_BASE_DIRECTORY) != $(LAST_APACHE_BASE_DIRECTORY) && \
-	    echo $(APACHE_BASE_DIRECTORY) > .build-artefacts/last-apache-base-directory || :
+	test "$(APACHE_BASE_DIRECTORY)" != "$(LAST_APACHE_BASE_DIRECTORY)" && \
+	    echo "$(APACHE_BASE_DIRECTORY)" > .build-artefacts/last-apache-base-directory || :
 
 .build-artefacts/last-deploy-target::
 	mkdir -p $(dir $@)
-	test $(DEPLOY_TARGET) != $(LAST_DEPLOY_TARGET) && \
+	test "$(DEPLOY_TARGET)" != "$(LAST_DEPLOY_TARGET)" && \
 	    echo $(DEPLOY_TARGET) > .build-artefacts/last-deploy-target || :
 
 .build-artefacts/ol3-cesium:
@@ -700,6 +695,9 @@ clean:
 	rm -f .build-artefacts/app.js
 	rm -f .build-artefacts/js-files
 	rm -rf .build-artefacts/annotated
+	rm -f externs/angular.js
+	rm -f externs/jquery.js
+	rm -f test/lib/*.js
 	rm -f src/deps.js
 	rm -f src/style/app.css
 	rm -f src/TemplateCacheModule.js

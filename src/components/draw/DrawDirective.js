@@ -709,8 +709,9 @@ goog.require('gf3_webdav_service');
             }).success(function(data) {
               scope.userShortenUrl = data.shorturl;
             });*/
-            scope.adminShortenUrl = gaPermalink.getHref().replace(
-                gaUrlUtils.encodeUriQuery(layer.id, true), '') +
+            var regex = new RegExp(',{0,1}' +
+                gaUrlUtils.encodeUriQuery(layer.id, true));
+            scope.adminShortenUrl = gaPermalink.getHref().replace(regex, '') +
                 '&adminId=' + adminId;
             scope.userShortenUrl = gaPermalink.getHref();
           };

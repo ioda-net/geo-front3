@@ -1154,7 +1154,8 @@ goog.require('ga_urlutils_service');
 
             var wmsParams = {
               LAYERS: layer.wmsLayers,
-              FORMAT: 'image/' + layer.format
+              FORMAT: 'image/' + layer.format,
+              LANG: gaLang.get()
             };
             if (timestamp) {
               wmsParams['TIME'] = timestamp;
