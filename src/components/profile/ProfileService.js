@@ -398,7 +398,7 @@ goog.require('ga_urlutils_service');
               .attr('y', 11)
               .attr('width', 100)
               .attr('height', 30)
-              .text(elevationModel);
+              .text($translate.instant(elevationModel));
 
           group.append('text')
               .attr('class', 'ga-profile-label ga-profile-label-x')
