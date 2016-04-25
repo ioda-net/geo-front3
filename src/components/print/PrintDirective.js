@@ -177,6 +177,8 @@ goog.require('sigeom_plugins');
         spec.attributes.map.layers.forEach(function(layer) {
           if (layer.customParams) {
             layer.customParams['MAP.RESOLUTION'] = $scope.dpi;
+            layer.customParams['MAP_RESOLUTION'] = $scope.dpi;
+            layer.customParams['DPI'] = $scope.dpi;
           }
         });
 
