@@ -311,7 +311,12 @@ describe('ga_kml_service', function() {
 
         var isValid1 = gaUrlUtilsMock.expects('isValid').once().withArgs(hrefs[0]).returns(true);
         var isValid2 = gaUrlUtilsMock.expects('isValid').once().withArgs(hrefs[2]).returns(true);
-        var isNotValid = gaUrlUtilsMock.expects('isValid').once().withArgs(hrefs[1]).returns(false);
+        var isNotValid;
+        if (navigator.userAgent.indexOf('Firefox') === -1) {
+          isNotValid = gaUrlUtilsMock.expects('isValid').once().withArgs(hrefs[1]).returns(false);
+        } else {
+          isNotValid = gaUrlUtilsMock.expects('isValid').once().withArgs('http://localhost:8081/' + hrefs[1]).returns(false);
+        }
         gaKml.addKmlToMap(map, kml).then(function(olLayer) {
           isValid1.verify();
           isValid2.verify();
