@@ -47,7 +47,7 @@ goog.require('gf3_webdav_service');
           dfltLayer.preview = true;
         }
         gaMeasure.registerOverlaysEvents(map, dfltLayer);
-        dfltLayer.label = 'Drawing';
+        dfltLayer.label = $translate.instant('draw_layer_label');
         dfltLayer.type = 'KML';
         return dfltLayer;
       };
@@ -926,7 +926,7 @@ goog.require('gf3_webdav_service');
 
           $rootScope.$on('$translateChangeEnd', function() {
             if (layer) {
-              layer.label = $translate.instant('draw');
+              layer.label = $translate.instant('draw_layer_label');
             }
           });
 
