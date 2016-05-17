@@ -310,7 +310,7 @@ describe('ga_map_service', function() {
       expect(blob.type).to.eql('image/png');
     });
 
-    describe('transforms an ol.extent to a Cesium.Rectangle object', function() {
+    describe.skip('transforms an ol.extent to a Cesium.Rectangle object', function() {
 
       it('using the default projection', function() {
         var rect = gaMapUtils.extentToRectangle([0, 0, 30, 30]);
