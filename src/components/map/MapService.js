@@ -1401,12 +1401,7 @@ goog.require('ga_urlutils_service');
           }
           return this.arrayBufferToBlob(uInt8Array.buffer, contentType);
         },
-        // Convert an extent to Cesium
-        extentToRectangle: function(e, sourceProj) {
-          sourceProj = sourceProj || ol.proj.get(gaGlobalOptions.defaultEpsg);
-          e = ol.proj.transformExtent(e, sourceProj, 'EPSG:4326');
-          return Cesium.Rectangle.fromDegrees(e[0], e[1], e[2], e[3]);
-        },
+
         // Advantage of the blob is we have easy access to the size and the
         // type of the image, moreover in the future we could store it
         // directly in indexedDB, no need of fileReader anymore.
@@ -1423,6 +1418,13 @@ goog.require('ga_urlutils_service');
           }
         },
 
+        // Convert an ol.extent to Cesium.Rectangle
+        extentToRectangle: function(e, sourceProj) {
+          sourceProj = sourceProj || ol.proj.get(gaGlobalOptions.defaultEpsg);
+          e = ol.proj.transformExtent(e, sourceProj, 'EPSG:4326');
+          return Cesium.Rectangle.fromDegrees(e[0], e[1], e[2], e[3]);
+        },
+
         /**
          * Defines a unique identifier from a tileUrl.
          * Use by offline to store in local storage.
@@ -1430,6 +1432,7 @@ goog.require('ga_urlutils_service');
         getTileKey: function(tileUrl) {
           return tileUrl.replace(/^\/\/wmts[0-9]/, '');
         },
+
         /**
          * Search for a layer identified by bodId in the map and
          * return it. undefined is returned if the map does not have
@@ -1510,6 +1513,7 @@ goog.require('ga_urlutils_service');
           }
           return defer.promise;
         },
+
         zoomToExtent: function(map, ol3d, extent) {
           var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
@@ -1750,6 +1754,25 @@ goog.require('ga_urlutils_service');
           }
           // TODO: Implement the calculation of the closest level of detail
           // available if res is not in the resolutions array
+        },
+
+        // The ol.source.Vector.getExtent function doesn't exist when the
+        // useSpatialIndex property is set to false
+        getVectorSourceExtent: function(source) {
+          try {
+            return source.getExtent();
+          } catch (e) {
+            var sourceExtent;
+            source.getFeatures().forEach(function(item) {
+              var extent = item.getGeometry().getExtent();
+              if (!sourceExtent) {
+                sourceExtent = extent;
+              } else {
+                ol.extent.extend(sourceExtent, extent);
+              }
+            });
+            return sourceExtent;
+          }
         }
       };
     };

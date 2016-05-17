@@ -250,9 +250,15 @@ goog.require('ga_urlutils_service');
                 sanitizedFeatures.push(feat);
               }
             }
+
+            // #2820: we set useSpatialIndex to false for KML created with draw
+            // tool
             var source = new ol.source.Vector({
-              features: sanitizedFeatures
+              features: sanitizedFeatures,
+              useSpatialIndex: !gaMapUtils.isStoredKmlLayer(options.id)
             });
+
+            var sourceExtent = gaMapUtils.getVectorSourceExtent(source);
             var layerOptions = {
               id: options.id,
               adminId: options.adminId,
@@ -262,8 +268,7 @@ goog.require('ga_urlutils_service');
               opacity: options.opacity,
               visible: options.visible,
               source: source,
-              extent: gaMapUtils.intersectWithDefaultExtent(
-                  source.getExtent()),
+              extent: gaMapUtils.intersectWithDefaultExtent(sourceExtent),
               attribution: options.attribution
             };
 
@@ -332,20 +337,22 @@ goog.require('ga_urlutils_service');
           layerOptions = layerOptions || {};
           layerOptions.url = url;
           if (gaNetworkStatus.offline) {
-            addKmlLayer(map, null, layerOptions, index);
+            return this.addKmlToMap(map, null, layerOptions, index);
           } else {
-            $http.get(gaGlobalOptions.ogcproxyUrl + encodeURIComponent(url), {
+            return $http.get(gaGlobalOptions.ogcproxyUrl +
+                encodeURIComponent(url), {
               cache: true
-            }).success(function(data, status, headers, config) {
-              var fileSize = headers('content-length');
+            }).then(function(response) {
+              var data = response.data;
+              var fileSize = response.headers('content-length');
               if (that.isValidFileContent(data) &&
                   that.isValidFileSize(fileSize)) {
                 layerOptions.useImageVector = that.useImageVector(fileSize);
-                addKmlLayer(map, data, layerOptions, index);
+                return that.addKmlToMap(map, data, layerOptions, index);
               }
-            }).error(function() {
+            }, function() {
               // Try to get offline data if exist
-              addKmlLayer(map, null, layerOptions, index);
+              return that.addKmlToMap(map, null, layerOptions, index);
             });
           }
         };

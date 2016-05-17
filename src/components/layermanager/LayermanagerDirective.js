@@ -56,7 +56,7 @@ goog.require('gf3');
       '<div class="ga-layer-timestamps">' +
         '<div tabindex="1" ng-if="tmpLayer.type == \'wms\'" ' +
              'ng-class="{badge: !tmpLayer.time}" ' +
-             'ng-click="setLayerTime(tmpLayer, null)" ' +
+             'ng-click="setLayerTime(tmpLayer)" ' +
              'translate>time_all</div> ' +
         '<div tabindex="1" ng-repeat="i in tmpLayer.timestamps" ' +
              'ng-class="{badge: (tmpLayer.time == i)}" ' +
@@ -299,9 +299,7 @@ goog.require('gf3');
         };
 
         scope.setLayerTime = function(layer, time) {
-          if (angular.isDefined(time)) {
-            layer.time = time;
-          }
+          layer.time = time;
           destroyPopover(null, element);
         };
 

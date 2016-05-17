@@ -69,7 +69,7 @@ goog.require('ga_permalink_service');
               propDeregKey[olLayer.id] = olLayer.on('propertychange',
                   function(evtProp) {
                 if (evtProp.key == 'visible' || (evtProp.key == 'time' &&
-                    angular.isDefined(evtProp.target.time) &&
+                    angular.isString(evtProp.target.time) &&
                     parseInt(evtProp.target.time.substr(0, 4)) != time)) {
                   that.updateStatus(evt.target.getArray());
                 }
@@ -121,8 +121,20 @@ goog.require('ga_permalink_service');
             $rootScope.$broadcast('gaTimeChange', time, oldTime);
           }
         };
-       };
-       return new Time();
+
+        // Returns the year (as integer) from a complete timestmap
+        // (ex: 1999:12:31).
+        // Returns undefined when timestamp is 'current' or '99991231
+        this.getYearFromTimestamp = function(timestamp) {
+          if (timestamp && timestamp.length) {
+            timestamp = parseInt(timestamp.substr(0, 4));
+            if (timestamp <= new Date().getFullYear()) {
+              return timestamp;
+            }
+          }
+        };
+      };
+      return new Time();
     };
   });
 })();
