@@ -167,6 +167,9 @@ goog.require('gf3_webdav_service');
           feedbackPopupShown: '=gaFeedbackPopupShown'
         },
         link: function(scope, element, attrs, controller) {
+          if (!scope.options) {
+            scope.options = {};
+          }
           var layer, draw, lastActiveTool, snap;
           var unDblClick, unLayerAdd, unLayerRemove, unSourceEvents = [],
               deregPointerMove, deregFeatureChange, unLayerVisible,
@@ -263,7 +266,6 @@ goog.require('gf3_webdav_service');
             togglePopup();
           });
           select.setActive(false);
-          map.addInteraction(select);
 
           // Add modify interaction
           // The modify interaction works with features selected by the select
@@ -273,7 +275,6 @@ goog.require('gf3_webdav_service');
             features: select.getFeatures(),
             style: scope.options.selectStyleFunction
           });
-          map.addInteraction(modify);
 
           var defineLayerToModify = function() {
 
@@ -328,6 +329,10 @@ goog.require('gf3_webdav_service');
           // Activate the component: active a tool if one was active when draw
           // has been deactivated.
           var activate = function() {
+            if (!scope.options.noModify) {
+              map.addInteraction(select);
+              map.addInteraction(modify);
+            }
             defineLayerToModify();
 
             if (layer.adminId) {
@@ -380,7 +385,7 @@ goog.require('gf3_webdav_service');
               }
             }));
 
-            unWatch.push(scope.$watch('popupToggle', function(active) {
+            unWatch.push(scope.$watch('options.popupToggle', function(active) {
               if (!active) {
                 select.getFeatures().clear();
               }
@@ -417,10 +422,14 @@ goog.require('gf3_webdav_service');
             }
 
             // Remove the layer if no features added
-            if (layer && layer.getSource().getFeatures().length == 0) {
+            if (layer && (useTemporaryLayer ||
+                layer.getSource().getFeatures().length == 0)) {
               map.removeLayer(layer);
               layer = null;
             }
+            map.removeInteraction(select);
+            map.removeInteraction(modify);
+            map.removeInteraction(snap);
           };
 
           // Set the draw interaction with the good geometry
@@ -443,6 +452,12 @@ goog.require('gf3_webdav_service');
             draw = new ol.interaction.Draw(tool.drawOptions);
             var isFinishOnFirstPoint;
             unDrawEvts.push(draw.on('drawstart', function(evt) {
+              // Remove the first features created if wanted
+              var src = layer.getSource();
+              if (tool.maxFeatures &&
+                  src.getFeatures().length >= tool.maxFeatures) {
+                src.removeFeature(src.getFeatures()[0]);
+              }
               var nbPoint = 1;
               var isSnapOnLastPoint = false;
               updateHelpTooltip(helpTooltip, tool.id, true,
@@ -506,8 +521,37 @@ goog.require('gf3_webdav_service');
             }));
 
             unDrawEvts.push(draw.on('drawend', function(evt) {
+              // Unregister the change event
+              ol.Observable.unByKey(deregFeatureChange);
+              deactivateTool(lastActiveTool);
+              scope.$applyAsync();
+
               var featureToAdd = evt.feature;
               var geom = featureToAdd.getGeometry();
+
+              // According to #3319, it seems LineString can be created with one
+              // point (or with an array of exact same points). If it's the case
+              // we ignore it.
+              if (geom instanceof ol.geom.Polygon) {
+                var hasUniqueCoords = true;
+                var coords;
+                geom.getCoordinates()[0].forEach(function(item) {
+                  if (!coords) {
+                    coords = item;
+                  } else if (hasUniqueCoords &&
+                      coords[0] == item[0] &&
+                      coords[1] == item[1] &&
+                      coords[2] == item[2]) {
+                    coords = item;
+                  } else {
+                    hasUniqueCoords = false;
+                  }
+                });
+                if (hasUniqueCoords) {
+                  return;
+                }
+              }
+
               if (geom instanceof ol.geom.Polygon && !isFinishOnFirstPoint) {
                 // The sketchFeatureArea is automatically closed by the draw
                 // interaction even if the user has finished drawing on the
@@ -527,24 +571,19 @@ goog.require('gf3_webdav_service');
                 featureToAdd.set('type', lastActiveTool.id);
               }
 
-
-              // Unregister the change event
-              ol.Observable.unByKey(deregFeatureChange);
-
               // Set the definitve style of the feature
               featureToAdd.getGeometry().set('altitudeMode', 'clampToGround');
               layer.getSource().addFeature(featureToAdd);
               var styles = tool.style(featureToAdd);
               featureToAdd.setStyle(styles);
-              scope.$apply();
-              deactivateTool(lastActiveTool);
               select.getFeatures().push(featureToAdd);
+
               // Add final measure tooltips
               if (tool.showMeasure) {
                 gaMeasure.addOverlays(map, layer, featureToAdd);
                 map.removeOverlay(distTooltip);
                 map.removeOverlay(areaTooltip);
-             }
+              }
             }));
             map.addInteraction(draw);
           };
@@ -570,6 +609,14 @@ goog.require('gf3_webdav_service');
           });
 
 
+          // Deactivate tools if another draw directive actives one
+          scope.$on('gaDrawToolActive', function(evt, drawScope) {
+            if (drawScope !== scope && lastActiveTool &&
+                scope.options[lastActiveTool.activeKey]) {
+              deactivateTool(lastActiveTool);
+            }
+          });
+
           ///////////////////////////////////
           // Tools managment
           ///////////////////////////////////
@@ -594,8 +641,12 @@ goog.require('gf3_webdav_service');
             if (snap) {
               map.removeInteraction(snap);
             }
-            map.addInteraction(snap);
+            if (!scope.options.noModify) {
+              map.addInteraction(snap);
+            }
 
+            // Warn other draw directive that a tool has been activated
+            $rootScope.$broadcast('gaDrawToolActive', scope);
           };
 
           var deactivateTool = function(tool) {
@@ -692,7 +743,9 @@ goog.require('gf3_webdav_service');
           // Shorten url stuff
           ////////////////////////////////////
           var updateShortenUrl = function(adminId) {
-
+            if (scope.options.noShareUpdate) {
+              return;
+            }
             // For now we pass the long permalink otherwoise we need to
             // regenerate the permalink on each map interaction
             /*$http.get(scope.options.shortenUrl, {
@@ -725,10 +778,13 @@ goog.require('gf3_webdav_service');
           ////////////////////////////////////
           var popupTitlePrefix = 'draw_popup_title_';
           var togglePopup = function(feature) {
+            if (scope.options.noStyleUpdate) {
+              return;
+            }
             if (feature) {
               scope.feature = feature;
               // Open the popup
-              scope.popupToggle = true;
+              scope.options.popupToggle = true;
               // Set the correct title
               scope.options.popupOptions.title = popupTitlePrefix +
                   feature.get('type');
@@ -741,7 +797,7 @@ goog.require('gf3_webdav_service');
               }
             } else {
               scope.feature = undefined;
-              scope.popupToggle = false;
+              scope.options.popupToggle = false;
               scope.options.popupOptions.title = popupTitlePrefix + 'feature';
             }
           };
@@ -749,6 +805,9 @@ goog.require('gf3_webdav_service');
           // Determines which elements to display in the feature's propereties
           // tab
           var updatePropsTabContent = function() {
+            if (scope.options.noStyleUpdate) {
+              return;
+            }
             // The select interaction selects only one feature
             var feature = select.getFeatures().item(0);
             var useTextStyle = false;
@@ -949,6 +1008,10 @@ goog.require('gf3_webdav_service');
             }
           };
 
+          // Remove interactions on destroy
+          scope.$on('$destroy', function() {
+            deactivate();
+          });
 
 
           ////////////////////////////////////

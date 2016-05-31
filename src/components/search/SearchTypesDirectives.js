@@ -217,7 +217,7 @@ goog.require('ga_urlutils_service');
 
         canceler = $q.defer();
 
-        var url = gaUrlUtils.append($scope.options.baseUrl,
+        var url = gaUrlUtils.append($scope.options.searchUrl,
                                     'type=' + $scope.type);
         url = $scope.typeSpecificUrl(url);
 
@@ -302,7 +302,7 @@ goog.require('ga_urlutils_service');
 
       $scope.fuzzy = '';
 
-      $scope.$watch('options.query', function(newval) {
+      $scope.$watch('options.searchUrl', function(newval) {
         //cancel old requests
         cancel();
         if (newval != '') {

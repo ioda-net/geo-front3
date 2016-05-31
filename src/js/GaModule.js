@@ -18,6 +18,7 @@ goog.require('ga_feedback_controller');
 goog.require('ga_fullscreen');
 goog.require('ga_geolocation');
 goog.require('ga_help');
+goog.require('ga_identify_service');
 goog.require('ga_importkml');
 goog.require('ga_importkml_controller');
 goog.require('gf3_importows');
@@ -94,6 +95,7 @@ goog.require('gf3_webdav');
     'ga_seo',
     'ga_draw',
     'ga_shop',
+    'ga_tilt3d',
     'ga_modal_directive',
     'ga_draggable_directive',
     'ga_placeholder_directive',
@@ -104,6 +106,7 @@ goog.require('gf3_webdav');
     'ga_rotate',
     'gf3_importwms_controller',
     'gf3_importwmts_controller',
+    'ga_identify_service',
     'ga_main_controller',
     'ga_catalogtree_controller',
     'ga_mouseposition_controller',

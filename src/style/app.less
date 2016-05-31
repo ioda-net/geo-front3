@@ -34,6 +34,8 @@
 @import "../components/tilt3d/style/tilt3d.less";
 @import "../components/controls3d/style/controls3d.less";
 @import "../components/shop/style/shop.less";
+@import "../components/shop/style/shop-rectangle.less";
+
 
 
 
@@ -1761,6 +1763,11 @@ body:not(.embed) {
 }
 
 .embed {
+
+  #search-container {
+    display: none;
+  }
+
   #bigMapLink {
     position: absolute;
     z-index: 1000;
