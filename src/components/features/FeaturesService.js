@@ -228,7 +228,7 @@ goog.require('ga_map_service');
       pdf: '<a target="pdf" href="{{cellValue}}" ng-if="cellValue">' +
           '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
           '</a>',
-      url: '<div ng-click="console.log(\'toto\')">' +
+      url: '<div>' +
           '<a target="_blank" href="{{cellValue}}" ng-if="cellValue">' +
           '{{cellValue | translate  }}</a></div>'
     };
