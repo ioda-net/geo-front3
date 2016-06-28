@@ -20,8 +20,8 @@ all the dependencies. This is required to have some commands in `node_modules/.b
    1. `git checkout master`
    2. `git fetch upstream master`
    3. `git rebase upstream/master`
-2. Go to the branch `sigeom`: `git checkout sigeom`
-3. Merge `master` into `sigeom`: `git merge master`
+2. Go to the branch `devel`: `git checkout devel`
+3. Merge `master` into `devel`: `git merge master`
 4. Slove the merge conflicts (See below for some tips)
 5. Update Open Layers (See below for the how to and why you must do this update)
 5. Commit the result
@@ -30,8 +30,8 @@ all the dependencies. This is required to have some commands in `node_modules/.b
    your merge work, unless you do a `git rebase --abort`) and you will have to
    handle conflict for each commit from swisstopo you are merging into the
    current branch. So if that happens, do:
-   1. `git fetch origin sigeom` to get the changes
-   2. `git merge origin/sigeom` to merge them with a merge commit into your
+   1. `git fetch origin devel` to get the changes
+   2. `git merge origin/devel` to merge them with a merge commit into your
       branch
 
 
