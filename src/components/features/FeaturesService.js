@@ -1,9 +1,13 @@
 goog.provide('gf3_features_service');
 
 goog.require('ga_map_service');
+goog.require('gf3_features_templates_service');
 
 (function() {
-  var module = angular.module('gf3_features_service', ['ga_map_service']);
+  var module = angular.module('gf3_features_service', [
+    'ga_map_service',
+    'gf3_features_templates_service'
+  ]);
 
   module.provider('gf3DragBox', function() {
     this.$get = function(gaStyleFactory, gaBrowserSniffer) {
@@ -176,7 +180,7 @@ goog.require('ga_map_service');
   });
 
   module.factory('gf3FeaturesGrid', function($translate, $window,
-      gaPreviewFeatures, gaGlobalOptions) {
+      gaPreviewFeatures, gaGlobalOptions, gf3FeaturesTemplates) {
     var parser = new ol.format.GeoJSON();
     var isHiddenRegexp = /_hidden$/;
     var map,
@@ -226,24 +230,7 @@ goog.require('ga_map_service');
       }
     };
 
-    var cellTemplates = {
-      grudis: '<a target="grudis" href="{{cellValue}}">[G]</a>',
-      hinni: '<a target="hinni" href="{{cellValue}}" ng-if="cellValue">' +
-          '<img src="img/dbh.png" style="width:18px;height:18px" /></a>',
-      photo: '<a target="photo" href="{{cellValue}}" ng-if="cellValue">' +
-          '<img src="img/camera.png" style="width:18px;height:18px"/>' +
-          '</a>',
-      protocol: '<a target="protocol" href="{{\'{api}\' + cellValue}}" ' +
-                    'ng-if="cellValue">' +
-          '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
-          '</a>',
-      pdf: '<a target="pdf" href="{{cellValue}}" ng-if="cellValue">' +
-          '<img src="img/acroread16.png" style="width:18px;height:18px"/>' +
-          '</a>',
-      url: '<div>' +
-          '<a target="_blank" href="{{cellValue}}" ng-if="cellValue">' +
-          '{{cellValue | translate  }}</a></div>'
-    };
+    var cellTemplates = gf3FeaturesTemplates.getTemplates();
 
     return {
       init: init,
@@ -278,7 +265,7 @@ goog.require('ga_map_service');
         } else {
           cellTemplate = cellTemplates[name];
         }
-        if (name === 'protocol') {
+        if (cellTemplate) {
           cellTemplate = cellTemplate.replace('{api}', gaGlobalOptions.apiUrl);
         }
 
