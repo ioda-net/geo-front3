@@ -109,11 +109,23 @@ goog.require('ga_map_service');
 
     // Get all the queryable layers
     function getLayersToQuery(map) {
-      var layersToQuery = [];
+      var layersToQuery = {
+        bodLayers: [],
+        vectorLayers: [],
+        wmsLayers: []
+      };
       map.getLayers().forEach(function(l) {
-        if (l.visible && !l.preview &&
-            (isQueryableBodLayer(l) || isVectorLayer(l))) {
-          layersToQuery.push(l);
+        if (!l.visible || l.preview) {
+          return;
+        }
+        if (isQueryableBodLayer(l)) {
+          layersToQuery.bodLayers.push(l);
+        } else if (isVectorLayer(l)) {
+          layersToQuery.vectorLayers.push(l);
+        } else if (l.getSource &&
+            (l.getSource() instanceof ol.source.ImageWMS ||
+             l.getSource() instanceof ol.source.TileWMS)) {
+          layersToQuery.wmsLayers.push(l);
         }
       });
       return layersToQuery;
@@ -410,10 +422,14 @@ goog.require('ga_map_service');
           features[data.layerLabel][currentIndex];
       if (currentFeature instanceof ol.Feature) {
         geometry = currentFeature;
-      } else {
+      } else if (currentFeature) {
         geometry = parser.readFeature(currentFeature);
       }
-      gaPreviewFeatures.highlight(map, geometry);
+
+      // geometry is empty for WMS features
+      if (geometry) {
+        gaPreviewFeatures.highlight(map, geometry);
+      }
     }
 
     function clearHighlight() {

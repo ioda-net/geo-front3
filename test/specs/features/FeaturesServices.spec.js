@@ -60,6 +60,16 @@ describe('gf3_features_service', function() {
       var vectorLayer = new ol.layer.Vector();
       vectorLayer.visible = true;
       vectorLayer.bodId = 'vector';
+      var wmsImageLayer = new ol.layer.Image({
+        source: new ol.source.ImageWMS()
+      });
+      wmsImageLayer.visible = true;
+      wmsImageLayer.bodId = 'wmsImageLayer';
+      var wmsTiledLayer = new ol.layer.Tile({
+        source: new ol.source.TileWMS()
+      });
+      wmsTiledLayer.visible = true;
+      wmsTiledLayer.bodId = 'wmsTiledLayer';
       var notQueryableLayer = new ol.layer.Tile({
         source: new ol.source.TileImage({
           projection: '21781'
@@ -84,16 +94,30 @@ describe('gf3_features_service', function() {
       previewLayer.bodId = 'preview';
 
       var map = new ol.Map({
-        layers: [layer, vectorLayer, notQueryableLayer]
+        layers: [
+          layer,
+          vectorLayer,
+          wmsImageLayer,
+          wmsTiledLayer,
+          notQueryableLayer,
+          hiddenLayer,
+          previewLayer
+        ]
       });
 
       var layersToQuery = gf3FeaturesUtils.getLayersToQuery(map);
-      expect(layersToQuery.length).to.be(2);
+      expect(layersToQuery.bodLayers.length).to.be(1);
+      expect(layersToQuery.vectorLayers.length).to.be(1);
+      expect(layersToQuery.wmsLayers.length).to.be(2);
 
-      var layersToQueryIds = layersToQuery.map(function(l) {
+      var all = layersToQuery.bodLayers.slice();
+      all = all.concat(layersToQuery.vectorLayers);
+      all = all.concat(layersToQuery.wmsLayers);
+      console.log(all.length)
+      var layersToQueryIds = all.map(function(l) {
         return l.bodId;
       });
-      expect(layersToQueryIds).to.eql(['queryable', 'vector']);
+      expect(layersToQueryIds).to.eql(['queryable', 'vector', 'wmsImageLayer', 'wmsTiledLayer']);
     });
 
     it('gets year from string', function() {

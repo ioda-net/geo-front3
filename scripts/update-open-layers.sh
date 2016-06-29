@@ -43,6 +43,7 @@ git fetch --all
 git checkout "${ol_version}"
 
 ### Apply patches by Swisstopo
+cat "${geo_front_root}/scripts/ga-ol3-reproj.exports" >> src/ol/reproj/reproj.js
 cat "${geo_front_root}/scripts/ga-ol3-style.exports" >> src/ol/style/style.js
 cat "${geo_front_root}/scripts/ga-ol3-tilegrid.exports" >> src/ol/tilegrid/tilegrid.js
 cat "${geo_front_root}/scripts/ga-ol3-tilerange.exports" >> src/ol/tilerange.js

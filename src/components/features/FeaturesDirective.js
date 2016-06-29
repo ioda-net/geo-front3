@@ -19,7 +19,7 @@ goog.require('gf3_features_service');
 
   module.directive('gf3Features',
       function($timeout, $http, $q, $rootScope, gaLayers, gaBrowserSniffer,
-          gaMapClick, gaDebounce, gaPreviewFeatures,
+          gaMapClick, gaDebounce, gaPreviewFeatures, gaGlobalOptions,
           gf3DragBox, gf3FeaturesUtils, gf3FeaturesGrid, datatable) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
                             '<div ng-bind-html="htmlsnippet"></div>' +
@@ -50,9 +50,11 @@ goog.require('gf3_features_service');
             var dragBox = gf3DragBox(map, function(geometry) {
               scope.isActive = true;
               scope.$apply(function() {
-                var size = map.getSize();
-                var mapExtent = map.getView().calculateExtent(size);
-                findFeatures(geometry, size, mapExtent);
+                var mapRes = map.getView().getResolution();
+                var mapProj = map.getView().getProjection();
+                var mapSize = map.getSize();
+                var mapExtent = map.getView().calculateExtent(mapSize);
+                findFeatures(geometry, mapSize, mapExtent, mapProj, mapRes);
               });
             });
             gf3FeaturesGrid.init(
@@ -82,7 +84,7 @@ goog.require('gf3_features_service');
               // We use $timeout to execute the showFeature when the
               // popup is correctly closed.
               $timeout(function() {
-                showFeatures(data.features);
+                showFeatures(data.features, null, data.nohighlight);
               }, 0);
 
             });
@@ -159,8 +161,10 @@ goog.require('gf3_features_service');
               if (!scope.isActive) {
                 return;
               }
-              var size = map.getSize();
-              var mapExtent = map.getView().calculateExtent(size);
+              var mapRes = map.getView().getResolution();
+              var mapProj = map.getView().getProjection();
+              var mapSize = map.getSize();
+              var mapExtent = map.getView().calculateExtent(mapSize);
               var coordinate = (evt.originalEvent) ?
                   map.getEventCoordinate(evt.originalEvent) :
                   evt.coordinate;
@@ -174,7 +178,7 @@ goog.require('gf3_features_service');
               // digest cycle for us.
 
               scope.$apply(function() {
-                findFeatures(coordinate, size, mapExtent);
+                findFeatures(coordinate, mapSize, mapExtent, mapProj, mapRes);
               });
             });
 
@@ -245,23 +249,28 @@ goog.require('gf3_features_service');
             }
 
             // Find features for all type of layers
-            function findFeatures(geometry, size, mapExtent) {
+            function findFeatures(geometry, mapSize, mapExtent,
+                mapProj, mapRes) {
               var layersToQuery = gf3FeaturesUtils.getLayersToQuery(map);
               var coordinates = gf3FeaturesUtils.getCoords(geometry);
               initTooltip();
-              for (var i = 0; i < layersToQuery.length; i++) {
-                var layerToQuery = layersToQuery[i];
-                if (gf3FeaturesUtils.isVectorLayer(layerToQuery)) {
-                  var features =
-                      findVectorFeatures(coordinates, layerToQuery, geometry);
-                  if (features) {
-                    showFeatures(features, layerToQuery.get('label'));
-                  }
-                } else { // queryable bod layers
-                  findQueryableLayerFeatures(coordinates, size, mapExtent,
-                    layerToQuery);
+
+              layersToQuery.vectorLayers.forEach(function(layerToQuery) {
+                var features =
+                    findVectorFeatures(coordinates, layerToQuery, geometry);
+                if (features) {
+                  showFeatures(features, layerToQuery.get('label'));
                 }
-              }
+              });
+
+              layersToQuery.bodLayers.forEach(function(layerToQuery) {
+                findQueryableLayerFeatures(coordinates, mapSize, mapExtent,
+                    layerToQuery);
+              });
+
+              layersToQuery.wmsLayers.forEach(function(layerToQuery) {
+                findWmsLayerFeatures(layerToQuery, geometry, mapProj, mapRes);
+              });
             }
 
             function findQueryableLayerFeatures(coordinates, size, mapExtent,
@@ -341,7 +350,8 @@ goog.require('gf3_features_service');
                 name = layerName;
               }
 
-              feature.properties = {
+              // For features comming from a WMS, this is already set.
+              feature.properties = value.properties || {
                 name: name,
                 description: value.get('description'),
                 type: value.get('type'),
@@ -435,6 +445,54 @@ goog.require('gf3_features_service');
                   done = true;
                 }
               });
+            }
+
+            function findWmsLayerFeatures(layerToQuery, geometry,
+                mapProj, mapRes) {
+              var extent = layerToQuery.getExtent();
+              if (extent && !ol.extent.containsCoordinate(extent,
+                  geometry)) {
+                return;
+              }
+              var source = layerToQuery.getSource();
+              var sourceCoord, sourceRes,
+                  sourceProj = source.getProjection();
+              if (sourceProj) { // auto reprojection
+                sourceRes = ol.reproj.calculateSourceResolution(sourceProj,
+                    mapProj, geometry, mapRes);
+                sourceCoord = ol.proj.transform(geometry, mapProj,
+                    sourceProj);
+              }
+              var url = source.getGetFeatureInfoUrl(
+                  sourceCoord || geometry,
+                  sourceRes || mapRes,
+                  sourceProj || mapProj,
+                  {'INFO_FORMAT': 'text/plain'});
+              if (url) {
+                url = gaGlobalOptions.ogcproxyUrl +
+                    encodeURIComponent(url);
+                $http.get(url, {
+                  timeout: canceler.promise,
+                  layer: layerToQuery
+                }).then(function(response) {
+                  var text = response.data;
+                  if (/(Server Error|ServiceException)/.test(text)) {
+                    return 0;
+                  }
+                  var description = '<pre>' + text + '</pre>';
+                  var feature = new ol.Feature({
+                    geometry: null,
+                    description: description
+                  });
+                  feature.properties = {
+                    description: description
+                  };
+                  feature.set('featureId', parseInt(Math.random() * 1000000));
+                  feature.set('layerId', layerToQuery.id);
+                  showFeatures([feature]);
+                  return 1;
+                });
+              }
             }
 
             function initFeaturesForLayer(feature) {
