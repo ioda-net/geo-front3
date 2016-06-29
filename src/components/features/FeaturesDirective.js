@@ -450,6 +450,7 @@ goog.require('gf3_features_service');
             function findWmsLayerFeatures(layerToQuery, geometry,
                 mapProj, mapRes) {
               var extent = layerToQuery.getExtent();
+              geometry = geometry.getExtent ? geometry.getExtent() : geometry;
               if (extent && !ol.extent.containsCoordinate(extent,
                   geometry)) {
                 return;
@@ -463,9 +464,11 @@ goog.require('gf3_features_service');
                 sourceCoord = ol.proj.transform(geometry, mapProj,
                     sourceProj);
               }
+              var resolution =
+                  getWmsLayerFeaturesResolution(geometry, sourceRes, mapRes);
               var url = source.getGetFeatureInfoUrl(
                   sourceCoord || geometry,
-                  sourceRes || mapRes,
+                  resolution,
                   sourceProj || mapProj,
                   {'INFO_FORMAT': 'text/plain'});
               if (url) {
@@ -492,6 +495,16 @@ goog.require('gf3_features_service');
                   showFeatures([feature]);
                   return 1;
                 });
+              }
+            }
+
+            function getWmsLayerFeaturesResolution(geometry, sourceRes,
+                mapRes) {
+              if (geometry.length === 2) {
+                return sourceRes || mapRes;
+              } else {
+                return Math.max(geometry[2] - geometry[0],
+                  geometry[3] - geometry[1]);
               }
             }
 
