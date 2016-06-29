@@ -1,12 +1,11 @@
 describe('gf3_importows_directive', function() {
 
   describe('a good WMS GetCapabilities is received', function() {
-    var element, scope, map;
+    var element, scope, map, httpBackend;
 
     beforeEach(function() {
 
       module(function($provide) {
-        $provide.value('gaLayers', {});
         $provide.value('gaTopic', {});
         $provide.value('gaLang', {
           get: function() {
@@ -15,7 +14,9 @@ describe('gf3_importows_directive', function() {
         });
       });
 
-      inject(function($injector, $rootScope, $compile, $translate, gaGlobalOptions) {
+      inject(function($injector, $rootScope, $compile,
+          $translate, $httpBackend, gaGlobalOptions) {
+        httpBackend = $httpBackend;
         map = new ol.Map({});
         map.setSize([600, 300]);
         map.getView().fit([-20000000, -20000000, 20000000, 20000000], map.getSize());
@@ -41,9 +42,23 @@ describe('gf3_importows_directive', function() {
         $injector.get('$controller')('GfImportOwsDirectiveController', {'$scope': scope});
         $injector.get('$controller')('GfImportOwsItemDirectiveController', {'$scope': scope});
         $compile(element)(scope);
+        var expectedUrl = 'http://example.com/all?lang=somelang';
+        httpBackend.whenGET(expectedUrl).respond({});
+        httpBackend.expectGET(expectedUrl);
         $rootScope.$digest();
+        httpBackend.flush();
+        expectedUrl = 'http://example.com/all?lang=fr';
+        httpBackend.whenGET(expectedUrl).respond({});
+        httpBackend.expectGET(expectedUrl);
         $translate.use('fr');
+        $rootScope.$digest();
+        httpBackend.flush();
       });
+    });
+
+    afterEach(function () {
+      httpBackend.verifyNoOutstandingExpectation();
+      httpBackend.verifyNoOutstandingRequest();
     });
 
     it('verifies html elements', inject(function($rootScope) {
@@ -146,11 +161,6 @@ describe('gf3_importows_directive', function() {
       $rootScope.$digest();
     }));
 
-    afterEach(function () {
-      $httpBackend.verifyNoOutstandingExpectation();
-      $httpBackend.verifyNoOutstandingRequest();
-    });
-
     it('uploads and parses successfully', inject(function() {
       expect(scope.userMessage).to.be('parse_succeeded');
       expect(scope.layers.length).to.be(2); 
@@ -188,12 +198,11 @@ describe('gf3_importows_directive', function() {
   });
 
   describe('A good WMTS capabilities.xml is recieved', function() {
-    var element, scope, map;
+    var element, scope, map, httpBackend;
 
     beforeEach(function() {
 
       module(function($provide) {
-        $provide.value('gaLayers', {});
         $provide.value('gaTopic', {});
         $provide.value('gaLang', {
           get: function() {
@@ -202,7 +211,9 @@ describe('gf3_importows_directive', function() {
         });
       });
 
-      inject(function($injector, $rootScope, $compile, $translate, gaGlobalOptions) {
+      inject(function($injector, $rootScope, $compile,
+          $translate, $httpBackend, gaGlobalOptions) {
+        httpBackend = $httpBackend;
         map = new ol.Map({});
         map.setSize([600, 300]);
         map.getView().fit([-20000000, -20000000, 20000000, 20000000], map.getSize());
@@ -223,12 +234,26 @@ describe('gf3_importows_directive', function() {
         $injector.get('$controller')('GfImportOwsDirectiveController', {'$scope': scope});
         $injector.get('$controller')('GfImportOwsItemDirectiveController', {'$scope': scope});
         $compile(element)(scope);
+        var expectedUrl = 'http://example.com/all?lang=somelang';
+        httpBackend.whenGET(expectedUrl).respond({});
+        httpBackend.expectGET(expectedUrl);
         $rootScope.$digest();
+        httpBackend.flush();
+        expectedUrl = 'http://example.com/all?lang=fr';
+        httpBackend.whenGET(expectedUrl).respond({});
+        httpBackend.expectGET(expectedUrl);
         $translate.use('fr');
+        $rootScope.$digest();
+        httpBackend.flush();
       });
     });
 
-    it('verifies html elements', inject(function($rootScope) {
+    afterEach(function () {
+      httpBackend.verifyNoOutstandingExpectation();
+      httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it('verifies html elements', function() {
       var form = element.find('form');
       expect(form.find('input[type=url][ng-model=fileUrl]').length).to.be(1);
       expect(form.find('.twitter-typeahead').length).to.be(1);
@@ -241,7 +266,7 @@ describe('gf3_importows_directive', function() {
       form.find('.gf3-import-ows-open').click();
       expect(element.find('.tt-dropdown-menu').css('display')).not.to.be('none');
       expect(element.find('.tt-suggestion').length).to.be(1);
-    }));
+    });
 
     var $httpBackend;
     var expectedWtmsGetCapAdminUrl = "http://admin.ch/ogcproxy?url=https%3A%2F%2Fwmts.geo.admin.ch%2F1.0.0%2FWMTSCapabilities.xml%3Flang%3Dfr";
@@ -653,11 +678,6 @@ describe('gf3_importows_directive', function() {
       $httpBackend.flush();
       $rootScope.$digest();
     }));
-
-    afterEach(function() {
-      $httpBackend.verifyNoOutstandingExpectation();
-      $httpBackend.verifyNoOutstandingRequest();
-    });
 
     it('uploads and parses successfully', inject(function() {
       expect(scope.userMessage).to.be('parse_succeeded');

@@ -12,6 +12,7 @@ API_URL ?= //mf-chsdi3.dev.bgdi.ch
 LAST_API_URL := $(shell if [ -f .build-artefacts/last-api-url ]; then cat .build-artefacts/last-api-url 2> /dev/null; else echo '-none-'; fi)
 PUBLIC_URL ?= //public.dev.bgdi.ch
 E2E_TARGETURL ?= https://mf-geoadmin3.dev.bgdi.ch
+APPLICATION_URL ?= $(E2E_TARGETURL)
 PUBLIC_URL_REGEXP ?= ^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*
 ADMIN_URL_REGEXP ?= ^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)
 MAPPROXY_URL ?= //wmts{s}.dev.bgdi.ch
@@ -29,9 +30,9 @@ DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOYCONFIG ?=
 DEPLOY_TARGET ?= 'dev'
 LAST_DEPLOY_TARGET := $(shell if [ -f .build-artefacts/last-deploy-target ]; then cat .build-artefacts/last-deploy-target 2> /dev/null; else echo '-none-'; fi)
-OL3_VERSION ?= 34d8d77344ee0b653770f065c593d4ab7b5d102b # master, 2 mars 2016
-OL3_CESIUM_VERSION ?= 968055642a1bc7c5e74d41b5972447a135294877 # master, 24 mars 2016
-CESIUM_VERSION ?= 00face25bbb9fbc9b281d1d4b0932cf174db0a8e # camptocamp/c2c_patches (cesium 1.19), 2 mars 2016
+OL3_VERSION ?= 27853ea7dd8f4d7416ec9523b5acc2ea7bd43dc4 # a little after v3.16.0, 3 Juin 2016
+OL3_CESIUM_VERSION ?= 2ea22cfa287e6bd4a773a5d93de292c35aabf71c #v1.16, 30 mai 2016
+CESIUM_VERSION ?= d710b61029dcb66db9854f1add711e7fe296a55e # camptocamp/c2c_patches (cesium 1.21), 1 mai 2016
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"en\", \"fr\", \"it\", \"rm\"]'
@@ -231,6 +232,7 @@ ol3cesium: .build-artefacts/ol3-cesium
 	git fetch --all; \
 	git checkout $(OL3_VERSION); \
 	git show; \
+	cat ../../../scripts/ga-ol3-reproj.exports >> src/ol/reproj/reproj.js; \
 	cat ../../../scripts/ga-ol3-style.exports >> src/ol/style/style.js; \
 	cat ../../../scripts/ga-ol3-tilegrid.exports >> src/ol/tilegrid/tilegrid.js; \
 	cat ../../../scripts/ga-ol3-tilerange.exports >> src/ol/tilerange.js; \
@@ -361,6 +363,7 @@ define buildpage
 		--var "versionslashed=$4" \
 		--var "apache_base_path=$(APACHE_BASE_PATH)" \
 		--var "api_url=$(API_URL)" \
+		--var "application_url=$(APPLICATION_URL)" \
 		--var "mapproxy_url=$(MAPPROXY_URL)" \
 		--var "shop_url=$(SHOP_URL)" \
 		--var "default_topic_id=$(DEFAULT_TOPIC_ID)" \
@@ -683,8 +686,8 @@ scripts/00-$(GIT_BRANCH).conf: scripts/00-branch.mako-dot-conf \
 # We use the service to get only the minimal polyfill file for ie9
 .build-artefacts/polyfill:
 	mkdir -p $@
-	curl -q -o $@/polyfill.js 'https://cdn.polyfill.io/v2/polyfill.js?features=Array.isArray,requestAnimationFrame&flags=always,gated&unknown=polyfill'
-	curl -q -o $@/polyfill.min.js 'https://cdn.polyfill.io/v2/polyfill.min.js?features=Array.isArray,requestAnimationFrame&flags=always,gated&unknown=polyfill'
+	curl -q -o $@/polyfill.js 'https://cdn.polyfill.io/v2/polyfill.js?features=Array.isArray,requestAnimationFrame,Element.prototype.classList&flags=always,gated&unknown=polyfill'
+	curl -q -o $@/polyfill.min.js 'https://cdn.polyfill.io/v2/polyfill.min.js?features=Array.isArray,requestAnimationFrame,Element.prototype.classList&flags=always,gated&unknown=polyfill'
 
 .PHONY: cleanall
 cleanall: clean

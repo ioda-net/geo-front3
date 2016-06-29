@@ -16,6 +16,14 @@ describe('ga_map_service', function() {
     return layer;
   };
 
+  var addVectorLayerToMap = function(bodId) {
+    var layer = new ol.layer.Vector();
+    layer.bodId = bodId;
+    layer.displayInLayerManager = true;
+    map.addLayer(layer);
+    return layer;
+  };
+
   var addLocalKmlLayerToMap = function() {
     var kmlFormat = new ol.format.KML({
       extractStyles: true,
@@ -29,7 +37,9 @@ describe('ga_map_service', function() {
       opacity: 0.1,
       visible: false,
       source: new ol.source.Vector({
-        features: kmlFormat.readFeatures('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:gx="http://www.google.com/kml/ext/2.2"></kml>')
+        features: kmlFormat.readFeatures('<kml xmlns="http://www.opengis.net/' +
+            'kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:gx=' +
+            '"http://www.google.com/kml/ext/2.2"></kml>')
       })
     });
     layer.displayInLayerManager = true;
@@ -50,7 +60,9 @@ describe('ga_map_service', function() {
       opacity: 0.1,
       visible: false,
       source: new ol.source.Vector({
-        features: kmlFormat.readFeatures('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:gx="http://www.google.com/kml/ext/2.2"></kml>')
+        features: kmlFormat.readFeatures('<kml xmlns="http://www.opengis.net/' +
+            'kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" ' +
+            'xmlns:gx="http://www.google.com/kml/ext/2.2"></kml>')
       })
     });
     layer.displayInLayerManager = true;
@@ -71,7 +83,9 @@ describe('ga_map_service', function() {
       opacity: 0.1,
       visible: false,
       source: new ol.source.Vector({
-        features: kmlFormat.readFeatures('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:gx="http://www.google.com/kml/ext/2.2"></kml>')
+        features: kmlFormat.readFeatures('<kml xmlns="http://www.opengis.net/' +
+            'kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:gx=' +
+            '"http://www.google.com/kml/ext/2.2"></kml>')
       })
     });
     layer.displayInLayerManager = true;
@@ -93,6 +107,14 @@ describe('ga_map_service', function() {
       visible: false,
       source: source
     });
+    layer.displayInLayerManager = true;
+    map.addLayer(layer);
+    return layer;
+  };
+
+  var addBodWmsToMap = function(bodId) {
+    var layer = new ol.layer.Image();
+    layer.bodId = bodId;
     layer.displayInLayerManager = true;
     map.addLayer(layer);
     return layer;
@@ -154,7 +176,6 @@ describe('ga_map_service', function() {
   describe('gaLayers', function() {
     var layers, $httpBackend, $rootScope;
 
-
     beforeEach(function() {
 
       module(function($provide) {
@@ -191,6 +212,43 @@ describe('ga_map_service', function() {
           matrixSet: 'set2',
           timestamps: ['t3', 't4']
         },
+        bodwms: {
+          type: 'wms'
+        },
+        tooltip: {
+          type: 'aggregate',
+          tooltip: true,
+          subLayersIds: ['childtooltip1', 'childtooltip2']
+        },
+        notooltip: {
+          type: 'aggreagate',
+          tooltip: false,
+          subLayersIds: ['childnotooltip1', 'childnotooltip2']
+        },
+        childtooltip1: {
+          type: 'wmts',
+          matrixSet: 'set5',
+          timestamps: ['t8', 't9'],
+          parentLayerId: 'tooltip'
+        },
+        childtooltip2: {
+          type: 'wmts',
+          matrixSet: 'set5',
+          timestamps: ['t8', 't9'],
+          parentLayerId: 'tooltip'
+        },
+        childnotooltip1: {
+          type: 'wmts',
+          matrixSet: 'set6',
+          timestamps: ['t10', 't11'],
+          parentLayerId: 'notooltip'
+        },
+        childnotooltip2: {
+          type: 'wmts',
+          matrixSet: 'set7',
+          timestamps: ['t12', 't13'],
+          parentLayerId: 'notooltip'
+        },
         "ch.bafu.wrz-wildruhezonen_portal": {},
         "ch.swisstopo.swisstlm3d-wanderwege": {},
         "ch.swisstopo.fixpunkte-agnes": {},
@@ -217,7 +275,6 @@ describe('ga_map_service', function() {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
     });
-
 
     describe('getOlLayerById', function() {
       it('returns layers with correct settings', function() {
@@ -269,6 +326,151 @@ describe('ga_map_service', function() {
         expect(layer.invertedOpacity).to.be("1");
       });
     });
+
+    describe('hasTooltipBodLayer', function() {
+      it('determines if a bod layer has a tooltip', function() {
+        expect(layers.hasTooltipBodLayer(undefined)).to.be(false);
+        expect(layers.hasTooltipBodLayer(null)).to.be(false);
+        expect(layers.hasTooltipBodLayer('')).to.be(false);
+
+        var layer = layers.getOlLayerById('tooltip');
+        expect(layers.hasTooltipBodLayer(layer)).to.be(true);
+        layer = layers.getOlLayerById('notooltip');
+        expect(layers.hasTooltipBodLayer(layer)).to.be(false);
+        layer = layers.getOlLayerById('childtooltip1');
+        expect(layers.hasTooltipBodLayer(layer)).to.be(true);
+        layer = layers.getOlLayerById('childnotooltip2');
+        expect(layers.hasTooltipBodLayer(layer)).to.be(false);
+
+        expect(layers.hasTooltipBodLayer(new ol.layer.Image())).to.be(false);
+        expect(layers.hasTooltipBodLayer(new ol.layer.Vector())).to.be(false);
+      });
+    });
+  });
+
+  describe('gaLayerFilters', function() {
+    var $rootScope, $httpBackend, gaLayerFilters, gaDefinePropertiesForLayer;
+
+    beforeEach(function() {
+      module(function($provide) {
+        $provide.value('gaTopic', {
+          get: function() {
+            return {
+              id: 'sometopic',
+              backgroundLayers: ['bar']
+            }
+          }
+        });
+        $provide.value('gaLang',{
+          get: function() {
+            return 'somelang';
+          }
+        });
+      });
+      inject(function($injector) {
+        $rootScope = $injector.get('$rootScope');
+        $httpBackend = $injector.get('$httpBackend');
+        gaLayerFilters = $injector.get('gaLayerFilters');
+        gaDefinePropertiesForLayer = $injector.get(
+            'gaDefinePropertiesForLayer');
+      });
+      var expectedUrl = 'http://example.com/all?lang=somelang';
+      $httpBackend.whenGET(expectedUrl).respond({
+        toto: {
+          type: 'wmts',
+          matrixSet: 'set1',
+          timestamps: ['t1', 't2'],
+          tooltip: true
+        },
+        samere: {
+          type: 'wms',
+          matrixSet: 'set2',
+          timestamps: ['t3', 't4'],
+          tooltip: false
+        }
+      });
+      $httpBackend.expectGET(expectedUrl);
+      $rootScope.$digest();
+      $httpBackend.flush();
+    });
+
+    afterEach(function () {
+      $httpBackend.verifyNoOutstandingExpectation();
+      $httpBackend.verifyNoOutstandingRequest();
+    });
+
+    it('selected keeps layers in the display manager', function() {
+      // We use a type caster "!!" because they are used as filters and
+      // that's how they are evaluated in angular.
+      var layer = new ol.layer.Tile();
+      gaDefinePropertiesForLayer(layer);
+      layer.displayInLayerManager = true;
+      expect(!!gaLayerFilters.selected(layer)).to.be(true);
+      layer.displayInLayerManager = false;
+      expect(!!gaLayerFilters.selected(layer)).to.be(false);
+      layer.displayInLayerManager = undefined;
+      expect(!!gaLayerFilters.selected(layer)).to.be(false);
+      layer.displayInLayerManager = null;
+      expect(!!gaLayerFilters.selected(layer)).to.be(false);
+    });
+
+    it('selectedAndVisible keeps visible layers in the display manager',
+        function() {
+      var layer = new ol.layer.Tile();
+      gaDefinePropertiesForLayer(layer);
+      layer.displayInLayerManager = true;
+      layer.visible = true;
+      expect(!!gaLayerFilters.selectedAndVisible(layer)).to.be(true);
+      layer.visible = false;
+      expect(!!gaLayerFilters.selectedAndVisible(layer)).to.be(false);
+      layer.visible = true;
+      layer.displayInLayerManager = false;
+      expect(!!gaLayerFilters.selectedAndVisible(layer)).to.be(false);
+      layer.visible = false;
+      expect(!!gaLayerFilters.selectedAndVisible(layer)).to.be(false);
+    });
+
+    it('realtime keeps only realtime layers', function() {
+      var layer = new ol.layer.Vector();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaLayerFilters.realtime(layer)).to.be(false);
+      layer.updateDelay = null;
+      expect(gaLayerFilters.realtime(layer)).to.be(false);
+      layer.updateDelay = 100;
+      expect(gaLayerFilters.realtime(layer)).to.be(true);
+    });
+
+    it('potentialTooltip keeps visible layers in the display manager',
+        function() {
+      var layer = new ol.layer.Tile();
+      gaDefinePropertiesForLayer(layer);
+      layer.displayInLayerManager = true;
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+      layer.visible = true;
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+      layer.bodId = 'toto';
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(true);
+
+      var layer = new ol.layer.Tile();
+      gaDefinePropertiesForLayer(layer);
+      layer.displayInLayerManager = true;
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+      layer.visible = true;
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+      layer.bodId = 'samere';
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+
+      // Not a vector layer -> no support of intersection on vector layers
+      // in query tool
+      layer = new ol.layer.Vector({ source: new ol.source.Vector({}) });
+      gaDefinePropertiesForLayer(layer);
+      layer.displayInLayerManager = true;
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+      layer.visible = true;
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+      layer.bodId = 'toto';
+      expect(!!gaLayerFilters.potentialTooltip(layer)).to.be(false);
+    });
   });
 
   describe('gaMapUtils', function() {
@@ -282,7 +484,6 @@ describe('ga_map_service', function() {
 
     beforeEach(function() {
       map = new ol.Map({});
-
       inject(function($injector) {
         gaMapUtils = $injector.get('gaMapUtils');
       });
@@ -359,31 +560,70 @@ describe('ga_map_service', function() {
     }));
 
     it('tests getMapOverlayForBodId', inject(function(gaDefinePropertiesForLayer) {
-       var foundLayer;
-       var nonBodLayer = addLayerToMap();
-       gaDefinePropertiesForLayer(nonBodLayer);
-       foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
-       expect(foundLayer).to.eql(undefined);
+      var foundLayer;
+      var nonBodLayer = addLayerToMap();
+      gaDefinePropertiesForLayer(nonBodLayer);
+      foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
+      expect(foundLayer).to.eql(undefined);
 
-       var prevLayer = addLayerToMap();
-       gaDefinePropertiesForLayer(prevLayer);
-       prevLayer.bodId = 'ch.bod.layer';
-       prevLayer.preview = true;
-       foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
-       expect(foundLayer).to.eql(undefined);
+      var prevLayer = addLayerToMap();
+      gaDefinePropertiesForLayer(prevLayer);
+      prevLayer.bodId = 'ch.bod.layer';
+      prevLayer.preview = true;
+      foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
+      expect(foundLayer).to.eql(undefined);
 
-       var bgLayer = addLayerToMap();
-       gaDefinePropertiesForLayer(bgLayer);
-       bgLayer.bodId = 'ch.bod.layer';
-       bgLayer.background = true;
-       foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
-       expect(foundLayer).to.eql(undefined);
+      var bgLayer = addLayerToMap();
+      gaDefinePropertiesForLayer(bgLayer);
+      bgLayer.bodId = 'ch.bod.layer';
+      bgLayer.background = true;
+      foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
+      expect(foundLayer).to.eql(undefined);
 
-       var bodLayer = addLayerToMap();
-       gaDefinePropertiesForLayer(bodLayer);
-       bodLayer.bodId = 'ch.bod.layer';
-       foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
-       expect(foundLayer).to.eql(bodLayer);
+      var bodLayer = addLayerToMap();
+      gaDefinePropertiesForLayer(bodLayer);
+      bodLayer.bodId = 'ch.bod.layer';
+      foundLayer = gaMapUtils.getMapOverlayForBodId(map, 'ch.bod.layer');
+      expect(foundLayer).to.eql(bodLayer);
+    }));
+
+    it('tests isWMSLayer', inject(function(gaDefinePropertiesForLayer) {
+      expect(gaMapUtils.isWMSLayer(undefined)).to.eql(false);
+      expect(gaMapUtils.isWMSLayer(null)).to.eql(false);
+      expect(gaMapUtils.isWMSLayer('')).to.eql(false);
+
+      var layer = addKmlLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isWMSLayer(layer)).to.eql(false);
+      layer = addVectorLayerToMap('ch.bod.layer');
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isWMSLayer(layer)).to.eql(false);
+      layer = addLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isWMSLayer(layer)).to.eql(false);
+      layer = addExternalWmsLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isWMSLayer(layer)).to.eql(true);
+    }));
+
+    it('tests isVectorLayer', inject(function(gaDefinePropertiesForLayer) {
+      expect(gaMapUtils.isVectorLayer(undefined)).to.eql(false);
+      expect(gaMapUtils.isVectorLayer(null)).to.eql(false);
+      expect(gaMapUtils.isVectorLayer('')).to.eql(false);
+
+      var layer = addVectorLayerToMap('ch.bod.layer');
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isVectorLayer(layer)).to.eql(false);
+      layer.setSource(new ol.source.Vector());
+      expect(gaMapUtils.isVectorLayer(layer)).to.eql(true);
+      layer.setSource(new ol.source.ImageVector({source: new ol.source.Vector()}));
+      expect(gaMapUtils.isVectorLayer(layer)).to.eql(true);
+      layer = addLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isVectorLayer(layer)).to.eql(false);
+      layer = addKmlLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isVectorLayer(layer)).to.eql(true);
     }));
 
     it('tests isKmlLayer', inject(function(gaDefinePropertiesForLayer) {
@@ -516,6 +756,9 @@ describe('ga_map_service', function() {
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isExternalWmsLayer(layer)).to.eql(false);
       layer = addStoredKmlLayerToMap();
+      gaDefinePropertiesForLayer(layer);
+      expect(gaMapUtils.isExternalWmsLayer(layer)).to.eql(false);
+      layer = addBodWmsToMap('bodwms');
       gaDefinePropertiesForLayer(layer);
       expect(gaMapUtils.isExternalWmsLayer(layer)).to.eql(false);
     }));

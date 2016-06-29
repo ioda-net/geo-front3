@@ -106,6 +106,8 @@ goog.require('gf3');
           }
           swisssearchActive = false;
           $rootScope.$broadcast('gaSwisssearchDone');
+        } else {
+          restat.reset();
         }
       };
 
