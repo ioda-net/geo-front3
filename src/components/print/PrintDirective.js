@@ -2,20 +2,20 @@ goog.provide('gf3_print_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_map_service');
+goog.require('gf3_plugins');
 goog.require('ngeo.Print');
 goog.require('ngeo.PrintUtils');
-goog.require('sigeom_plugins');
 (function() {
 
   var module = angular.module('gf3_print_directive', [
     'ngeo',
     'ga_map_service',
-    'sigeom'
+    'gf3'
   ]);
 
   module.controller('gf3PrintDirectiveController', function($scope,
           $window, $timeout, $translate, $q, gaLayers,
-          ngeoCreatePrint, ngeoPrintUtils, sgPlugins) {
+          ngeoCreatePrint, ngeoPrintUtils, gf3Plugins) {
 
     $scope.username = undefined;
     $scope.printError = false;
@@ -116,8 +116,8 @@ goog.require('sigeom_plugins');
       var url = $window.location.toString();
       var legend = getLengend(map);
 
-      if (sgPlugins.communes) {
-        sgPlugins.communes(mapCenter)
+      if (gf3Plugins.communes) {
+        gf3Plugins.communes(mapCenter)
                 .success(doPrint)
                 // If we cannot get the commune name, launch the print anyway
                 .error(doPrint);

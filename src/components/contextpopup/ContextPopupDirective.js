@@ -2,7 +2,7 @@ goog.provide('ga_contextpopup_directive');
 
 goog.require('ga_networkstatus_service');
 goog.require('ga_permalink');
-goog.require('sigeom_plugins');
+goog.require('gf3_plugins');
 (function() {
 
   var module = angular.module('ga_contextpopup_directive', [
@@ -14,7 +14,7 @@ goog.require('sigeom_plugins');
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
           gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions,
-          sgPlugins) {
+          gf3Plugins) {
         return {
           restrict: 'A',
           replace: true,
@@ -158,9 +158,9 @@ goog.require('sigeom_plugins');
 
               });
 
-              if (sgPlugins.communes) {
+              if (gf3Plugins.communes) {
                 scope.commune = undefined;
-                sgPlugins.communes(coord21781).success(function(response) {
+                gf3Plugins.communes(coord21781).success(function(response) {
                   scope.commune = response.commune;
                 });
               }

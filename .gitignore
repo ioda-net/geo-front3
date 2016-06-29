@@ -2,7 +2,7 @@
 /node_modules
 /coverage
 /src/deps.js
-/src/js/SigeomPlugins.js
+/src/js/Gf3Plugins.js
 /src/style/app.css
 /src/index.html
 /src/mobile.html

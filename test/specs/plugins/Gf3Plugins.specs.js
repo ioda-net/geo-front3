@@ -2,7 +2,7 @@ describe('SigeomPlugins', function () {
   var plugins;
 
   beforeEach(inject(function ($injector) {
-    plugins = $injector.get('sgPlugins');
+    plugins = $injector.get('gf3Plugins');
   }));
 
   it('plugin not activated should returns undefined', function () {

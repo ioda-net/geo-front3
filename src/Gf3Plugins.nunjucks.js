@@ -6,11 +6,11 @@
 // We use gaGlobalOptions but we don't explicitely require
 // goog.require('ga'); because closure-compiler will crash due to circular
 // dependencies.
-goog.require('sigeom');
+goog.require('gf3');
 
-goog.provide('sigeom_plugins');
+goog.provide('gf3_plugins');
 (function() {
-  sigeomModule.factory('sgPlugins', function($http, gaGlobalOptions) {
+  angular.module('gf3').factory('gf3Plugins', function($http, gaGlobalOptions) {
       var plugins  = {};
 {% for plugin_name in activated_plugins %}
   plugins['${plugin_name}'] = ${available_plugins[plugin_name]}

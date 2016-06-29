@@ -36,8 +36,8 @@ describe('ga_contextpopup_directive', function() {
       coordinate: [661473, 188192]
     };
 
-    inject(function($rootScope, $compile, sgPlugins) {
-      plugins = sgPlugins;
+    inject(function($rootScope, $compile, gf3Plugins) {
+      plugins = gf3Plugins;
       map = new ol.Map({});
       $rootScope.map = map;
       $rootScope.options = {
@@ -213,7 +213,7 @@ describe('ga_contextpopup_directive', function() {
   describe('should work without the commune plugin', function () {
     var $httpBackend;
     var $timeout;
-    var sgPlugins;
+    var gf3Plugins;
 
     beforeEach(inject(function ($injector) {
       map.getEventPixel = function (event) {
@@ -231,8 +231,8 @@ describe('ga_contextpopup_directive', function() {
                 {coordinates: [2725984.4037894635, 1180787.4007025931]});
 
         $timeout = $injector.get('$timeout');
-        sgPlugins = $injector.get('sgPlugins');
-        sgPlugins.communes = undefined;
+        gf3Plugins = $injector.get('gf3Plugins');
+        gf3Plugins.communes = undefined;
       });
     }));
 
