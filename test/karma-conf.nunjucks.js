@@ -11,10 +11,19 @@ function mergeFilesWithArgv(staticFiles) {
     var source = staticFiles || [];
     var argv = process.argv;
 
+    var infra_dir = '';
+    argv.forEach(function (arg) {
+      var index = arg.indexOf('--infra-dir=');
+      if (index !== -1) {
+        infra_dir = arg.substring(12);
+        infra_dir += '/prod/';
+      }
+    });
+
     argv.forEach(function (arg) {
         var index = arg.indexOf('--portal=');
         if (index !== - 1) {
-            source.push(arg.substring(9) + '/lib/build.js');
+            source.push(infra_dir + arg.substring(9) + '/lib/build.js');
         }
     });
 
