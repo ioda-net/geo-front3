@@ -168,7 +168,9 @@ goog.require('gf3');
               url = gaUrlUtils.append(url, tokenized.parameters[i]);
             }
             url = gaUrlUtils.append(url, 'lang=' + gaLang.get());
-            url = url.replace('{Topic}', gaGlobalOptions.portalName);
+            var portal = gaGlobalOptions.portalAlias ||
+                gaGlobalOptions.portalName;
+            url = url.replace('{Topic}', portal);
 
             $scope.childoptions.searchUrl = url;
             $scope.childoptions.query = q;

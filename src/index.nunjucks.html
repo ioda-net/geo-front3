@@ -732,6 +732,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           defaultElevationModel: '${front.default_values.elevation_model}',
           resolutions: ${front.default_values.resolutions},
           portalName: '${geoportal.name}',
+          portalAlias: {% if geoportal.alias %}'${geoportal.alias}'{% else %}null{% endif %},
           dpUrl: '/lib/IE/bootstrap-datetimepicker.js',
           defaultTerrain: '${default_terrain}',
           languages: ${geoportal.langs},
