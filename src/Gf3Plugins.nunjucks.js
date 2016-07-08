@@ -13,7 +13,10 @@ goog.provide('gf3_plugins');
   angular.module('gf3').factory('gf3Plugins', function($http, gaGlobalOptions) {
       var plugins  = {};
 {% for plugin_name in activated_plugins %}
+  {# We can be building for a branch without the plugins. In this case, we avoid syntax error by not including the code #}
+  {% if available_plugins[plugin_name] %}
   plugins['${plugin_name}'] = ${available_plugins[plugin_name]}
+  {% endif %}
 {% endfor %}
 
   return plugins;
