@@ -723,6 +723,11 @@ itemscope itemtype="http://schema.org/WebApplication"
           lods: [],
           defaultEpsg: '${geoportal.epsg}',
           defaultEpsgExtent: ${geoportal.epsg_extent},
+          defaultEpsgContextPopupTitle: '${geoportal.epsg_context_popup_title}',
+          secondaryEpsg: '${geoportal.secondary_epsg}',
+          secondaryEpsgExtent: ${geoportal.secondary_epsg_extent},
+          secondaryEpsgContextPopupTitle: '${geoportal.secondary_epsg_context_popup_title}',
+          defaultToSecondaryEpsgUrl: '${geoportal.default_to_secondary_epsg_url}',
           {% if front.default_values.wms_list %}
           wmsList: ${front.default_values.wms_list},
           {% endif %}

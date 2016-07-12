@@ -25,14 +25,14 @@ goog.require('ga_urlutils_service');
     return $.map(extent, parseFloat);
   };
 
-  var addOverlay = function(gaOverlay, map, res) {
+  var addOverlay = function(gaOverlay, map, res, destinationEpsg) {
     // Unlike swisstopo, we don't rely on originToZoomLevel to determine if the
     // marker is visible. It is always visible.
     var visible = true;
     var center = [res.attrs.y, res.attrs.x];
     if (!res.attrs.y || !res.attrs.x) {
       center = ol.proj.transform([res.attrs.lon, res.attrs.lat],
-          'EPSG:4326', 'EPSG:21781');
+          'EPSG:4326', destinationEpsg);
     }
     gaOverlay.add(map,
                   center,
@@ -192,7 +192,7 @@ goog.require('ga_urlutils_service');
 
   module.controller('GaSearchTypesController',
     function($scope, $http, $q, $sce, gaUrlUtils, gaSearchLabels,
-             gaBrowserSniffer, gaMarkerOverlay, gaDebounce) {
+             gaBrowserSniffer, gaMarkerOverlay, gaDebounce, gaGlobalOptions) {
 
       // This value is used to block blur/mouseleave event, when a value
       // is selected. See #2284. It's reinitialized when a new search is
@@ -280,7 +280,8 @@ goog.require('ga_urlutils_service');
         if (gaBrowserSniffer.mobile) {
           return;
         }
-        addOverlay(gaMarkerOverlay, $scope.map, res);
+        addOverlay(
+            gaMarkerOverlay, $scope.map, res, gaGlobalOptions.defaultEpsg);
       };
 
       $scope.removePreview = function() {
@@ -316,7 +317,8 @@ goog.require('ga_urlutils_service');
 
   module.directive('gaSearchLocations',
       function($http, $q, $sce, $translate, gaUrlUtils, gaBrowserSniffer,
-               gaMarkerOverlay, gaSearchLabels, gaMapUtils, gaDebounce) {
+               gaMarkerOverlay, gaSearchLabels, gaMapUtils, gaDebounce,
+               gaGlobalOptions) {
         return {
           restrict: 'A',
           templateUrl: 'components/search/partials/searchtypes.html',
@@ -354,7 +356,8 @@ goog.require('ga_urlutils_service');
               } else {
                 gaMapUtils.zoomToExtent($scope.map, $scope.ol3d, e);
               }
-              addOverlay(gaMarkerOverlay, $scope.map, res);
+              addOverlay(
+                gaMarkerOverlay, $scope.map, res, gaGlobalOptions.defaultEpsg);
               $scope.options.valueSelected(
                   gaSearchLabels.cleanLabel(res.attrs.label));
 

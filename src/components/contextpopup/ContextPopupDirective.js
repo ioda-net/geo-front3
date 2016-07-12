@@ -27,9 +27,14 @@ goog.require('gf3_plugins');
           link: function(scope, element, attrs) {
             var heightUrl = scope.options.heightUrl;
             var qrcodeUrl = scope.options.qrcodeUrl;
-            var lv03tolv95Url = scope.options.lv03tolv95Url;
+            var defaultToSecondaryEpsgUrl =
+                scope.options.defaultToSecondaryEpsgUrl;
 
             scope.titleClose = $translate.instant('close');
+            scope.defaultEpsgContextPopupTitle =
+                gaGlobalOptions.defaultEpsgContextPopupTitle;
+            scope.secondaryEpsgContextPopupTitle =
+                gaGlobalOptions.secondaryEpsgContextPopupTitle;
 
             // The popup content is updated (a) on contextmenu events,
             // and (b) when the permalink is updated.
@@ -37,7 +42,7 @@ goog.require('gf3_plugins');
             var map = scope.map;
             var view = map.getView();
 
-            var coord21781;
+            var coordDefaultEpsg;
             var popoverShown = false;
 
             var overlay = new ol.Overlay({
@@ -84,13 +89,13 @@ goog.require('gf3_plugins');
               var pixel = (event.originalEvent) ?
                   map.getEventPixel(event.originalEvent) :
                   event.pixel;
-              coord21781 = (event.originalEvent) ?
+              coordDefaultEpsg = (event.originalEvent) ?
                   map.getEventCoordinate(event.originalEvent) :
                   event.coordinate;
-              var coord4326 = ol.proj.transform(coord21781,
-                  'EPSG:21781', 'EPSG:4326');
-              var coord2056 = ol.proj.transform(coord21781,
-                  'EPSG:21781', 'EPSG:2056');
+              var coord4326 = ol.proj.transform(coordDefaultEpsg,
+                  gaGlobalOptions.defaultEpsg, 'EPSG:4326');
+              var coordSecondaryEpsg = ol.proj.transform(coordDefaultEpsg,
+                  gaGlobalOptions.defaultEpsg, gaGlobalOptions.secondaryEpsg);
 
               // recenter on phones
               /* istanbul ignore next */
@@ -100,15 +105,16 @@ goog.require('gf3_plugins');
                   source: view.getCenter()
                 });
                 map.beforeRender(pan);
-                view.setCenter(coord21781);
+                view.setCenter(coordDefaultEpsg);
               }
 
-              scope.coord21781 = formatCoordinates(coord21781, 1);
+              scope.coordDefaultEpsg = formatCoordinates(coordDefaultEpsg, 1);
               scope.coord4326 = ol.coordinate.format(coord4326, '{y}, {x}', 5);
               var coord4326String = ol.coordinate.toStringHDMS(coord4326, 3).
                                    replace(/ /g, '');
               scope.coordiso4326 = coord4326String.replace(/N/g, 'N ');
-              scope.coord2056 = formatCoordinates(coord2056, 2) + ' *';
+              scope.coordSecondaryEpsg =
+                  formatCoordinates(coordSecondaryEpsg, 2) + ' *';
               /* istanbul ignore next */
               if (coord4326[0] < 6 && coord4326[0] >= 0) {
                 var utm_31t = ol.proj.transform(coord4326,
@@ -138,31 +144,35 @@ goog.require('gf3_plugins');
 
                 $http.get(heightUrl, {
                   params: {
-                    easting: coord21781[0],
-                    northing: coord21781[1],
+                    easting: coordDefaultEpsg[0],
+                    northing: coordDefaultEpsg[1],
                     elevationModel: gaGlobalOptions.defaultElevationModel
                   }
                 }).success(function(response) {
                   scope.altitude = parseFloat(response.height);
                 });
 
-                $http.get(lv03tolv95Url, {
-                  params: {
-                    easting: coord21781[0],
-                    northing: coord21781[1]
-                  }
-                }).success(function(response) {
-                  coord2056 = response.coordinates;
-                  scope.coord2056 = formatCoordinates(coord2056, 1);
-                });
-
+                if (defaultToSecondaryEpsgUrl) {
+                  $http.get(defaultToSecondaryEpsgUrl, {
+                    params: {
+                      easting: coordDefaultEpsg[0],
+                      northing: coordDefaultEpsg[1]
+                    }
+                  }).success(function(response) {
+                    coordSecondaryEpsg = response.coordinates;
+                    scope.coordSecondaryEpsg =
+                        formatCoordinates(coordSecondaryEpsg, 1);
+                  });
+                }
               });
+
 
               if (gf3Plugins.communes) {
                 scope.commune = undefined;
-                gf3Plugins.communes(coord21781).success(function(response) {
-                  scope.commune = response.commune;
-                });
+                gf3Plugins.communes(coordDefaultEpsg)
+                  .success(function(response) {
+                    scope.commune = response.commune;
+                  });
               }
 
               updatePopupLinks();
@@ -172,7 +182,7 @@ goog.require('gf3_plugins');
                 hidePopover();
               });
 
-              overlay.setPosition(coord21781);
+              overlay.setPosition(coordDefaultEpsg);
               showPopover();
             };
 
@@ -220,7 +230,7 @@ goog.require('gf3_plugins');
             // Listen to permalink change events from the scope.
             /* istanbul ignore next */
             scope.$on('gaPermalinkChange', function(event) {
-              if (angular.isDefined(coord21781) && popoverShown) {
+              if (angular.isDefined(coordDefaultEpsg) && popoverShown) {
                 updatePopupLinks();
               }
             });
@@ -245,8 +255,8 @@ goog.require('gf3_plugins');
 
             function updatePopupLinks() {
               var p = {
-                X: Math.round(coord21781[1], 1),
-                Y: Math.round(coord21781[0], 1)
+                X: Math.round(coordDefaultEpsg[1], 1),
+                Y: Math.round(coordDefaultEpsg[0], 1)
               };
 
               var contextPermalink = gaPermalink.getHref(p);
