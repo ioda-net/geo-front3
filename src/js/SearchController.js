@@ -7,9 +7,9 @@ goog.provide('ga_search_controller');
       function($scope, gaGlobalOptions) {
         $scope.options = {
           searchUrl: gaGlobalOptions.cachedApiUrl +
-              '/rest/services/{Topic}/SearchServer?',
+              '/rest/services/SearchServer?',
           featureUrl: gaGlobalOptions.cachedApiUrl +
-              '/rest/services/{Topic}/MapServer/{Layer}/{Feature}'
+              '/rest/services/MapServer/{Layer}/{Feature}'
         };
       });
 })();

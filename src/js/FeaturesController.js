@@ -8,7 +8,7 @@ goog.provide('gf3_features_controller');
         $scope.gridApi = {};
         $scope.options = {
           tolerance: gaBrowserSniffer.touchDevice ? 15 : 5,
-          identifyUrlTemplate: gaGlobalOptions.apiUrl + '/rest/services/{Portal}/MapServer/identify'.replace('{Portal}', gaGlobalOptions.portalName),
+          identifyUrlTemplate: gaGlobalOptions.apiUrl + '/rest/services/MapServer/identify',
           params: {
             geometryType: 'esriGeometryPoint',
             geometryFormat: 'geojson'
