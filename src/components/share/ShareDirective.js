@@ -90,7 +90,7 @@ goog.require('ga_permalink');
 
   module.directive('gaShare',
     function($document, $http, $timeout, $translate, $window, gaPermalink,
-        gaBrowserSniffer) {
+        gaBrowserSniffer, gaGlobalOptions) {
       return {
         restrict: 'A',
         scope: {
@@ -140,7 +140,7 @@ goog.require('ga_permalink');
                 url: scope.permalinkValue
               }
             }).success(function(response) {
-              scope.permalinkValue = response.shorturl;
+              scope.permalinkValue = gaGlobalOptions.apiUrl + response.shorturl;
               scope.urlShortened = true;
               scope.$applyAsync(function() {
                 // Auto-select the shortened permalink (not on mobiles)
