@@ -9,6 +9,7 @@
   "author": "Swisstopo",
   "readmeFileName": "README.md",
   "devDependencies": {
+    "uglify-js": "^2.7",
     "babel": "^5.8.34",
     "browserstack-webdriver": "2.41.1",
     "q": "^1.4.1",
