@@ -175,7 +175,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
         </a>&nbsp;&nbsp;
         <a target="_blank" href="help/#?lang={{langId}}" translate>help_label</a>&nbsp;&nbsp;
-  {% if front.url.legends %}
+  {% if front.get('url', {}).get('legends', None) %}
         <a target="_blank" href="${front.url.legends}" translate>legend_label</a>&nbsp;&nbsp;
   {% endif %}
         <a href="{{deviceSwitcherHref}}" translate>mobile_redirect</a>&nbsp;&nbsp;
@@ -277,7 +277,9 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   {% endif %}
      <div class="pull-right">
+        {% if front.get('url', {}).get('copyrights', None) %}
         <a target="_blank" href="${front.url.copyrights}" translate>copyright_label</a>
+        {% endif %}
       </div>
   {% if device == 'index' %}
       {# <!-- Remove fix temp https://github.com/ioda-net/geo-front3/issues/58 -->
@@ -512,7 +514,9 @@ itemscope itemtype="http://schema.org/WebApplication"
                 <a target="_blank" translate translate-attr-href="{{topicId + '_service_link_href'}}" >{{topicId + '_service_link_label'}}</a>
                 <br>
                 #}
+                {% if front.get('url', {}).get('copyrights', None) %}
                 <a target="_blank" href="${front.url.copyrights}" translate>copyright_label</a>
+                {% endif %}
               </p>
             </div>
           </div>
