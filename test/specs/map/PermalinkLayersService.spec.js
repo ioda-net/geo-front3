@@ -339,7 +339,7 @@ describe('ga_permalinklayers_service', function() {
         def.resolve();
         $rootScope.$digest();
         expect(map.getLayers().getLength()).to.be(2);
-        expect(permalink.getParams().layers).to.be('bar,foo');
+        expect(permalink.getParams().layers).to.be('foo,bar');
 
         // On next topic change the selected layers are added and the previous
         // removed
@@ -347,7 +347,7 @@ describe('ga_permalinklayers_service', function() {
         $rootScope.$broadcast('gaTopicChange', {});
         expect(map.getLayers().getLength()).to.be(2);
         $rootScope.$digest();
-        expect(permalink.getParams().layers).to.be('bar2,foo2');
+        expect(permalink.getParams().layers).to.be('foo2,bar2');
 
         // For next test 
         permalink.deleteParam('layers');
@@ -367,7 +367,7 @@ describe('ga_permalinklayers_service', function() {
         $rootScope.$broadcast('gaTopicChange', {});
         expect(map.getLayers().getLength()).to.be(2);
         $rootScope.$digest();
-        expect(permalink.getParams().layers).to.be('bar,foo');
+        expect(permalink.getParams().layers).to.be('foo,bar');
 
         // For next test
         topic = undefined;
@@ -383,11 +383,11 @@ describe('ga_permalinklayers_service', function() {
         var kmlLayer = addKmlLayerToMap();
         gaDefinePropertiesForLayer(kmlLayer);
         $rootScope.$digest();
-        expect(permalink.getParams().layers).to.eql('bar,foo,KML||http://foo.ch/bar.kml');
+        expect(permalink.getParams().layers).to.eql('foo,bar,KML||http://foo.ch/bar.kml');
         topic = topicLoaded3;
         $rootScope.$broadcast('gaTopicChange', {});
         $rootScope.$digest();
-        expect(permalink.getParams().layers).to.eql('bar2,foo2,KML||http://foo.ch/bar.kml');
+        expect(permalink.getParams().layers).to.eql('KML||http://foo.ch/bar.kml,foo2,bar2');
         map.removeLayer(kmlLayer);
         $rootScope.$digest();
       }));
@@ -403,7 +403,7 @@ describe('ga_permalinklayers_service', function() {
         topic = topicLoaded4;
         $rootScope.$broadcast('gaTopicChange', {});
         $rootScope.$digest();
-        expect(permalink.getParams().layers).to.eql('bar3,foo3,WMS||The wms layer||http://foo.ch/wms||ch.wms.name');
+        expect(permalink.getParams().layers).to.eql('WMS||The wms layer||http://foo.ch/wms||ch.wms.name,foo3,bar3');
         map.removeLayer(wmsLayer);
         $rootScope.$digest();
       }));

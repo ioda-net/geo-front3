@@ -249,8 +249,7 @@ goog.require('ga_wms_service');
                   }
                   layer.time = timestamp;
                 }
-                //map.addLayer(layer);
-                map.getLayers().insertAt(0, layer);
+                map.addLayer(layer);
               }
 
             } else if (gaMapUtils.isKmlLayer(layerSpec)) {
