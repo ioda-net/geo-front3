@@ -229,45 +229,26 @@ describe('ga_contextpopup_directive', function() {
     var $timeout;
     var gf3Plugins;
 
-//    beforeEach(inject(function ($injector) {
-//      map.getEventPixel = function (event) {
-//        return [25, 50];
-//      };
-//      map.getEventCoordinate = function (event) {
-//        return [661473, 188192];
-//      };
-//
-//      inject(function ($injector) {
-//        $httpBackend = $injector.get('$httpBackend');
-//        $httpBackend.when('GET', expectedHeightUrl).respond(
-//                {height: '1233'});
-//        $httpBackend.when('GET', expectedReframeUrl).respond(
-//                {coordinates: [2725984.4037894635, 1180787.4007025931]});
-//        $httpBackend.when('GET', expectedw3wUrl).respond(
-//          {words: 'das.ist.test'});
-//
-//        $timeout = $injector.get('$timeout');
-//        gf3Plugins = $injector.get('gf3Plugins');
-//        gf3Plugins.communes = undefined;
-//      });
-//    }));
+    beforeEach(inject(function ($injector) {
+      map.getEventPixel = function (event) {
+        return [25, 50];
+      };
+      map.getEventCoordinate = function (event) {
+        return [661473, 188192];
+      };
 
-    beforeEach(inject(function($injector) {
-      map.getEventPixel = function(event) { return [25, 50]; };
-      map.getEventCoordinate = function(event) { return [661473, 188192]; };
-
-      inject(function($injector) {
+      inject(function ($injector) {
         $httpBackend = $injector.get('$httpBackend');
         $httpBackend.when('GET', expectedHeightUrl).respond(
-          {height: '1233'});
+                {height: '1233'});
         $httpBackend.when('GET', expectedReframeUrl).respond(
-          {coordinates: [2725984.4037894635, 1180787.4007025931]});
-        $httpBackend.when('GET', expecteCommunesUrl).respond(
-          {commune: 'Moutier'});
+                {coordinates: [2725984.4037894635, 1180787.4007025931]});
         $httpBackend.when('GET', expectedw3wUrl).respond(
           {words: 'das.ist.test'});
 
         $timeout = $injector.get('$timeout');
+        gf3Plugins = $injector.get('gf3Plugins');
+        gf3Plugins.communes = undefined;
       });
     }));
 
