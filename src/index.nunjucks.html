@@ -74,35 +74,22 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta itemprop="image" content="${versionslashed}img/logo_geoportal.png"/>
 #}
     <script>
-      (function(){
-        var w = window, l = w.location, n = w.navigator, pathname, p = '${device}',
-          m = l.search.match(/(?:mobile=(true|false))/);
-
-        if (!l.origin) { l.origin = l.protocol + "//" + l.hostname } // IE fix
-
-        // avoid loops
-        m = (m) ? m[1] : m;
-        if ((p=='index' && m=='false') || (p=='mobile' && m=='true')) {
-          return;
+      (function() {
+        var w = window, l = w.location, n = w.navigator, p = '${device}', m = l.search.match(/(?:mobile=(true|false))/);
+        if (!l.origin) {
+          l.origin=l.protocol + "//" +l.hostname; // IE fix
         }
-
-        var redirectToMobile = function() {
-          pathname = !/(index|embed)\.html$/.test(l.pathname) ?
-            l.pathname + 'mobile.html' : l.pathname.replace(/(index|embed)\.html$/, 'mobile.html');
-          l.href = l.origin + pathname + l.search;
-        }
-        var redirectToDesktop = function() {
-          l.href = l.origin + l.pathname.replace(/(mobile|embed)\.html$/, 'index.html') + l.search;
-        }
-
-        var onMobile = ((('ontouchstart' in w) ||
-            (('maxTouchPoints' in n) && n.maxTouchPoints > 1) ||
-            (('msMaxTouchPoints' in n) && n.msMaxTouchPoints > 1)) &&
-            (screen.width<=768 || screen.height<=768));
-        if (m=='false' || (!onMobile && p=='mobile') ) {
-          redirectToDesktop();
-        } else if (m=='true' || (onMobile && p=='index') ) {
-          redirectToMobile();
+        m = (m) ? m[1] : m; // avoid loops
+        if (!(p == 'desktop' && m == 'false') && !(p == 'mobile' && m == 'true')) {
+          var href, onMobile = (('ontouchstart' in w) || n.maxTouchPoints > 1 || n.msMaxTouchPoints > 1) && (screen.width <= 768 || screen.height <= 768);
+          if (m == 'false' || (!onMobile && p == 'mobile')) {
+            href = l.origin + l.pathname.replace(/\/(|(mobile|embed)\.html)$/, '/index.html') + l.search;
+          } else if (m == 'true' || (onMobile && p == 'desktop')) {
+            href = l.origin + l.pathname.replace(/\/(|(index|embed)\.html)$/, '/mobile.html') + l.search;
+          }
+          if (href && href != l.href) {
+            l.href = href;
+          }
         }
       })();
     </script>
@@ -662,10 +649,9 @@ itemscope itemtype="http://schema.org/WebApplication"
       window.CLOSURE_NO_DEPS = true;
     </script>
 
-    <!-- ol-debug.js includes Closure's base.js code, so we don't
+    <!-- ol3cesium-debug.js includes Closure's base.js code, so we don't
          need to load base.js ourselves. We keep Closure's base.js file
          around in case we need to test with ol.js or ol-simple.js. -->
-    
     <!--<script src="lib/closure/base.js"></script>-->
     <!-- ol3 and ol3-cesium are built together in debug mode -->
     <script src="lib/ol3cesium-debug.js"></script>
@@ -716,6 +702,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           resourceUrl: location.origin + pathname + '${versionslashed}',
           publicResourceUrl: '${front.build.public_resource_url}',
           ogcproxyUrl : location.protocol + '${front.build.api_url}' + '/ogcproxy?url=',
+          w3wUrl : 'https://api.what3words.com',
+          w3wApiKey : 'OM48J50Y',
           whitelist: [
             'https://' + window.location.host + '/**'
           ],

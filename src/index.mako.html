@@ -70,35 +70,22 @@ itemscope itemtype="http://schema.org/WebApplication"
     <meta itemprop="image" content="${application_url}/${versionslashed}img/logo_geoportal.png"/>
 
     <script>
-      (function(){
-        var w = window, l = w.location, n = w.navigator, pathname, p = '${device}',
-          m = l.search.match(/(?:mobile=(true|false))/);
-
-        if (!l.origin) { l.origin = l.protocol + "//" + l.hostname } // IE fix
-
-        // avoid loops
-        m = (m) ? m[1] : m;
-        if ((p=='desktop' && m=='false') || (p=='mobile' && m=='true')) {
-          return;
+      (function() {
+        var w = window, l = w.location, n = w.navigator, p = '${device}', m = l.search.match(/(?:mobile=(true|false))/);
+        if (!l.origin) {
+          l.origin=l.protocol + "//" +l.hostname; // IE fix
         }
-
-        var redirectToMobile = function() {
-          pathname = !/(index|embed)\.html$/.test(l.pathname) ?
-            l.pathname + 'mobile.html' : l.pathname.replace(/(index|embed)\.html$/, 'mobile.html');
-          l.href = l.origin + pathname + l.search;
-        }
-        var redirectToDesktop = function() {
-          l.href = l.origin + l.pathname.replace(/(mobile|embed)\.html$/, 'index.html') + l.search;
-        }
-
-        var onMobile = ((('ontouchstart' in w) ||
-            (('maxTouchPoints' in n) && n.maxTouchPoints > 1) ||
-            (('msMaxTouchPoints' in n) && n.msMaxTouchPoints > 1)) &&
-            (screen.width<=768 || screen.height<=768));
-        if (m=='false' || (!onMobile && p=='mobile') ) {
-          redirectToDesktop();
-        } else if (m=='true' || (onMobile && p=='desktop') ) {
-          redirectToMobile();
+        m = (m) ? m[1] : m; // avoid loops
+        if (!(p == 'desktop' && m == 'false') && !(p == 'mobile' && m == 'true')) {
+          var href, onMobile = (('ontouchstart' in w) || n.maxTouchPoints > 1 || n.msMaxTouchPoints > 1) && (screen.width <= 768 || screen.height <= 768);
+          if (m == 'false' || (!onMobile && p == 'mobile')) {
+            href = l.origin + l.pathname.replace(/\/(|(mobile|embed)\.html)$/, '/index.html') + l.search;
+          } else if (m == 'true' || (onMobile && p == 'desktop')) {
+            href = l.origin + l.pathname.replace(/\/(|(index|embed)\.html)$/, '/mobile.html') + l.search;
+          }
+          if (href && href != l.href) {
+            l.href = href;
+          }
         }
       })();
     </script>
@@ -280,7 +267,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   % endif
      <div class="pull-right">
-        <a target="_blank" href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
+        <a target="_blank" href="https://www.geo.admin.ch/{{langId}}/about-swiss-geoportal/impressum.html#copyright" translate>copyright_label</a>
       </div>
   % if device == 'desktop':
       <div class="pull-right">
@@ -515,7 +502,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               <p>
                 <a target="_blank" translate translate-attr-href="{{topicId + '_service_link_href'}}" >{{topicId + '_service_link_label'}}</a>
                 <br>
-                <a target="_blank" href="http://www.geo.admin.ch/internet/geoportal/{{langId}}/home/geoadmin/contact.html#copyright" translate>copyright_label</a>
+                <a target="_blank" href="https://www.geo.admin.ch/{{langId}}/about-swiss-geoportal/impressum.html#copyright" translate>copyright_label</a>
               </p>
             </div>
           </div>
@@ -691,7 +678,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       window.CLOSURE_NO_DEPS = true;
     </script>
 
-    <!-- ol-debug.js includes Closure's base.js code, so we don't
+    <!-- ol3cesium-debug.js includes Closure's base.js code, so we don't
          need to load base.js ourselves. We keep Closure's base.js file
          around in case we need to test with ol.js or ol-simple.js. -->
     <!--<script src="lib/closure/base.js"></script>-->
@@ -733,6 +720,12 @@ itemscope itemtype="http://schema.org/WebApplication"
         function getParam(name){
           return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.search)||[,""])[1].replace(/\+/g, '%20'))||null;
         }
+
+        var adminUrlRegexp = new RegExp('${admin_url_regexp}');
+        var wmsUrl = location.protocol + getParam('wms_url');
+        wmsUrl = adminUrlRegexp.test(wmsUrl) ? wmsUrl : location.protocol + '${wms_url}';
+        var printUrl = location.protocol + getParam('print_url');
+        printUrl = adminUrlRegexp.test(printUrl) ? printUrl : location.protocol + '${print_url}';
 
         var apiParam = getParam('api_url');
         var apiEnv = getParam('api_env');
@@ -782,14 +775,19 @@ itemscope itemtype="http://schema.org/WebApplication"
           pegman: !!window.location.search.match(/(pegman=true)/),
           mapUrl : location.origin + '${apache_base_path}',
           apiUrl : location.protocol + apiUrl,
+          printUrl : printUrl,
           mapproxyUrl : location.protocol + '${mapproxy_url}',
           shopUrl : location.protocol + shopUrl,
           publicUrl : location.protocol + '${public_url}',
           publicUrlRegexp: new RegExp('${public_url_regexp}'),
-          adminUrlRegexp: new RegExp('${admin_url_regexp}'),
+          adminUrlRegexp: adminUrlRegexp,
           cachedApiUrl: location.protocol + apiUrl + cacheAdd,
+          cachedPrintUrl: printUrl + cacheAdd,
           resourceUrl: location.origin + pathname + '${versionslashed}',
           ogcproxyUrl : location.protocol + apiUrl + '/ogcproxy?url=',
+          wmsUrl: wmsUrl,
+          w3wUrl : 'https://api.what3words.com',
+          w3wApiKey : 'OM48J50Y',
           whitelist: [
             'https://' + window.location.host + '/**'
           ],

@@ -35,6 +35,8 @@ beforeEach(function() {
       resourceUrl: location.origin + pathname + versionSlashed,
       ogcproxyUrl : location.protocol + apiUrl + '/ogcproxy?url=',
       shopUrl : location.protocol + '//shop.bgdi.ch',
+      w3wUrl: 'dummy.test.url.com',
+      w3wApiKey: 'testkey',
       whitelist: [
         'https://' + location.host + '/**'
       ],

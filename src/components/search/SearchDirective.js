@@ -8,7 +8,9 @@ goog.require('ga_search_service');
 goog.require('ga_search_type_directives');
 goog.require('ga_topic_service');
 goog.require('ga_translation_service');
+goog.require('ga_what3words_service');
 goog.require('gf3');
+
 (function() {
 
   var module = angular.module('ga_search_directive', [
@@ -21,6 +23,7 @@ goog.require('gf3');
     'ga_urlutils_service',
     'ga_translation_service',
     'ga_topic_service',
+    'ga_what3words_service',
     'gf3'
   ]);
 
@@ -74,7 +77,7 @@ goog.require('gf3');
     function($scope, $rootScope, $sce, $timeout, gaPermalink,
              gaUrlUtils, gaSearchGetCoordinate, gaMapUtils, gaMarkerOverlay,
              gaKml, gaPreviewLayers, gaLang, gaTopic, gaLayers,
-             gaSearchTokenAnalyser, gaGlobalOptions, gf3GlobalOptions) {
+             gaSearchTokenAnalyser, gaWhat3Words, gf3GlobalOptions) {
       var blockQuery = false;
       var restat = new ResultStats();
       $scope.restat = restat;
@@ -116,6 +119,7 @@ goog.require('gf3');
       $scope.childoptions.query = '';
 
       $scope.clearInput = function() {
+        gaWhat3Words.cancel();
         restat.reset();
         gaMarkerOverlay.remove($scope.map);
         gaPreviewLayers.removeAll($scope.map);
@@ -140,6 +144,7 @@ goog.require('gf3');
 
       var startQuery = function(q) {
         restat.reset();
+        gaWhat3Words.cancel();
 
         if (!blockQuery) {
           // URL?
@@ -154,10 +159,26 @@ goog.require('gf3');
           var position = gaSearchGetCoordinate(
               $scope.map.getView().getProjection().getExtent(), q);
 
+          // w3w word?
+          var w3w = gaWhat3Words.getCoordinate(q);
+
           if (position) {
             gaMapUtils.moveTo($scope.map, $scope.ol3d, 8, position);
             gaMarkerOverlay.add($scope.map, position,
                                 [position, position], true);
+          //TODO: canceling requests that might be out there...
+          } else if (w3w) {
+            w3w.then(function(response) {
+              var res = response.data;
+              if (res && res.geometry && res.geometry.lng && res.geometry.lat) {
+                var newPos = ol.proj.transform([res.geometry.lng,
+                                                res.geometry.lat],
+                                               'EPSG:4326', 'EPSG:21781');
+                gaMapUtils.moveTo($scope.map, $scope.ol3d, 8, newPos);
+                gaMarkerOverlay.add($scope.map, newPos,
+                                  [newPos, newPos], true);
+              }
+            });
           } else {
             // Standard query then
             var tokenized = gaSearchTokenAnalyser.run(q);

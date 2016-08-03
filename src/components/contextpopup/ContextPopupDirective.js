@@ -2,19 +2,21 @@ goog.provide('ga_contextpopup_directive');
 
 goog.require('ga_networkstatus_service');
 goog.require('ga_permalink');
+goog.require('ga_what3words_service');
 goog.require('gf3_plugins');
 (function() {
 
   var module = angular.module('ga_contextpopup_directive', [
     'ga_networkstatus_service',
     'ga_permalink',
+    'ga_what3words_service',
     'pascalprecht.translate'
   ]);
 
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
           gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions,
-          gf3Plugins) {
+          gaWhat3Words, gf3Plugins) {
         return {
           restrict: 'A',
           replace: true,
@@ -42,7 +44,7 @@ goog.require('gf3_plugins');
             var map = scope.map;
             var view = map.getView();
 
-            var coordDefaultEpsg;
+            var coordDefaultEpsg, coord4326, coordSecondaryEpsg;
             var popoverShown = false;
 
             var overlay = new ol.Overlay({
@@ -69,6 +71,13 @@ goog.require('gf3_plugins');
               return coord + ' ' + zone;
             };
 
+            var updateW3W = function() {
+              gaWhat3Words.getWords(coord4326[1],
+                                    coord4326[0]).then(function(res) {
+                scope.w3w = res;
+              });
+            };
+
             var handler = function(event) {
               if (scope.is3dActive) {
                 return;
@@ -92,9 +101,9 @@ goog.require('gf3_plugins');
               coordDefaultEpsg = (event.originalEvent) ?
                   map.getEventCoordinate(event.originalEvent) :
                   event.coordinate;
-              var coord4326 = ol.proj.transform(coordDefaultEpsg,
+              coord4326 = ol.proj.transform(coordDefaultEpsg,
                   gaGlobalOptions.defaultEpsg, 'EPSG:4326');
-              var coordSecondaryEpsg = ol.proj.transform(coordDefaultEpsg,
+              coordSecondaryEpsg = ol.proj.transform(coordDefaultEpsg,
                   gaGlobalOptions.defaultEpsg, gaGlobalOptions.secondaryEpsg);
 
               // recenter on phones
@@ -163,6 +172,8 @@ goog.require('gf3_plugins');
                     scope.coordSecondaryEpsg =
                         formatCoordinates(coordSecondaryEpsg, 1);
                   });
+
+                  updateW3W();
                 }
               });
 
@@ -225,6 +236,9 @@ goog.require('gf3_plugins');
             /* istanbul ignore next */
             $rootScope.$on('$translateChangeEnd', function() {
               scope.titleClose = $translate.instant('close');
+              if (popoverShown) {
+                updateW3W();
+              }
             });
 
             // Listen to permalink change events from the scope.
