@@ -17,13 +17,13 @@
       <select class="form-control" ng-model="scale" ng-options="l for l in layout.scales"></select>
     </div>
   </div>
-  <div class="form-group" ng-if="layout.dpis.length > 1">
+  <div class="form-group" ng-show="layout.dpis.length > 1">
     <label class="col-xs-4 control-label" translate>print_dpi</label>
     <div class="col-xs-8">
       <select class="form-control" ng-model="dpi" ng-options="l for l in layout.dpis"></select>
     </div>
   </div>
-  <div class="form-group" ng-if="layout.dpis.length === 1">
+  <div class="form-group" ng-show="layout.dpis.length === 1">
     <label class="col-xs-4 control-label" translate>print_dpi</label>
     <div class="col-xs-8">
       <input class="form-control" ng-model="layout.dpis[0]" readonly>
