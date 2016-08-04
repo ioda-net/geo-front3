@@ -193,10 +193,10 @@ goog.require('ga_wms_service');
                           p.layers_timestamp.split(',') : undefined
             );
           } else {
-            addLayers(topic.selectedLayers.slice(0));
+            addLayers(topic.selectedLayers.slice(0).reverse());
             var activatedLayers = topic.activatedLayers;
             if (activatedLayers.length) {
-              addLayers(activatedLayers.slice(0), null, false);
+              addLayers(activatedLayers.slice(0).reverse(), null, false);
             }
           }
         };
