@@ -1213,7 +1213,8 @@ goog.require('ga_urlutils_service');
                   projection: layer.epsg || gaGlobalOptions.defaultEpsg,
                   params: wmsParams,
                   gutter: layer.gutter || 0,
-                  crossOrigin: crossOrigin,
+                  crossOrigin: layer.crossOrigin === 'undefined' ?
+                      undefined : crossOrigin,
                   tileGrid: gaTileGrid.get(layer.resolutions,
                       layer.minResolution, 'wms'),
                   tileLoadFunction: tileLoadFunction,
