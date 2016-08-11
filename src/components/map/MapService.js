@@ -1210,6 +1210,7 @@ goog.require('ga_urlutils_service');
                   // Temporary until https://github.com/openlayers/ol3/pull/4964
                   // is merged upstream
                   cacheSize: 2048 * 3,
+                  projection: layer.epsg || gaGlobalOptions.defaultEpsg,
                   params: wmsParams,
                   gutter: layer.gutter || 0,
                   crossOrigin: crossOrigin,
