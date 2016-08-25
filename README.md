@@ -1,19 +1,15 @@
-geo-front3
-==========
-
-# Getting started
+# Getting started with geo-front3
 
 Checkout the source code:
 
     $ git clone https://github.com/ioda-net/mf-geoadmin3.git
 
-View the [getting started document in geo-infra](https://github.com/ioda-net/geo-infra/blob/master/docs/getting-started.rst) to start with this project.
+View the [getting started](https://docs.geoportal.xyz/getting-started.html) to start with this project. To learn more specifically about the frontend, look at the [frontend page of the developer guide](https://docs.geoportal.xyz/dev/front.html). You can also look at [the documentation](https://docs.geoportal.xyz/).
 
-To learn more specifically about the frontend, look at the [frontend page of the documentation](https://github.com/ioda-net/geo-infra/blob/master/docs/front/index.rst).
+In a nutshell:
 
-The build process relies on [mapinfra](https://github.com/ioda-net/mapinfra). Before building the project, you
-must run `npm install` in the root folder of the project in order to download
-all the dependencies. This is required to have some commands in `node_modules/.bin` to build the project.
+- The build process relies on [geo-infra](https://github.com/ioda-net/geo-infra), our infrastructure.
+- Before building the project, you must run `npm install` in the root folder of this project in order to download all the dependencies. This is required to have some commands in `node_modules/.bin` to build the project.
 
 
 # Credits
