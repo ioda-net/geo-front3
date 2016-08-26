@@ -107,8 +107,11 @@ goog.require('ngeo.PrintUtils');
       var map = $scope.map;
       var mapCenter = map.getView().getCenter();
       var cornerCoords = ngeoPrintUtils.getBottomLeftCorner(mapCenter);
-      var coordsToPrint = 'x = ' + parseInt(cornerCoords[0], 10) + ', y = ' +
-              parseInt(cornerCoords[1], 10);
+      var coordsToPrint = $translate.instant('x =') + ' ' +
+            parseInt(cornerCoords[0], 10) +
+            ', ' +
+            $translate.instant('y =') + ' ' +
+            parseInt(cornerCoords[1], 10);
 
       $scope.options.printing = true;
       $scope.options.printsuccess = false;
