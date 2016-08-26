@@ -47,7 +47,7 @@ goog.require('ga_urlutils_service');
           }
           if (minResolution) { // we remove useless resolutions
             for (var i = 0, ii = resolutions.length; i < ii; i++) {
-              if (resolutions[i] === i) {
+              if (resolutions[i] === minResolution) {
                 resolutions = resolutions.splice(0, i + 1);
                 break;
               }
@@ -199,7 +199,12 @@ goog.require('ga_urlutils_service');
                   src.updateDimensions({'Time': val});
                 } else if (src instanceof ol.source.ImageWMS ||
                     src instanceof ol.source.TileWMS) {
-                  src.updateParams({'TIME': val});
+                  if (angular.isDefined(val)) {
+                    src.updateParams({'TIME': val});
+                  } else {
+                    delete src.getParams().TIME;
+                    src.updateParams();
+                  }
                 }
                 this.set('time', val);
               }
@@ -950,7 +955,9 @@ goog.require('ga_urlutils_service');
           }
           lastLangUsed = lang;
           var url = getLayersConfigUrl(lang);
-          return $http.get(url).then(function(response) {
+          return $http.get(url, {
+            cache: true
+          }).then(function(response) {
             if (!layers) { // First load
               layers = response.data;
               // We register events only when layers are loaded
@@ -987,11 +994,11 @@ goog.require('ga_urlutils_service');
          * Returns an Cesium terrain provider.
          */
         this.getCesiumTerrainProviderById = function(bodId) {
-          var provider, config = layers[bodId];
-          var config3d = this.getConfig3d(config);
-          var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
-          var requestedLayer = config3d.serverLayerName || bodId;
+          var provider;
+          var config3d = this.getConfig3d(layers[bodId]);
           if (config3d.type == 'terrain') {
+            var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
+            var requestedLayer = config3d.serverLayerName || bodId;
             provider = new Cesium.CesiumTerrainProvider({
               url: getTerrainTileUrl(requestedLayer, timestamp),
               availableLevels: window.terrainAvailableLevels,
@@ -1011,7 +1018,6 @@ goog.require('ga_urlutils_service');
           bodId = config.config3d || bodId;
           var config3d = this.getConfig3d(config);
           // Only native tiles have a 3d config
-          var hasNativeTiles = !!config.config3d;
           var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
           var requestedLayer = config3d.wmsLayers || config3d.serverLayerName ||
               bodId;
@@ -1033,6 +1039,7 @@ goog.require('ga_urlutils_service');
             return providers;
           }
           if (config3d.type == 'wmts') {
+            var hasNativeTiles = !!config.config3d;
             params = {
               url: getWmtsGetTileTpl(requestedLayer, timestamp,
                   '4326', format, hasNativeTiles),
@@ -1139,7 +1146,6 @@ goog.require('ga_urlutils_service');
                   .replace('{z}', '{TileMatrix}')
                   .replace('{x}', '{TileCol}')
                   .replace('{y}', '{TileRow}');
-              var subdomains = dfltWmtsNativeSubdomains;
               olSource = layer.olSource = new ol.source.WMTS({
                 dimensions: {
                   'Time': timestamp
@@ -1152,20 +1158,20 @@ goog.require('ga_urlutils_service');
                 tileGrid: gaTileGrid.get(layer.resolutions,
                     layer.minResolution),
                 tileLoadFunction: tileLoadFunction,
-                urls: getImageryUrls(wmtsTplUrl, subdomains),
+                urls: getImageryUrls(wmtsTplUrl, dfltWmtsNativeSubdomains),
                 crossOrigin: crossOrigin,
                 matrixSet: layer.matrixSet,
                 layer: layer.serverLayerName
               });
             }
             olLayer = new ol.layer.Tile({
-              extent: extent,
               minResolution: gaNetworkStatus.offline ? null :
                   layer.minResolution,
-              preload: gaNetworkStatus.offline ? gaMapUtils.preload : 0,
               maxResolution: layer.maxResolution,
               opacity: layer.opacity || 1,
               source: olSource,
+              extent: extent,
+              preload: gaNetworkStatus.offline ? gaMapUtils.preload : 0,
               useInterimTilesOnError: gaNetworkStatus.offline
             });
           } else if (layer.type == 'wms') {
@@ -1206,7 +1212,8 @@ goog.require('ga_urlutils_service');
               if (!olSource) {
                 var subdomains = dfltWmsSubdomains;
                 olSource = layer.olSource = new ol.source.TileWMS({
-                  url: layer.wmsUrl,
+                  urls: getImageryUrls(
+                      getWmsTpl(layer.wmsUrl), subdomains),
                   // Temporary until https://github.com/openlayers/ol3/pull/4964
                   // is merged upstream
                   cacheSize: 2048 * 3,
@@ -1226,9 +1233,9 @@ goog.require('ga_urlutils_service');
                 maxResolution: layer.maxResolution,
                 opacity: layer.opacity || 1,
                 source: olSource,
+                extent: extent,
                 preload: gaNetworkStatus.offline ? gaMapUtils.preload : 0,
-                useInterimTilesOnError: gaNetworkStatus.offline,
-                extent: extent
+                useInterimTilesOnError: gaNetworkStatus.offline
               });
             }
           } else if (layer.type == 'aggregate') {
@@ -1246,7 +1253,6 @@ goog.require('ga_urlutils_service');
             });
           } else if (layer.type == 'geojson') {
             // cannot request resources over https in S3
-            var fullUrl = gaGlobalOptions.ogcproxyUrl + layer.geojsonUrl;
             olSource = new ol.source.Vector();
             olLayer = new ol.layer.Vector({
               minResolution: layer.minResolution,
@@ -1255,30 +1261,28 @@ goog.require('ga_urlutils_service');
               extent: extent
             });
             var setLayerSource = function() {
+              var fullUrl = gaUrlUtils.proxifyUrl(layer.geojsonUrl);
               var geojsonFormat = new ol.format.GeoJSON();
-              $http.get(fullUrl, {
-                cache: false
-              }).success(function(data) {
+              $http.get(fullUrl).then(function(response) {
                 olSource.clear();
                 olSource.addFeatures(
-                  geojsonFormat.readFeatures(data)
+                  geojsonFormat.readFeatures(response.data)
                 );
               });
             };
-            var setLayerStyle = function() {
-              // IE doesn't understand agnostic URLs
-              $http.get(location.protocol + layer.styleUrl, {
-                cache: true
-              }).success(function(data) {
-                var olStyleForVector = gaStylesFromLiterals(data);
-                olLayer.setStyle(function(feature, resolution) {
-                  return [olStyleForVector.getFeatureStyle(
-                      feature, resolution)];
-                });
+
+            // IE doesn't understand agnostic URLs
+            $http.get(location.protocol + layer.styleUrl, {
+              cache: true
+            }).then(function(response) {
+              var olStyleForVector = gaStylesFromLiterals(response.data);
+              olLayer.setStyle(function(feature, resolution) {
+                return [olStyleForVector.getFeatureStyle(
+                    feature, resolution)];
               });
-              // Handle error
-            };
-            setLayerStyle();
+            });
+            // TODO: Handle error
+
             if (!layer.updateDelay) {
               setLayerSource();
             }
@@ -1339,20 +1343,20 @@ goog.require('ga_urlutils_service');
         this.getLayerTimestampFromYear = function(configOrBodId, yearStr) {
           var layer = angular.isString(configOrBodId) ?
               this.getLayer(configOrBodId) : configOrBodId;
-          var timestamps = layer.timestamps || [];
-          if (angular.isNumber(yearStr)) {
-            yearStr = '' + yearStr;
-          }
           if (!layer.timeEnabled) {
             // a WMTS/Terrain layer has at least one timestamp
             return (layer.type == 'wmts' || layer.type == 'terrain') ?
-                timestamps[0] : undefined;
+                layer.timestamps[0] : undefined;
+          }
+          var timestamps = layer.timestamps || [];
+          if (angular.isNumber(yearStr)) {
+            yearStr = '' + yearStr;
           }
           if (!angular.isDefined(yearStr)) {
             var timeBehaviour = layer.timeBehaviour;
             //check if specific 4/6/8 digit timestamp is specified
             if (/^\d{4}$|^\d{6}$|^\d{8}$/.test(timeBehaviour)) {
-                yearStr = timeBehaviour;
+                yearStr = timeBehaviour.substr(0, 4);
             } else if (timeBehaviour !== 'all' && timestamps.length) {
                 yearStr = timestamps[0];
             }

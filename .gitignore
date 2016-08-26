@@ -22,7 +22,6 @@
 /config
 /src/lib/angular*.js
 /test/karma-conf-*.js
-/deploy/deploy-branch.cfg
 /src/locales/*.csv
 /scripts/00-*.conf
 /src/lib/Cesium/Assets/Textures/NaturalEarthII

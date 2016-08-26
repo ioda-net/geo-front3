@@ -6,12 +6,12 @@ goog.require('ga_layermetadatapopup_service');
 goog.require('ga_map_service');
 goog.require('ga_previewlayers_service');
 goog.require('gf3');
+
 (function() {
 
   var module = angular.module('ga_catalogitem_directive', [
     'ga_browsersniffer_service',
     'ga_catalogtree_directive',
-    'ga_catalogtree_service',
     'ga_layermetadatapopup_service',
     'ga_map_service',
     'ga_previewlayers_service',
@@ -22,9 +22,17 @@ goog.require('gf3');
    * See examples on how it can be used
    */
   module.directive('gaCatalogitem',
-      function($compile, gaCatalogtreeMapUtils, gaMapUtils,
-          gaLayerMetadataPopup, gaBrowserSniffer, gaPreviewLayers,
-          gf3GlobalOptions) {
+      function($compile, gaMapUtils, gaLayerMetadataPopup, gaBrowserSniffer,
+        gaPreviewLayers, gaLayers, gf3GlobalOptions) {
+
+        var addBodLayer = function(map, layerBodId) {
+          if (gaLayers.getLayer(layerBodId)) {
+            var layer = gaLayers.getOlLayerById(layerBodId);
+            if (layer) {
+              map.addLayer(layer);
+            }
+          }
+        };
 
         // Don't add preview layer if the layer is already on the map
         var addPreviewLayer = function(map, item) {
@@ -70,7 +78,7 @@ goog.require('gf3');
                   // Add it if it's not already on the map
                   if (!layer) {
                     removePreviewLayer($scope.map);
-                    gaCatalogtreeMapUtils.addLayer($scope.map, $scope.item);
+                    addBodLayer($scope.map, $scope.item.layerBodId);
                   }
                 }
               } else { //getter called

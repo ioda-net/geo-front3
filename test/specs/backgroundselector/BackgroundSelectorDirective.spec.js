@@ -1,7 +1,7 @@
 describe('ga_backgroundselector_directive', function() {
 
   describe('Background layer insertion', function () {
-    var element, map, layer1, layer2, $rootScope, $compile, def, html,
+    var element, map, layer1, layer2, $rootScope, $compile, def, gaBackground,
         gaBackground, gaBrowserSniffer;
     beforeEach(function() {
 
@@ -22,7 +22,7 @@ describe('ga_backgroundselector_directive', function() {
           },
           getLayerProperty: function(id, propertyName) {
             if (propertyName === 'label') {
-              switch(id) {
+              switch (id) {
                 case 'ch.swisstopo.swissimage':
                   return 'bg_luftbild';
                 case 'ch.swisstopo.pixelkarte-farbe':
@@ -122,7 +122,7 @@ describe('ga_backgroundselector_directive', function() {
           },
           getLayerProperty: function(id, propertyName) {
             if (propertyName === 'label') {
-              switch(id) {
+              switch (id) {
                 case 'ch.swisstopo.swissimage':
                   return 'bg_luftbild';
                 case 'ch.swisstopo.pixelkarte-farbe':

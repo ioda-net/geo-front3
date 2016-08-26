@@ -3,27 +3,32 @@ describe('ga_popup_service', function() {
 
   beforeEach(function() {
     module(function($provide) {
+      $provide.value('gaLang', {
+        get: function() {
+          return 'fr';
+        }
+      });
+
       htmlPrintoutSpy = sinon.spy();
 
       $provide.value('gf3PrintService', {
-        htmlPrintout: htmlPrintoutSpy
+        htmlPrintout: htmlPrintoutSpy,
       });
     });
 
-    inject(function($injector, $rootScope, _$timeout_) {
-        gaPopup = $injector.get('gaPopup');
-        rootScope = $rootScope;
-        $timeout = _$timeout_;
-      });
+    inject(function($injector) {
+      gaPopup = $injector.get('gaPopup');
+      rootScope = $injector.get('$rootScope');
+      $timeout = $injector.get('$timeout');
+    });
 
-      popup = gaPopup.create({
-        className: 'custom-class',
-        content: '<div> content </div>'
-      });
-
-      rootScope.$digest();
+    popup = gaPopup.create({
+      className: 'custom-class',
+      content: '<div> content </div>'
+    });
+    rootScope.$digest();
   });
-  
+
   it('creates a popup with a content', function() {
     expect(popup.scope).not.to.be(null);
     expect(popup.element).not.to.be(null);
@@ -32,7 +37,7 @@ describe('ga_popup_service', function() {
     expect(popup.element.hasClass('custom-class')).to.be(true);
     expect(popup.element.find('.ga-popup-content').html()).to.be('<div class="ng-scope"> content </div>');
   });
-  
+
   it('opens/closes/destroys a popup', function() {
     popup.open();
     rootScope.$digest();
@@ -43,7 +48,7 @@ describe('ga_popup_service', function() {
     rootScope.$digest();
     expect(popup.scope.toggle).to.be(false);
     expect(popup.element.css('display')).to.be('none');
-    
+
     popup.open();
     rootScope.$digest();
     expect(popup.scope.toggle).to.be(true);

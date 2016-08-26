@@ -55,7 +55,7 @@ describe('ga_permalinklayers_service', function() {
   var addExternalWmsLayerToMap = function() {
     var source = new ol.source.ImageWMS({
       params: {LAYERS: 'ch.wms.name'},
-      url: 'http://foo.ch/wms',
+      url: 'http://foo.ch/wms'
     });
     var layer = new ol.layer.Image({
       id: 'WMS||The wms layer||http://foo.ch/wms||ch.wms.name',
@@ -102,7 +102,7 @@ describe('ga_permalinklayers_service', function() {
       module(function($provide) {
         $provide.value('gaLayers', {
           loadConfig: function() {
-            return def.promise; 
+            return def.promise;
           },
           getLayer: function(id) {
             return {};
@@ -122,7 +122,7 @@ describe('ga_permalinklayers_service', function() {
         });
         $provide.value('gaTopic', {
           loadConfig: function() {
-            return def.promise; 
+            return def.promise;
           },
           get: function() {
             return topic;
@@ -191,19 +191,19 @@ describe('ga_permalinklayers_service', function() {
         barLayer = addLayerToMap('bar');
         $rootScope.$digest();
         expect(permalink.getParams().layers).to.eql('foo,bar');
-        
+
         kmlLayer = addKmlLayerToMap();
         gaDefinePropertiesForLayer(kmlLayer);
         $rootScope.$digest();
         expect(permalink.getParams().layers).to.eql('foo,bar,KML||http://foo.ch/bar.kml');
-         
-        wmsLayer = addExternalWmsLayerToMap(); 
+
+        wmsLayer = addExternalWmsLayerToMap();
         gaDefinePropertiesForLayer(wmsLayer);
         $rootScope.$digest();
         expect(permalink.getParams().layers).to.eql('foo,bar,KML||http://foo.ch/bar.kml,WMS||The wms layer||http://foo.ch/wms||ch.wms.name');
-        
+
         map.removeLayer(wmsLayer);
-        map.removeLayer(kmlLayer); 
+        map.removeLayer(kmlLayer);
         map.removeLayer(fooLayer);
         $rootScope.$digest();
         expect(permalink.getParams().layers).to.eql('bar');
@@ -219,7 +219,7 @@ describe('ga_permalinklayers_service', function() {
       it('changes permalink', inject(function($rootScope, gaDefinePropertiesForLayer) {
         var kmlLayer;
         expect(permalink.getParams().layers).to.be(undefined);
-        def.resolve(); 
+        def.resolve();
         // Local KML layer (add by dnd) is not added to permalink
         kmlLayer = addLocalKmlLayerToMap();
         gaDefinePropertiesForLayer(kmlLayer);
@@ -235,7 +235,7 @@ describe('ga_permalinklayers_service', function() {
       it('changes permalink', inject(function($rootScope, gaDefinePropertiesForLayer) {
         var kmlLayer;
         expect(permalink.getParams().layers).to.be(undefined);
-        def.resolve(); 
+        def.resolve();
         kmlLayer = addKmlLayerToMap();
         gaDefinePropertiesForLayer(kmlLayer);
         $rootScope.$digest();
@@ -250,7 +250,7 @@ describe('ga_permalinklayers_service', function() {
       it('changes permalink', inject(function($rootScope, gaDefinePropertiesForLayer) {
         var wmsLayer;
         expect(permalink.getParams().layers).to.be(undefined);
-        def.resolve(); 
+        def.resolve();
         wmsLayer = addExternalWmsLayerToMap();
         gaDefinePropertiesForLayer(wmsLayer);
         $rootScope.$digest();
@@ -264,7 +264,7 @@ describe('ga_permalinklayers_service', function() {
     describe('change layer opacity', function() {
       it('changes permalink',
           inject(function($rootScope, gaDefinePropertiesForLayer) {
-        def.resolve(); 
+        def.resolve();
         var fooLayer, barLayer;
 
         fooLayer = addLayerToMap('foo');
@@ -349,7 +349,7 @@ describe('ga_permalinklayers_service', function() {
         $rootScope.$digest();
         expect(permalink.getParams().layers).to.be('bar2,foo2');
 
-        // For next test 
+        // For next test
         permalink.deleteParam('layers');
         topic = topicLoaded;
         layersPermalink = 'ged';

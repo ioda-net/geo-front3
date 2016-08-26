@@ -1,5 +1,5 @@
 describe('ga_contextpopup_directive', function() {
-  var element, handlers = {}, viewport, map, mapEvt, plugins;
+  var element, handlers = {}, viewport, map, mapEvt, plugins, originalEvt;
 
   var expectedHeightUrl = '//api.geo.admin.ch/height' +
       '?easting=661473&elevationModel=COMB' +
@@ -16,7 +16,7 @@ describe('ga_contextpopup_directive', function() {
         msie: false,
         mobile: false,
         phone: false,
-        events:{
+        events: {
           menu: 'contextmenu'
         }
       });
@@ -31,6 +31,7 @@ describe('ga_contextpopup_directive', function() {
         }
       });
     });
+    originalEvt = {originalEvent: {}};
     element = angular.element(
       '<div>' +
         '<div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options"></div>' +

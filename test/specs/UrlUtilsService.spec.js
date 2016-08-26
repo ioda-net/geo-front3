@@ -6,7 +6,7 @@ describe('ga_urlutils_service', function() {
       gaUrlUtils = $injector.get('gaUrlUtils');
     });
   });
-  
+
   it('verifies validity', function() {
     expect(gaUrlUtils.isValid(undefined)).to.be(false);
     expect(gaUrlUtils.isValid(null)).to.be(false);
@@ -40,6 +40,34 @@ describe('ga_urlutils_service', function() {
     expect(gaUrlUtils.isAdminValid('https://public.dev.bgdi.ch')).to.be(true);
   });
 
+  it('verifies https', function() {
+    expect(gaUrlUtils.isHttps('http://public.geo.admin.ch')).to.be(false);
+    expect(gaUrlUtils.isHttps('ftp://public.geo.admin.ch')).to.be(false);
+    expect(gaUrlUtils.isHttps('http://public.geo')).to.be(false);
+    expect(gaUrlUtils.isHttps('https')).to.be(false);
+    expect(gaUrlUtils.isHttps('https://test.com')).to.be(true);
+    expect(gaUrlUtils.isHttps('https://public.geo.admin.ch')).to.be(true);
+  });
+
+  it('verifies proxy needs', function() {
+    expect(gaUrlUtils.needsProxy('http://public.geo.admin.ch')).to.be(true);
+    expect(gaUrlUtils.needsProxy('https://public.geo.admin.ch/')).to.be(false);
+    expect(gaUrlUtils.needsProxy('http://data.geo.admin.ch')).to.be(true);
+    expect(gaUrlUtils.needsProxy('https://data.geo.admin.ch')).to.be(false);
+    expect(gaUrlUtils.needsProxy('https://google.com')).to.be(true);
+    expect(gaUrlUtils.needsProxy('https://admin.ch')).to.be(true);
+    expect(gaUrlUtils.needsProxy('ftp://geo.admin.ch')).to.be(true);
+    expect(gaUrlUtils.needsProxy('https://some.geo.admin.ch')).to.be(false);
+    expect(gaUrlUtils.needsProxy('https://public.geo.admin.ch/test.kml')).to.be(false);
+    expect(gaUrlUtils.needsProxy('https://data.geo.admin.ch/test.kml')).to.be(false);
+    expect(gaUrlUtils.needsProxy('https://public.geo.admin.ch/test.kmz')).to.be(true);
+  });
+
+  it('applies proxy correctly', function() {
+    expect(gaUrlUtils.proxifyUrl('http://data.geo.admin.ch')).to.be('https://api3.geo.admin.ch/ogcproxy?url=http%3A%2F%2Fdata.geo.admin.ch');
+    expect(gaUrlUtils.proxifyUrl('https://data.geo.admin.ch')).to.be('https://data.geo.admin.ch');
+  });
+
   it('verifies third party validity', function() {
     expect(gaUrlUtils.isThirdPartyValid('http://public.geo.admin.ch')).to.be(false);
     expect(gaUrlUtils.isThirdPartyValid('http://public.geo.admin.ch/dfilghjdfigfdj')).to.be(true);
@@ -64,14 +92,14 @@ describe('ga_urlutils_service', function() {
     expect(url).to.be('http://wms.admin.ch?SERVICE=WMS');
     url = gaUrlUtils.append(url, 'VERSION=1.1.1');
     expect(url).to.be('http://wms.admin.ch?SERVICE=WMS&VERSION=1.1.1');
-   
+
     url = 'http://wms.admin.ch?';
     url = gaUrlUtils.append(url, 'Service=WMS');
     expect(url).to.be('http://wms.admin.ch?Service=WMS');
     url = gaUrlUtils.append(url, 'VERSION=1.1.1');
     expect(url).to.be('http://wms.admin.ch?Service=WMS&VERSION=1.1.1');
   });
-  
+
   it('removes an array of parameters', function() {
     var url = 'http://wms.admin.ch?SErvice=WMS&VERSION=1.1.1';
     expect(gaUrlUtils.remove(url, ['SERVICE'], true)).to.be('http://wms.admin.ch?VERSION=1.1.1');
@@ -79,13 +107,13 @@ describe('ga_urlutils_service', function() {
     expect(gaUrlUtils.remove(url, ['SERVICE', 'VERSION'], true)).to.be('http://wms.admin.ch');
     expect(gaUrlUtils.remove(url, ['SERVICE', 'VERSION'], false)).to.be('http://wms.admin.ch?SErvice=WMS');
   });
-  
+
   it('encodes URI query', function() {
     var stringToEncode = 'test:$test@te&st.com, ';
     expect(gaUrlUtils.encodeUriQuery(stringToEncode)).to.be('test:$test@te%26st.com,+');
     expect(gaUrlUtils.encodeUriQuery(stringToEncode, true)).to.be('test:$test@te%26st.com,%20');
   });
-  
+
   it('parses KVP', function() {
     var kvp = 'key1=value%201&Key2=value2';
     var obj = gaUrlUtils.parseKeyValue(kvp);
@@ -93,12 +121,12 @@ describe('ga_urlutils_service', function() {
     expect(obj.key1).to.be('value 1');
     expect(obj.Key2).to.be('value2');
   });
- 
+
   it('parses Object to KVP', function() {
     var obj = {
       key1: 'value 1',
       Key2: 'value2'
-    }
+    };
     var kvp = gaUrlUtils.toKeyValue(obj);
     expect(kvp).to.be('key1=value%201&Key2=value2');
   });

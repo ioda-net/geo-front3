@@ -20,7 +20,6 @@ goog.require('ga_geolocation');
 goog.require('ga_help');
 goog.require('ga_identify_service');
 goog.require('ga_importkml');
-goog.require('ga_importkml_controller');
 goog.require('gf3_importows');
 goog.require('gf3_importwms_controller');
 goog.require('gf3_importwmts_controller');
@@ -101,7 +100,6 @@ goog.require('gf3_webdav');
     'ga_placeholder_directive',
     'ga_collapsible_directive',
     'ga_slider_directive',
-    'ga_importkml_controller',
     'ga_geolocation',
     'ga_rotate',
     'gf3_importwms_controller',

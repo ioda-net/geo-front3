@@ -571,11 +571,8 @@ itemscope itemtype="http://schema.org/WebApplication"
          ga-popup-options="{title:'import_kml', help:'63'}"
          ga-draggable=".popover-title"
          id="import-kml-popup" >
-      <div ng-controller="GaImportKmlController">
-        <div ga-import-kml
-             ga-import-kml-map="map"
-             ga-import-kml-options="options">
-        </div>
+      <div ga-import-kml
+           ga-import-kml-map="map">
       </div>
     </div><!-- end Import KML -->
   {% endif %}
@@ -702,8 +699,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           resourceUrl: location.origin + pathname + '${versionslashed}',
           publicResourceUrl: '${front.build.public_resource_url}',
           ogcproxyUrl : location.protocol + '${front.build.api_url}' + '/ogcproxy?url=',
-          w3wUrl : 'https://api.what3words.com',
-          w3wApiKey : 'OM48J50Y',
+          w3wUrl: 'https://api.what3words.com',
+          w3wApiKey: 'OM48J50Y',
           whitelist: [
             'https://' + window.location.host + '/**'
           ],

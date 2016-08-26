@@ -17,8 +17,7 @@ goog.require('ga_wms_service');
     // We store all review layers we add
     var olPreviewLayers = {};
 
-    this.$get = function($rootScope, gaLayers, gaWms, gaTime, gaMapUtils,
-        gf3Wmts) {
+    this.$get = function(gaLayers, gaWms, gaTime, gaMapUtils, gf3Wmts) {
       var olPreviewLayer;
 
       var PreviewLayers = function() {
@@ -33,17 +32,15 @@ goog.require('ga_wms_service');
 
           if (!olPreviewLayer) {
             olPreviewLayer = gaLayers.getOlLayerById(bodId);
+          } else if (olPreviewLayer.timeEnabled) {
+            // Update time property
+            olPreviewLayer.time = gaLayers.getLayerTimestampFromYear(
+                olPreviewLayer.bodId, gaTime.get());
           }
 
           // Something failed, layer doesn't exist
           if (!olPreviewLayer) {
             return undefined;
-          }
-
-          // Apply the current time
-          if (olPreviewLayer.bodId && olPreviewLayer.timeEnabled) {
-            olPreviewLayer.time = gaLayers.getLayerTimestampFromYear(
-                olPreviewLayer.bodId, gaTime.get());
           }
 
           olPreviewLayer.preview = true;

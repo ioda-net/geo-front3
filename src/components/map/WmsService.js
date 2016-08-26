@@ -19,14 +19,14 @@ goog.require('ga_urlutils_service');
   module.provider('gaWms', function() {
     this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils,
         gaGlobalOptions, $q, gaLang) {
+
       var getCesiumImageryProvider = function(layer) {
         var params = layer.getSource().getParams();
         var proxy;
         if (!gaUrlUtils.isAdminValid(layer.url)) {
           proxy = {
             getURL: function(resource) {
-               return gaGlobalOptions.ogcproxyUrl +
-                   encodeURIComponent(resource);
+               return gaUrlUtils.proxifyUrl(resource);
             }
           };
         }
@@ -106,7 +106,7 @@ goog.require('ga_urlutils_service');
             source: source
           });
           gaDefinePropertiesForLayer(layer);
-          layer.preview = options.preview;
+          layer.preview = !!options.preview;
           layer.displayInLayerManager = !layer.preview;
           layer.useThirdPartyData = gaUrlUtils.isThirdPartyValid(options.url);
           layer.label = options.label;

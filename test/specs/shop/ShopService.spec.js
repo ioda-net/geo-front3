@@ -1,6 +1,5 @@
 describe('ga_shop_service', function() {
-  var gaShop;
-  var shopUrl = 'http://shop.bgdi.ch';
+  var gaShop, gaGlobalOptions;
   var mapsheetParams = '?layer=layerBodId&featureid=featureId';
   var mapsheetWithClipperParamsTpl = '?layer={layerBodId}&clipper={clipper}&featureid=featureId';
   var communeParams = '?layer=layerBodId&clipper=ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill&featureid=featureId';
@@ -25,27 +24,29 @@ describe('ga_shop_service', function() {
         get: function() {
           return 'custom';
         }
-      })
+      });
     });
 
-    inject(function($injector, gaGlobalOptions) {
+    inject(function($injector) {
       gaShop = $injector.get('gaShop');
+      gaGlobalOptions = $injector.get('gaGlobalOptions');
     });
   });
 
   describe('#dispatch()', function() {
     var closeSpy, openStub, clock, $window;
-    var dispatchUrl = shopUrl + '/custom/dispatcher';
-    var dfltDispatchUrl = dispatchUrl + '?layer=layerBodId';
+    var dispatchUrl;
+    var dfltDispatchUrl;
     var fakeWindow = {
-      close: function(){}
+      close: function() {}
     };
 
     beforeEach(function() {
       inject(function($injector) {
         $window = $injector.get('$window');
       });
-
+      dispatchUrl = gaGlobalOptions.shopUrl + '/custom/dispatcher';
+      dfltDispatchUrl = dispatchUrl + '?layer=layerBodId';
       clock = sinon.useFakeTimers();
       openStub = sinon.stub($window, 'open');
       closeSpy = sinon.spy($window, 'close');
@@ -56,7 +57,7 @@ describe('ga_shop_service', function() {
       closeSpy.restore();
     });
 
-     
+
     it('do nothing if orderType or layerBodId are not defined', function() {
       gaShop.dispatch();
       sinon.assert.notCalled(openStub);
@@ -80,17 +81,17 @@ describe('ga_shop_service', function() {
       var fakeCloseSpy = sinon.spy(fakeWindow, 'close');
       gaShop.dispatch('orderType', 'layerBodId');
       sinon.assert.calledOnce(openStub);
-    
+
       gaShop.dispatch('orderType', 'layerBodId');
       sinon.assert.calledOnce(fakeCloseSpy);
       sinon.assert.calledTwice(openStub);
       fakeCloseSpy.restore();
     });
-     
+
     it('closes the shop window then opens the new one keeping the sessionId', function() {
-      var tpshopId = 'toposhop-344';  
-      $window.name = 'map-' + tpshopId; 
-      $window.opener = fakeWindow; 
+      var tpshopId = 'toposhop-344';
+      $window.name = 'map-' + tpshopId;
+      $window.opener = fakeWindow;
       var openerCloseSpy = sinon.spy($window.opener, 'close');
 
       gaShop.dispatch('orderType', 'layerBodId');
@@ -98,7 +99,7 @@ describe('ga_shop_service', function() {
       sinon.assert.notCalled(closeSpy);
       sinon.assert.calledWith(openStub, dfltDispatchUrl, tpshopId);
     });
-     
+
     it('opens a good mapsheet url', function() {
       gaShop.dispatch('mapsheet', 'layerBodId', 'featureId');
       sinon.assert.calledWith(openStub, dispatchUrl + mapsheetParams);
@@ -142,22 +143,23 @@ describe('ga_shop_service', function() {
 
   describe('#getPrice()', function() {
     var $httpBackend, $rootScope;
-    var priceUrl = shopUrl + '/shop-server/resources/products/price';
-    
+    var priceUrl;
+
     beforeEach(function() {
       inject(function($injector) {
         $httpBackend = $injector.get('$httpBackend');
         $rootScope = $injector.get('$rootScope');
       });
+      priceUrl = gaGlobalOptions.shopUrl + '/shop-server/resources/products/price';
     });
-    
+
     afterEach(function() {
       $httpBackend.verifyNoOutstandingExpectation();
       $httpBackend.verifyNoOutstandingRequest();
     });
 
     it('returns a promise', function(done) {
-      gaShop.getPrice().catch(function() {
+      gaShop.getPrice().catch (function() {
         done();
       });
       $rootScope.$digest();
@@ -186,7 +188,7 @@ describe('ga_shop_service', function() {
         $rootScope.$digest();
         $httpBackend.flush();
       });
-    };
+    }
 
     it('send a good commune url', function(done) {
       $httpBackend.expectGET(priceUrl + communeParams).respond(200, {productPrice: 30});
@@ -239,3 +241,4 @@ describe('ga_shop_service', function() {
     });
   });
 });
+
