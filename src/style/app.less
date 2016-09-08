@@ -618,18 +618,6 @@ input[type=text][readonly] {
 #logo {
   display: inline-block;
 
-  @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
-
-    .fa-ga-logo-bund {
-      font-size: 21px;
-      line-height: 39px;
-    }
-
-    .ga-logo-text, .ga-logo-subtitle {
-      display: none;
-    }
-  }
-
   &.ga-logo-de {
     background-image: data-uri('../img/logo.ch.de.png');
   }
@@ -644,6 +632,22 @@ input[type=text][readonly] {
   }
   &.ga-logo-en {
     background-image: data-uri('../img/logo.ch.en.png');
+  }
+
+  @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+      height: 50px;
+      width: 44px;
+
+      &.ga-logo-de,
+      &.ga-logo-fr,
+      &.ga-logo-it,
+      &.ga-logo-rm,
+      &.ga-logo-en {
+        background-image: data-uri('../img/logo.ch.small.png');
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 33px 33px;
+      }
   }
 }
 
