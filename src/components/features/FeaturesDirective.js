@@ -18,7 +18,8 @@ goog.require('gf3_features_service');
   ]);
 
   module.directive('gf3Features',
-      function($timeout, $http, $q, $rootScope, gaLayers, gaBrowserSniffer,
+      function($timeout, $http, $q, $rootScope, $window,
+          gaLayers, gaBrowserSniffer,
           gaMapClick, gaDebounce, gaPreviewFeatures, gaGlobalOptions,
           gf3DragBox, gf3FeaturesUtils, gf3FeaturesGrid, datatable) {
         var popupContent = '<div ng-repeat="htmlsnippet in options.htmls">' +
@@ -472,6 +473,10 @@ goog.require('gf3_features_service');
                   sourceProj || mapProj,
                   {'INFO_FORMAT': 'text/plain'});
               if (url) {
+                if (!/^https?:/.test(url)) {
+                  url = $window.location.protocol + url;
+                }
+
                 url = gaGlobalOptions.ogcproxyUrl +
                     encodeURIComponent(url);
                 $http.get(url, {
