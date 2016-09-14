@@ -37,6 +37,8 @@ goog.require('gf3_features_service');
             isActive: '=gf3FeaturesActive'
           },
           link: function(scope, element, attrs) {
+            // Max number of features to ask to external WMS.
+            var FEATURE_COUNT = 201;
             var featurePropertiesToDisplay = {},
                 features = {},
                 featuresIdToIndex = {},
@@ -471,7 +473,10 @@ goog.require('gf3_features_service');
                   sourceCoord || geometry,
                   resolution,
                   sourceProj || mapProj,
-                  {'INFO_FORMAT': 'text/plain'});
+                  {
+                    'INFO_FORMAT': 'text/plain',
+                    FEATURE_COUNT: FEATURE_COUNT
+                  });
               if (url) {
                 if (!/^https?:/.test(url)) {
                   url = $window.location.protocol + url;
