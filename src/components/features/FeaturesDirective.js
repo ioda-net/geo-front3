@@ -469,12 +469,17 @@ goog.require('gf3_features_service');
               }
               var resolution =
                   getWmsLayerFeaturesResolution(geometry, sourceRes, mapRes);
+              // We ask the results in HTML if the WMS server is on the same
+              // domain than the host
+              var sameDomain =
+                  new RegExp('^https?://' + $window.location.hostname);
               var url = source.getGetFeatureInfoUrl(
                   sourceCoord || geometry,
                   resolution,
                   sourceProj || mapProj,
                   {
-                    'INFO_FORMAT': 'text/plain',
+                    INFO_FORMAT: sameDomain.test(source.getUrl()) ?
+                        'text/html' : 'text/plain',
                     FEATURE_COUNT: FEATURE_COUNT
                   });
               if (url) {
