@@ -189,37 +189,47 @@ goog.require('gf3_print_service');
             }
           });
 
+          var win;
+          var setSize = function() {
+            if (scope.options.position) {
+              element.addClass('ga-popup-' + scope.options.position);
+            } else if (win) {
+              var screenSmLimit = 768;
+              var winWidth = win.width();
+              if (winWidth > screenSmLimit) {
+                var winHeight = win.height();
+                var popupWidth = element.outerWidth();
+                var popupHeight = element.outerHeight();
+                var offset = element.offset();
+                var x = offset.left;
+                var y = offset.top;
+                if (x + popupWidth > winWidth) {
+                  x = winWidth - popupWidth;
+                }
+                if (y + popupHeight > winHeight) {
+                  y = winHeight - popupHeight;
+                  if (y < 0) {
+                    y = 0;
+                  }
+                }
+                element.css({
+                  width: popupWidth + 'px',
+                  top: y + 'px',
+                  left: x + 'px'
+                });
+              }
+            }
+          };
+
+          setSize();
+
           var moveOnWindow = function() {
             if (scope.options.isReduced) {
               return;
             }
-            var screenSmLimit = 768;
-            var winWidth = win.width();
-            if (winWidth > screenSmLimit) {
-              var winHeight = win.height();
-              var popupWidth = element.outerWidth();
-              var popupHeight = element.outerHeight();
-              var offset = element.offset();
-              var x = offset.left;
-              var y = offset.top;
-              if (x + popupWidth > winWidth) {
-                x = winWidth - popupWidth;
-              }
-              if (y + popupHeight > winHeight) {
-                y = winHeight - popupHeight;
-                if (y < 0) {
-                  y = 0;
-                }
-              }
-              element.css({
-                width: popupWidth + 'px',
-                top: y + 'px',
-                left: x + 'px'
-              });
-            }
+            setSize();
           };
 
-          var win;
           if (!scope.options.position && !scope.map) {
             // If the position is not defined we try to keep the entire popup
             // inside the window.
