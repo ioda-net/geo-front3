@@ -32,7 +32,6 @@ goog.require('gf3_plugins');
             var defaultToSecondaryEpsgUrl =
                 scope.options.defaultToSecondaryEpsgUrl;
 
-            scope.titleClose = $translate.instant('close');
             scope.defaultEpsgContextPopupTitle =
                 gaGlobalOptions.defaultEpsgContextPopupTitle;
             scope.secondaryEpsgContextPopupTitle =
@@ -235,7 +234,6 @@ goog.require('gf3_plugins');
 
             /* istanbul ignore next */
             $rootScope.$on('$translateChangeEnd', function() {
-              scope.titleClose = $translate.instant('close');
               if (popoverShown) {
                 updateW3W();
               }

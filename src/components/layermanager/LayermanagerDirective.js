@@ -47,7 +47,7 @@ goog.require('gf3');
     }
   });
 
-  module.directive('gaLayermanager', function($compile, $document, $timeout,
+  module.directive('gaLayermanager', function($compile, $timeout,
       $rootScope, $translate, $window, gaBrowserSniffer, gaLayerFilters,
       gaLayerMetadataPopup, gaLayers, gaAttribution, gaUrlUtils, gaMapUtils,
       gf3GlobalOptions) {
@@ -66,7 +66,7 @@ goog.require('gf3');
       '</div>';
 
     // Create the popover
-    var popover, content, container, callback, closeBt;
+    var popover, content, container, callback;
     var win = $($window);
     var createPopover = function(target, element, scope) {
 
@@ -74,47 +74,30 @@ goog.require('gf3');
       if (!container) {
         container = element.parent();
         callback = function(evt) {
-          destroyPopover(evt.target, element);
+          destroyPopover(element);
         };
-        closeBt = $('<button class="close">&times;</button>').on('click',
-            function() {
-          destroyPopover(null, element);
-        });
       }
 
       popover = $(target).popover({
         container: container,
         content: content,
-        html: 'true',
-        placement: function() {
-          return (win.width() < 640) ? 'left' : 'right';
-        },
-        title: $translate.instant('time_select_year'),
-        trigger: 'manual'
-      });
-      popover.addClass('ga-layer-timestamps-popover');
-      popover.popover('show');
-      container.find('.popover-title').append(closeBt);
+        html: true,
+        placement: 'auto right',
+        title: $translate.instant('time_select_year') +
+            '<button class="ga-icon ga-btn fa fa-remove"></button>',
+        trigger: 'focus'
+      }).popover('show');
       element.on('scroll', callback);
-      $document.on('click', callback);
       win.on('resize', callback);
     };
 
     // Remove the popover
-    var destroyPopover = function(target, element) {
+    var destroyPopover = function(element) {
       if (popover) {
-        if (target) {
-          var popoverElt = container.find('.popover');
-          if (popoverElt.is(target) ||
-              popoverElt.has(target).length !== 0) {
-            return;
-          }
-        }
         popover.popover('destroy');
         popover = undefined;
-        element.unbind('scroll', callback);
-        $document.unbind('click', callback);
-        win.unbind('resize', callback);
+        element.off('scroll', callback);
+        win.off('resize', callback);
       }
     };
 
@@ -223,9 +206,9 @@ goog.require('gf3');
           // Simulate a select box with a popover
           scope.displayTimestamps = function(evt, layer) {
             if (popover && popover[0] === evt.target) {
-              destroyPopover(evt.target, element);
+              destroyPopover(element);
             } else {
-              destroyPopover(evt.target, element);
+              destroyPopover(element);
               scope.tmpLayer = layer;
               // We use timeout otherwise the popover is bad centered.
               $timeout(function() {
@@ -300,7 +283,7 @@ goog.require('gf3');
 
         scope.setLayerTime = function(layer, time) {
           layer.time = time;
-          destroyPopover(null, element);
+          destroyPopover(element);
         };
 
         scope.useRange = (!gaBrowserSniffer.mobile && (!gaBrowserSniffer.msie ||
@@ -342,9 +325,11 @@ goog.require('gf3');
             title: function(elm) {
               return $translate.instant('external_data_tooltip');
             },
-            template: '<div class="tooltip ga-red-tooltip" role="tooltip">' +
-                '<div class="tooltip-arrow"></div><div class="tooltip-inner">' +
-                '</div></div>'
+            template:
+              '<div class="tooltip ga-red-tooltip">' +
+                '<div class="tooltip-arrow"></div>' +
+                '<div class="tooltip-inner"></div>' +
+              '</div>'
           });
         }
 

@@ -43,12 +43,14 @@ module.exports = function(config) {
 	// list of files / patterns to load in the browser
 	files: mergeFilesWithArgv([
 	    {% if not prod %}
+           'style/app.css',
 	       'lib/jquery.js',
-           'lib/d3.js',
+           'lib/jQuery.XDomainRequest.js',
+           'lib/slip.js',
 	       'lib/angular.js',
 	       'lib/angular-translate.js',
 	       'lib/angular-translate-loader-static-files.js',
-           'lib/ultimate-datatable.js',
+           'lib/d3.js',
 	       'lib/bootstrap.js',
 	       'lib/typeahead-0.9.3.js',
 	       'lib/proj4js-compressed.js',
@@ -56,6 +58,11 @@ module.exports = function(config) {
 	       'lib/EPSG2056.js',
 	       'lib/EPSG32631.js',
 	       'lib/EPSG32632.js',
+           'lib/fastclick.js',
+          'lib/localforage.js',
+          'lib/filesaver.js',
+          'lib/moment-with-customlocales.js',
+           'lib/ultimate-datatable.js',
            'lib/ol3.js',
            ${js_files}
 	    {% endif %}

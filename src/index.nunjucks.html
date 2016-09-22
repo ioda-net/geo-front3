@@ -44,27 +44,27 @@ itemscope itemtype="http://schema.org/WebApplication"
     <link rel="styleSheet" href="style/font-awesome-4.5.0/css/font-awesome.min.css" />
 
     <!-- Description is translated 'by hand' in the MainController -->
-    <meta name="description" content=""/>
+    <meta name="description" translate translate-attr-content="page_description" content=""/>
     <meta name="keywords" content=""/>
     <meta name="news_keywords" content=""/>
 
 {#
     <!-- Open Graph metas SMO -->
-    <meta property="og:site_name" content="geo.admin.ch"/>
-    <meta property="og:title" content="Swiss Geoportal"/>
-    <meta property="og:description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta property="og:site_name" content="${geoportal.name}"/>
+    <meta property="og:title" content="Geoportal"/>
+    <meta property="og:description" translate translate-attr-content="page_description" content=""/>
     <meta property="og:type" content="WebApplication"/>
-    <meta property="og:url" content="https://map.geo.admin.ch"/>
+    <meta property="og:url" content=""/>
     <meta property="og:image" content="${versionslashed}img/logo_geoportal.png"/>
 
     <!-- Twitter Card Infos -->
     <meta name="twitter:card" content="summary"/>
-    <meta name="twitter:site" content="@swiss_geoportal"/>
-    <meta name="twitter:creator" content="@swiss_geoportal"/>
-    <meta name="twitter:title" content="geo.admin.ch"/>
-    <meta name="twitter:description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta name="twitter:site" content=""/>
+    <meta name="twitter:creator" content=""/>
+    <meta name="twitter:title" content=""/>
+    <meta name="twitter:description" translate translate-attr-content="page_description" content=""/>
     <meta name="twitter:image" content="${versionslashed}img/logo_geoportal.png"/>
-    <meta name="twitter:url" content="https://map.geo.admin.ch"/>
+    <meta name="twitter:url" content=""/>
 
     <!-- Facebook Specific fb:admins and fb.appid -->
 
@@ -159,7 +159,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       <div id="toptools">
         <div ga-fullscreen ga-fullscreen-map="map"></div>&nbsp;&nbsp;
         <a href="" ng-click="globals.feedbackPopupShown = !globals.feedbackPopupShown">
-          <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
+          <span translate>problem_announcement</span>
         </a>&nbsp;&nbsp;
         <a target="_blank" href="help/#?lang={{langId}}" translate>help_label</a>&nbsp;&nbsp;
   {% if front.get('url', {}).get('legends', None) %}
@@ -232,7 +232,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 {% endif %}
 {% if device == 'mobile' %}
     <div ga-offline-selector
-         ga-offline-selector-map="map">
+         ga-offline-selector-map="::map">
     </div>
 {% endif %}
 
@@ -244,21 +244,21 @@ itemscope itemtype="http://schema.org/WebApplication"
 {% if device != 'embded' %}
   <div ng-cloak translate-cloak
            ga-background-selector
-           ga-background-selector-map="map"
+           ga-background-selector-map="::map"
            ga-background-selector-ol3d="::ol3d">
   </div>
 
 
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
-      <div  class="pull-left" ga-scale-line ga-scale-line-map="map" ng-show="!globals.is3dActive"></div>
+      <div  class="pull-left" ga-scale-line ga-scale-line-map="::map" ng-show="!globals.is3dActive"></div>
 
   {% if device == 'index' %}
       <div id="mouseposition" class="pull-left hidden-xs" ng-controller="GaMousePositionController">
         <select ng-model="options.projection"
-                ng-options="p.label for p in mousePositionProjections">
+                ng-options="p.label for p in ::mousePositionProjections">
         </select>
         <div ga-mouse-position
-             ga-mouse-position-map="map"
+             ga-mouse-position-map="::map"
              ga-mouse-position-ol3d="::ol3d"
              ga-mouse-position-options="options"></div>
       </div>
@@ -271,14 +271,19 @@ itemscope itemtype="http://schema.org/WebApplication"
   {% if device == 'index' %}
       {# <!-- Remove fix temp https://github.com/ioda-net/geo-front3/issues/58 -->
       <div class="pull-right">
-        <a target="_blank" translate="{{topicId + '_service_link_label'}}" translate-attr-href="{{topicId + '_service_link_href'}}"></a>
+        <a target="_blank"
+           translate="{{topicId + '_service_link_label'}}"
+           translate-attr-href="{{topicId + '_service_link_href'}}"></a>
       </div>
       #}
   {% endif %}
     </div><!-- #footer -->
 
     <div ng-controller="GaContextPopupController">
-      <div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options" ga-context-popup-is3d="globals.is3dActive"></div>
+      <div ga-context-popup
+           ga-context-popup-map="::map"
+           ga-context-popup-options="::options"
+           ga-context-popup-is3d="globals.is3dActive"></div>
     </div>
 {% endif %}
 
@@ -522,14 +527,22 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div> <!-- #pulldown -->
 
   {% if device == 'mobile' %}
-    <!-- offline dialog -->
+    <!-- Modal: offline menu -->
     <div ng-cloak translate-cloak ga-offline-menu ga-offline-menu-map="map"></div>
   {% endif %}
+
+    <!-- Modal: draw share -->
+    <div ng-cloak translate-cloak ga-share-draw></div>
+
+    <!-- Modal: embed share -->
+    <div ng-cloak translate-cloak ga-share-embed></div>
+
     <!-- Popup: Feedback -->
     <div ga-popup="globals.feedbackPopupShown"
          ga-popup-options="{title:'problem_announcement', help:'70'}"
          ga-draggable=".popover-title"
-         id="feedback-popup" >
+         id="feedback-popup"
+         class="ga-popup-mobile-bottom">
       <div ng-controller="GaFeedbackController">
         <div ga-feedback
              ga-feedback-map="map"
@@ -544,7 +557,8 @@ itemscope itemtype="http://schema.org/WebApplication"
     <div ga-popup="globals.importWmsPopupShown"
          ga-popup-options="{title:'import_wms', help:'62'}"
          ga-draggable=".popover-title"
-         id="import-ows-popup" >
+         id="import-ows-popup"
+         class="ga-popup-mobile-bottom">
       <div ng-controller="GfImportWmsController">
         <div gf3-import-ows
              gf3-import-ows-map="map"
@@ -557,7 +571,8 @@ itemscope itemtype="http://schema.org/WebApplication"
     <div ga-popup="globals.importWmtsPopupShown"
          ga-popup-options="{title:'import_wmts', help:'62'}"
          ga-draggable=".popover-title"
-         id="import-ows-popup" >
+         id="import-ows-popup"
+         class="ga-popup-mobile-bottom">
       <div ng-controller="GfImportWmtsController">
         <div gf3-import-ows
              gf3-import-ows-map="map"
@@ -576,6 +591,40 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
     </div><!-- end Import KML -->
   {% endif %}
+
+  <!-- Popup: Profile -->
+    <div ng-controller="GaProfilePopupController">
+      <div ga-popup="toggle"
+           ga-popup-options="options"
+           id="profile-popup"
+           class="ga-popup-bottom">
+        <div ng-controller="GaProfileController">
+          <div ng-if="toggle"
+               ga-profile="feature"
+               ga-profile-map="::map"
+               ga-profile-layer="layer"
+               ga-profile-options="options">
+          </div>
+        </div>
+      </div>
+    </div><!-- end Profile -->
+
+    <!-- Popup: Draw style -->
+    <div ng-controller="GaDrawStylePopupController">
+      <div ga-popup="toggle"
+           ga-popup-map="::map"
+           ga-popup-options="options"
+           id="draw-style-popup"
+           class="ga-popup-mobile-bottom bottom">
+        <div ng-controller="GaDrawStyleController">
+          <div ng-if="toggle"
+               ga-draw-style="feature"
+               ga-draw-style-layer="layer"
+               ga-draw-style-options="options">
+          </div>
+        </div>
+      </div>
+    </div><!-- end Draw style -->
 
   {% if device == 'mobile' %}
     <div ng-if="globals.homescreen" class="popover homescreen"

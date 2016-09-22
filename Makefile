@@ -76,7 +76,8 @@ S3_MF_GEOADMIN3_INFRA = mf-geoadmin3-infra-dublin
 S3_BASE_PATH ?=
 S3_SRC_BASE_PATH ?=
 CLONEDIR = /home/$(USER_NAME)/tmp/branches/${DEPLOY_GIT_BRANCH}
-
+DEEP_CLEAN ?= "false"
+NAMED_BRANCH ?= "true"
 
 ## Python interpreter can't have space in path name
 ## So prepend all python scripts with python cmd
@@ -114,7 +115,7 @@ help:
 	@echo "- clean              Remove generated files"
 	@echo "- cleanall           Remove all the build artefacts"
 	@echo "- deploydev          Deploys current github master to dev. Specify SNAPSHOT=true to create snapshot as well."
-	@echo "- s3deploybranch     Build a branch and deploy it to S3 int (usage: make s3deploybranch DEPLOY_GIT_BRANCH=branch_to_deploy)"
+	@echo "- s3deploybranch     Build a branch and deploy it to S3 int. Defaults to the current branch name."
 	@echo "- s3deployint        Deploys a snapshot specified with SNAPSHOT=xxx to s3 int."
 	@echo "- s3deployprod       Deploys a snapshot specified with SNAPSHOT=xxx to s3 prod."
 	@echo "- s3activateint      Activate a version at the root of a remote bucket. (usage: make s3activateint S3_VERSION_PATH=<branch>/<sha>/<version>)"
@@ -188,7 +189,7 @@ autolintpy: ${AUTOPEP8_CMD}
 	${AUTOPEP8_CMD} --in-place --aggressive --aggressive --verbose --max-line-lengt=110 $(PYTHON_FILES)
 
 .PHONY: testdebug
-testdebug: .build-artefacts/app-whitespace.js test/karma-conf-debug.js 
+testdebug: .build-artefacts/app-whitespace.js test/karma-conf-debug.js
 	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-debug.js --single-run;
 	cat .build-artefacts/coverage.txt; echo;
 
@@ -197,7 +198,7 @@ testrelease: prd/lib/build.js test/karma-conf-release.js .build-artefacts/devlib
 	PHANTOMJS_BIN="node_modules/.bin/phantomjs" ./node_modules/.bin/karma start test/karma-conf-release.js --single-run
 
 .PHONY: teste2e
-teste2e: saucelabs 
+teste2e: saucelabs
 
 .PHONY: saucelabs
 saucelabs: guard-SAUCELABS_USER guard-SAUCELABS_KEY .build-artefacts/requirements.timestamp lintpy
@@ -211,7 +212,7 @@ saucelabssingle: guard-SAUCELABS_USER guard-SAUCELABS_KEY .build-artefacts/requi
 apache: apache/app.conf
 
 .PHONY: deploydev
-deploydev: 
+deploydev:
 	@ if test "$(SNAPSHOT)" = "true"; then \
 		./scripts/deploydev.sh -s; \
 	else \
@@ -219,48 +220,53 @@ deploydev:
 	fi
 
 .PHONY: s3deployint
-s3deployint: guard-SNAPSHOT .build-artefacts/requirements.timestamp
-	./scripts/deploysnapshot.sh $(SNAPSHOT) int $(DEPLOYCONFIG)
+s3deployint: guard-SNAPSHOT guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
+	./scripts/deploysnapshot.sh $(SNAPSHOT) int $(DEPLOYCONFIG);
 
 .PHONY: s3deployprod
-s3deployprod: guard-SNAPSHOT .build-artefacts/requirements.timestamp
-	./scripts/deploysnapshot.sh $(SNAPSHOT) prod $(DEPLOYCONFIG)
+s3deployprod: guard-SNAPSHOT guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
+	./scripts/deploysnapshot.sh $(SNAPSHOT) prod $(DEPLOYCONFIG);
 
 .PHONY: s3deploybranch
-s3deploybranch: guard-CLONEDIR guard-DEPLOY_GIT_BRANCH .build-artefacts/requirements.timestamp
-	./scripts/clonebuild.sh ${CLONEDIR} ${DEPLOY_GIT_BRANCH} int || (echo "Cloning and building failed $$?"; exit 1);
-	${PYTHON_CMD} ./scripts/s3manage.py upload ${CLONEDIR}/mf-geoadmin3 int;
+s3deploybranch: guard-S3_MF_GEOADMIN3_INT \
+	              guard-CLONEDIR \
+	              guard-DEPLOY_GIT_BRANCH \
+	              guard-DEEP_CLEAN \
+	              guard-NAMED_BRANCH \
+	              .build-artefacts/requirements.timestamp
+	./scripts/clonebuild.sh ${CLONEDIR} int ${DEPLOY_GIT_BRANCH} ${DEEP_CLEAN} ${NAMED_BRANCH};
+	${PYTHON_CMD} ./scripts/s3manage.py upload ${CLONEDIR}/mf-geoadmin3 int ${NAMED_BRANCH};
 
 .PHONY: s3listint
-s3listint: .build-artefacts/requirements.timestamp
+s3listint: guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py list int;
 
 .PHONY: s3listprod
-s3listprod: .build-artefacts/requirements.timestamp
+s3listprod: guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py list prod;
 
 .PHONY: s3infoint
-s3infoint: guard-S3_VERSION_PATH .build-artefacts/requirements.timestamp
+s3infoint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py info ${S3_VERSION_PATH} int;
 
 .PHONY: s3infoprod
-s3infoprod: guard-S3_VERSION_PATH .build-artefacts/requirements.timestamp
+s3infoprod: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py info ${S3_VERSION_PATH} prod;
 
 .PHONY: s3activateint
-s3activateint: guard-S3_VERSION_PATH .build-artefacts/requirements.timestamp
+s3activateint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py activate ${S3_VERSION_PATH} int;
 
 .PHONY: s3activateprod
-s3activateprod: guard-S3_VERSION_PATH .build-artefacts/requirements.timestamp
+s3activateprod: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py activate ${S3_VERSION_PATH} prod;
 
 .PHONY: s3deleteint
-s3deleteint: guard-S3_VERSION_PATH .build-artefacts/requirements.timestamp
+s3deleteint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py delete ${S3_VERSION_PATH} int;
 
 .PHONY: s3deleteprod
-s3deleteprod: guard-S3_VERSION_PATH .build-artefacts/requirements.timestamp
+s3deleteprod: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py delete ${S3_VERSION_PATH} prod;
 
 .PHONY: ol3cesium
@@ -677,7 +683,7 @@ ${HTMLMIN_CMD}: ${PYTHON_VENV}
 
 ${GJSLINT_CMD}: ${PYTHON_VENV}
 	${PIP_CMD} install \
-	    "http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz"
+	    "https://github.com/google/closure-linter/archive/v2.3.19.tar.gz"
 	touch $@
 
 ${FLAKE8_CMD}: ${PYTHON_VENV}

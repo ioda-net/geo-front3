@@ -164,8 +164,7 @@ goog.require('gf3');
 
           if (position) {
             gaMapUtils.moveTo($scope.map, $scope.ol3d, 8, position);
-            gaMarkerOverlay.add($scope.map, position,
-                                [position, position], true);
+            gaMarkerOverlay.add($scope.map, position, true);
           //TODO: canceling requests that might be out there...
           } else if (w3w) {
             w3w.then(function(response) {
@@ -175,8 +174,7 @@ goog.require('gf3');
                                                 res.geometry.lat],
                                                'EPSG:4326', 'EPSG:21781');
                 gaMapUtils.moveTo($scope.map, $scope.ol3d, 8, newPos);
-                gaMarkerOverlay.add($scope.map, newPos,
-                                  [newPos, newPos], true);
+                gaMarkerOverlay.add($scope.map, newPos, true);
               }
             });
           } else {

@@ -44,8 +44,6 @@ describe('ga_popup_directive', function() {
   });
 
   it('shows/closes the popup with scope property', inject(function($rootScope) {
-    expect(element.css('display')).to.be('none'); // hidden by default
-
     $rootScope.popupShown = true;
     $rootScope.$digest();
     expect(element.css('display')).to.be('block');
@@ -69,6 +67,7 @@ describe('ga_popup_directive', function() {
     var element2 = angular.element(
         '<div ga-popup="popup2Shown" ga-popup-options="{title:\'Title popup2\'}"></div>');
     $compile(element2)($rootScope);
+    $rootScope.$digest();
     $rootScope.popupShown = true;
     $rootScope.popup2Shown = true;
     $rootScope.$digest();
@@ -97,18 +96,18 @@ describe('ga_popup_directive', function() {
   it('reduces the popup', inject(function() {
     var scope = element.isolateScope();
 
-    expect(scope.isReduced).to.be(false);
+    expect(scope.options.isReduced).to.be(false);
     expect(element.hasClass('ga-popup-reduced')).to.be(false);
 
     // Minify
     element.find('.fa-minus').click();
-    expect(scope.isReduced).to.be(true);
+    expect(scope.options.isReduced).to.be(true);
     expect(element.hasClass('ga-popup-reduced')).to.be(true);
     expect(element.hasClass('ga-draggable-zone')).to.be(false);
 
     // Maximise
     element.find('.popover-title').click();
-    expect(scope.isReduced).to.be(false);
+    expect(scope.options.isReduced).to.be(false);
     expect(element.hasClass('ga-popup-reduced')).to.be(false);
   }));
 

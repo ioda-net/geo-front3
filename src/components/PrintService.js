@@ -13,7 +13,7 @@ goog.provide('gf3_print_service');
       html += '<html><head>';
       html += head || '';
       html += getStylesheetString();
-      html += '</head><body onload=\'window.opener.printOnLoad(window);\'>';
+      html += '</head><body onload="window.opener.printOnLoad(window);">';
       html += body;
       html += '</body></html>';
       return html;
@@ -35,7 +35,7 @@ goog.provide('gf3_print_service');
           }
           windowPrint = $window.open('', 'printout', 'height=400, width=600');
           if (!windowPrint) {
-            alert($translate.instant('popup_blocked'));
+            $window.alert($translate.instant('popup_blocked'));
             return;
           }
           windowPrint.document.write(buildHtml(body, head));

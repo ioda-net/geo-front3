@@ -13,6 +13,8 @@ goog.require('ga_controls3d');
 goog.require('ga_draggable_directive');
 goog.require('ga_draw');
 goog.require('ga_draw_controller');
+goog.require('ga_drawstyle_controller');
+goog.require('ga_drawstylepopup_controller');
 goog.require('ga_feedback');
 goog.require('ga_feedback_controller');
 goog.require('ga_fullscreen');
@@ -36,6 +38,8 @@ goog.require('ga_popup');
 goog.require('gf3_print_controller');
 goog.require('gf3_print_directive');
 goog.require('ga_profile');
+goog.require('ga_profile_controller');
+goog.require('ga_profilepopup_controller');
 goog.require('ga_rotate');
 goog.require('ga_scaleline');
 goog.require('ga_search');
@@ -111,6 +115,8 @@ goog.require('gf3_webdav');
     'ga_share_controller',
     'gf3_print_controller',
     'gf3_print_directive',
+    'ga_profile_controller',
+    'ga_profilepopup_controller',
     'ga_translation_controller',
     'ga_feedback_controller',
     'ga_contextpopup_controller',
@@ -118,9 +124,11 @@ goog.require('gf3_webdav');
     'ga_seo_controller',
     'ga_timeselector_controller',
     'ga_draw_controller',
+    'ga_tilt3d',
+    'ga_drawstyle_controller',
+    'ga_drawstylepopup_controller',
     'gf3_features_controller',
-    'gf3_webdav',
-    'ga_tilt3d'
+    'gf3_webdav'
   ]);
 
 })();

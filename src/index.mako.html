@@ -41,14 +41,14 @@ itemscope itemtype="http://schema.org/WebApplication"
     <link rel="apple-touch-icon" sizes="152x152" href="${s3basepath}${versionslashed}img/touch-icon-bund-152x152.png"/>
 
     <!-- Description is translated 'by hand' in the MainController -->
-    <meta name="description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta name="description" translate translate-attr-content="page_description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
     <meta name="keywords" content="maps Switzerland, map viewer, Confederation, geodata, public platform, geographical information, geoportal, orthophotos, geolocation, geoinformation, Geodaten, Geoinformation, Bund, Plattform, Karte, Kartendienst, Kartenviewer"/>
     <meta name="news_keywords" content="Maps of Switzerland"/>
 
     <!-- Open Graph metas SMO -->
     <meta property="og:site_name" content="geo.admin.ch"/>
     <meta property="og:title" content="Swiss Geoportal"/>
-    <meta property="og:description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
+    <meta property="og:description" translate translate-attr-content="page_description" content="geo.admin.ch ist die Geoinformationsplattform der Schweizerischen Eidgenossenschaft. // geo.admin.ch est la plateforme de géoinformation de la Confédération suisse."/>
     <meta property="og:type" content="WebApplication"/>
     <meta property="og:url" content="https://map.geo.admin.ch"/>
     <meta property="og:image" content="https://cms.geo.admin.ch/img/logo_geoportal.png"/>
@@ -91,11 +91,11 @@ itemscope itemtype="http://schema.org/WebApplication"
     </script>
     <link href="${s3basepath}${versionslashed}style/app.css" rel="stylesheet"/>
   </head>
-  <body class="{{topicId}} {{langId}}" 
+  <body class="{{topicId}} {{langId}}"
         ng-class="{
           'search-focused': globals.searchFocused,
-          'touch': globals.touch, 
-          'webkit': globals.webkit, 
+          'touch': globals.touch,
+          'webkit': globals.webkit,
           'no-webkit': !globals.webkit,
           'no-animation': !globals.animation,
           'offline': globals.offline,
@@ -127,9 +127,9 @@ itemscope itemtype="http://schema.org/WebApplication"
       </script>
     <![endif]-->
 
-    <div ng-cloak class="corner-ribbon 
+    <div ng-cloak class="corner-ribbon
 % if device == 'mobile':
-    top-left    
+    top-left
 % else:
     bottom-left
 % endif
@@ -159,7 +159,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       <div id="toptools">
         <div ga-fullscreen ga-fullscreen-map="map"></div>&nbsp;&nbsp;
         <a href="" ng-click="globals.feedbackPopupShown = !globals.feedbackPopupShown">
-          <span ng-class="{'selected': globals.feedbackPopupShown}" translate>problem_announcement</span>
+          <span translate>problem_announcement</span>
         </a>&nbsp;&nbsp;
         <a target="_blank" href="//help.geo.admin.ch/?lang={{langId}}" translate>help_label</a>&nbsp;&nbsp;
         <a href="{{deviceSwitcherHref}}" translate>mobile_redirect</a>&nbsp;&nbsp;
@@ -235,7 +235,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
 % if device == 'mobile':
     <div ga-offline-selector
-         ga-offline-selector-map="map">
+         ga-offline-selector-map="::map">
     </div>
 % endif
 
@@ -247,19 +247,19 @@ itemscope itemtype="http://schema.org/WebApplication"
 % if device != 'embed':
     <div ng-cloak translate-cloak
          ga-background-selector
-         ga-background-selector-map="map"
+         ga-background-selector-map="::map"
          ga-background-selector-ol3d="::ol3d">
     </div>
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
-      <div  class="pull-left" ga-scale-line ga-scale-line-map="map" ng-show="!globals.is3dActive"></div>
+      <div  class="pull-left" ga-scale-line ga-scale-line-map="::map" ng-show="!globals.is3dActive"></div>
 
   % if device == 'desktop':
       <div id="mouseposition" class="pull-left hidden-xs" ng-controller="GaMousePositionController">
         <select ng-model="options.projection"
-                ng-options="p.label for p in mousePositionProjections">
+                ng-options="p.label for p in ::mousePositionProjections">
         </select>
         <div ga-mouse-position
-             ga-mouse-position-map="map"
+             ga-mouse-position-map="::map"
              ga-mouse-position-ol3d="::ol3d"
              ga-mouse-position-options="options"></div>
       </div>
@@ -269,13 +269,19 @@ itemscope itemtype="http://schema.org/WebApplication"
       </div>
   % if device == 'desktop':
       <div class="pull-right">
-        <a target="_blank" translate="{{topicId + '_service_link_label'}}" translate-attr-href="{{topicId + '_service_link_href'}}"></a>
+        <a target="_blank"
+           translate="{{topicId + '_service_link_label'}}"
+           translate-attr-href="{{topicId + '_service_link_href'}}"></a>
       </div>
   % endif
     </div><!-- #footer -->
 
     <div ng-controller="GaContextPopupController">
-      <div ga-context-popup ga-context-popup-map="map" ga-context-popup-options="options" ga-context-popup-is3d="globals.is3dActive"></div>
+      <div ga-context-popup
+           ga-context-popup-map="::map"
+           ga-context-popup-options="::options"
+           ga-context-popup-is3d="globals.is3dActive">
+      </div>
     </div>
 % endif
 
@@ -292,11 +298,12 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
 
     <div ng-controller="GaTooltipController">
-      <div ga-tooltip 
+      <div ga-tooltip
            ga-tooltip-map="::map"
-           ga-tooltip-ol3d="::ol3d" 
+           ga-tooltip-ol3d="::ol3d"
            ga-tooltip-options="options"
-           ga-tooltip-active="!globals.feedbackPopupShown && !globals.isDrawActive"></div>
+           ga-tooltip-active="!globals.feedbackPopupShown && !globals.isDrawActive">
+      </div>
     </div>
 
 % if device != 'embed':
@@ -508,7 +515,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   % endif
         <button id="menu-button" class="btn btn-default"
                 ng-click="globals.pulldownShown=!globals.pulldownShown">
-          <span class="ga-hidden-mobile"> 
+          <span class="ga-hidden-mobile">
             <i class="fa fa-caret-down"></i>
             <span class="ga-hidden-collapsed" translate>close_menu</span>
             <span class="ga-visible-collapsed" translate>open_menu</span>
@@ -519,14 +526,22 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div> <!-- #pulldown -->
 
   % if device == 'mobile':
-    <!-- offline dialog -->
+    <!-- Modal: offline menu -->
     <div ng-cloak translate-cloak ga-offline-menu ga-offline-menu-map="map"></div>
   % endif
+
+    <!-- Modal: draw share -->
+    <div ng-cloak translate-cloak ga-share-draw></div>
+    
+    <!-- Modal: embed share -->
+    <div ng-cloak translate-cloak ga-share-embed></div>
+ 
     <!-- Popup: Feedback -->
     <div ga-popup="globals.feedbackPopupShown"
          ga-popup-options="{title:'problem_announcement', help:'70'}"
          ga-draggable=".popover-title"
-         id="feedback-popup" >
+         id="feedback-popup"
+         class="ga-popup-mobile-bottom">
       <div ng-controller="GaFeedbackController">
         <div ga-feedback
              ga-feedback-map="map"
@@ -541,7 +556,8 @@ itemscope itemtype="http://schema.org/WebApplication"
     <div ga-popup="globals.importWmsPopupShown"
          ga-popup-options="{title:'import_wms', help:'62'}"
          ga-draggable=".popover-title"
-         id="import-wms-popup" >
+         id="import-wms-popup"
+         class="ga-popup-mobile-bottom">
       <div ng-controller="GaImportWmsController">
         <div ga-import-wms
              ga-import-wms-map="map"
@@ -554,18 +570,55 @@ itemscope itemtype="http://schema.org/WebApplication"
     <div ga-popup="globals.importKmlPopupShown"
          ga-popup-options="{title:'import_kml', help:'63'}"
          ga-draggable=".popover-title"
-         id="import-kml-popup" >
+         id="import-kml-popup"
+         class="ga-popup-mobile-bottom">
       <div ga-import-kml
            ga-import-kml-map="map">
       </div>
     </div><!-- end Import KML -->
   % endif
+
+    <!-- Popup: Profile -->
+    <div ng-controller="GaProfilePopupController">
+      <div ga-popup="toggle"
+           ga-popup-options="options"
+           id="profile-popup"
+           class="ga-popup-bottom">
+        <div ng-controller="GaProfileController">
+          <div ng-if="toggle"
+               ga-profile="feature"
+               ga-profile-map="::map"
+               ga-profile-layer="layer" 
+               ga-profile-options="options"> 
+          </div>
+        </div>
+      </div>
+    </div><!-- end Profile -->
+
+    <!-- Popup: Draw style -->
+    <div ng-controller="GaDrawStylePopupController">
+      <div ga-popup="toggle"
+           ga-popup-map="::map"
+           ga-popup-options="options"
+           id="draw-style-popup"
+           class="ga-popup-mobile-bottom bottom">
+        <div ng-controller="GaDrawStyleController">
+          <div ng-if="toggle"
+               ga-draw-style="feature"
+               ga-draw-style-layer="layer"
+               ga-draw-style-options="options">
+          </div>
+        </div>
+      </div>
+    </div><!-- end Draw style -->
+
     <!-- Popup: Feature Tree -->
     <div ng-controller="GaFeaturetreeController">
       <div ga-popup="globals.isFeatureTreeActive"
            ga-popup-options="{title:'object_information', showPrint:true, print: print, help:'68'}"
            ga-draggable=".popover-title"
-           id="featuretree-popup">
+           id="featuretree-popup"
+           class="ga-popup-mobile-bottom">
         <div class="panel-group" id="accordion">
           <div class="panel panel-default">
             <a class="panel-heading" data-toggle="collapse" data-parent="#accordion" href="#accordion-query">
@@ -625,7 +678,7 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
 
 % if mode == 'prod':
-  
+
     <script>
       window.CESIUM_BASE_URL="${s3basepath}${versionslashed}lib/Cesium/";
     </script>
@@ -666,7 +719,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <script src="${s3basepath}lib/filesaver.js"></script>
     <script src="${s3basepath}lib/moment-with-customlocales.js"></script>
     <script src="${s3basepath}lib/Cesium/Cesium.js"></script>
-   
+
 
     <!-- Use Closure to load the application scripts -->
     <script>
@@ -677,7 +730,7 @@ itemscope itemtype="http://schema.org/WebApplication"
          need to load base.js ourselves. We keep Closure's base.js file
          around in case we need to test with ol.js or ol-simple.js. -->
     <!--<script src="${s3basepath}lib/closure/base.js"></script>-->
-    <!-- ol3 and ol3-cesium are built together in debug mode --> 
+    <!-- ol3 and ol3-cesium are built together in debug mode -->
     <script src="${s3basepath}lib/ol3cesium-debug.js"></script>
     <script src="${s3basepath}deps.js"></script>
     <script>
@@ -798,12 +851,12 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         module.config(function(gaLayersProvider, gaGlobalOptions) {
           gaLayersProvider.dfltWmsSubdomains = ['', '0', '1', '2', '3', '4'];
-          gaLayersProvider.dfltWmtsNativeSubdomains = ['5', '6', '7', '8', '9'];
-          gaLayersProvider.dfltWmtsMapProxySubdomains = ['20', '21', '22', '23', '24'];
+          gaLayersProvider.dfltWmtsNativeSubdomains = ['100', '101', '102', '103', '104', '105', '106', '107', '108', '109'];
+          gaLayersProvider.dfltWmtsMapProxySubdomains = staging === 'prod' ? ['100', '101', '102', '103', '104', '105', '106', '107', '108', '109'] : ['20', '21', '22', '23', '24'];
           gaLayersProvider.wmsUrlTemplate = '//wms{s}.geo.admin.ch/';
           gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{y}/{x}.{Format}';
           gaLayersProvider.wmtsMapProxyGetTileUrlTemplate =  gaGlobalOptions.mapproxyUrl + '/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{x}/{y}.{Format}';
-          gaLayersProvider.terrainTileUrlTemplate = '//3d.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
+          gaLayersProvider.terrainTileUrlTemplate = '//terrain100.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
           if (apiOverwrite) {
             gaLayersProvider.layersConfigUrlTemplate = apiUrl + '/rest/services/all/MapServer/layersConfig?lang={Lang}';
           } else {

@@ -81,7 +81,7 @@ describe('ga_background_service', function() {
         map = new ol.Map({});
       });
 
-      describe('init', function() {
+    describe('#init()', function() {
 
         describe('using a basic topic', function() {
 

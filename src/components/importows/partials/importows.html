@@ -1,38 +1,40 @@
-<div>
-  <form ng-class="{'has-error': error}">
-    <input type="url" name="url" autocomplete="off" placeholder="{{'choose_wms_url' | translate}}"
-      ng-model="fileUrl" required class="form-control"/>
+<form ng-class="{'has-error': error}">
+  <div class="input-group input-group-sm">
+    <input type="url" name="url" autocomplete="off" placeholder="{{'choose_wms_url'| translate}}"
+           ng-model="fileUrl" required class="form-control"/>
     <div class="gf3-import-ows-open fa fa-collapse"></div>
-    <button type="button" class="btn btn-default gf3-import-ows-connect"
-            ng-click="handleFileUrl()" translate>connect</button>
-    <div class="ga-message">{{userMessage}}</div>
-  </form>
-  <div class="gf3-import-ows-container">
-    <div class="gf3-import-ows-header" ng-click="reverse = !reverse">
-      <label translate>title</label>
-      <button class="pull-right fa" ng-class="{
+    <span class="input-group-btn">$
+      <button type="button" class="btn btn-default gf3-import-ows-connect"
+              ng-click="handleFileUrl()" translate>connect</button>
+    </span>
+  </div>
+  <div class="ga-message">{{userMessage}}</div>
+</form>
+<div class="gf3-import-ows-container">
+  <div class="gf3-import-ows-header" ng-click="reverse = !reverse">
+    <label translate>title</label>
+    <button class="pull-right fa" ng-class="{
         'fa-sort-by-alphabet': !reverse,
-        'fa-sort-by-alphabet-alt': reverse
+        'fa-sort-by-alphabet - alt': reverse
       }"></button>
-    </div>
-    <div class="gf3-import-ows-content">
-      <ul>
-        <li ng-repeat="layer in layers | orderBy:'Title':reverse">
-          <div gf3-import-ows-item></div>
-        </li>
-      </ul>
-    </div>
-    <div class="modal-backdrop fade in" ng-show="progress > 0 && progress < 100">
-      <div class="progress progress-striped active">
-        <div class="progress-bar" style="width: 100%;"></div>
-      </div>
+  </div>
+  <div class="gf3-import-ows-content">
+    <ul>
+      <li ng-repeat="layer in layers| orderBy:'Title':reverse">
+        <div gf3-import-ows-item></div>
+      </li>
+    </ul>
+  </div>
+  <div class="modal-backdrop fade in" ng-show="progress > 0 && progress < 100">
+    <div class="progress progress-striped active">
+      <div class="progress-bar" style="width: 100%;"></div>
     </div>
   </div>
-  <div class="gf3-import-ows-descr">
-    <label translate>description</label>
-    <textarea ng-if="options.owsType === 'WMS'" placeholder="{{'description_instructions' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
-    <textarea ng-if="options.owsType === 'WMTS'" placeholder="{{'description_instructions_wmts' | translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
-    <button type="button" class="btn btn-default gf3-import-ows-add"
-    ng-disabled="(options.layerSelected && options.layerSelected.isInvalid)" ng-click="addLayerSelected()" translate>add_layer</button>
-  </div>
+</div>
+<div class="gf3-import-ows-descr">
+  <label translate>description</label>
+  <textarea ng-if="options.owsType === 'WMS'" placeholder="{{'description_instructions'| translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
+  <textarea ng-if="options.owsType === 'WMTS'" placeholder="{{'description_instructions_wmts'| translate}}" class="form-control" readonly>{{getAbstract()}}</textarea>
+  <button type="button" class="btn btn-default gf3-import-ows-add"
+          ng-disabled="(options.layerSelected && options.layerSelected.isInvalid)" ng-click="addLayerSelected()" translate>add_layer</button>
 </div>
