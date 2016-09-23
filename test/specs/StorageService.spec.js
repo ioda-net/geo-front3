@@ -173,8 +173,13 @@ describe('ga_storage_service', function() {
         gaStorage.init();
         var spy = sinon.spy($window.localforage, 'getItem');
         gaStorage.getTile('key', function(arg1, arg2) {
-          expect(arg1).to.be(null);
-          expect(arg2).to.be(null);
+          if (/PhantomJS/.test(window.navigator.userAgent)) {
+            expect(arg1).to.be.an(TypeError);
+            expect(arg2).to.be(undefined);
+          } else {
+            expect(arg1).to.be(null);
+            expect(arg2).to.be(null);
+          }
           done();
         });
         expect(spy.calledOnce).to.be(true);
