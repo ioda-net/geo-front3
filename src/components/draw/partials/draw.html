@@ -38,7 +38,7 @@
     </li>
     <li class="col-sm-4 col-xs-4">
       <a href="" class="btn"
-         ng-disabled="!canShare() || drawingSave.value == 'server'"
+         ng-disabled="!canShare() || drawingSave.value !== 'server'"
          ng-click="share($event)"
          translate>share</a>
     </li>
