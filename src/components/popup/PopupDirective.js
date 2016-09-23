@@ -158,7 +158,6 @@ goog.require('gf3_print_service');
             }
           });
 
-          var header = element.find('.popover-title');
           header.toggleClass('ga-draggable-zone', scope.options.draggable);
           scope.$watch('options.isReduced', function(newVal, oldVal) {
             if (newVal != oldVal) {
