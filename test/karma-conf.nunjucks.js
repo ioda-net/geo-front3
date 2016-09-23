@@ -1,5 +1,7 @@
 // Karma configuration
 
+var path = require('path');
+
 function mergeFilesWithArgv(staticFiles) {
     var common = [
        '../test/lib/angular-mocks.js',
@@ -10,22 +12,32 @@ function mergeFilesWithArgv(staticFiles) {
     ];
     var source = staticFiles || [];
     var argv = process.argv;
+    var isProd = false;
+    var portal = '';
 
     var infra_dir = '';
     argv.forEach(function (arg) {
       var index = arg.indexOf('--infra-dir=');
       if (index !== -1) {
         infra_dir = arg.substring(12);
-        infra_dir += '/prod/';
+        infra_dir = path.join(infra_dir, 'prod');
+        isProd = true;
       }
     });
 
     argv.forEach(function (arg) {
         var index = arg.indexOf('--portal=');
         if (index !== - 1) {
-            source.push(infra_dir + arg.substring(9) + '/lib/build.js');
+            portal = arg.substring(9);
         }
     });
+
+    if (isProd) {
+      source.push('lib/build.js');
+      source = source.map(function(src) {
+        return path.join(infra_dir, portal, src);
+      });
+    }
 
     return source.concat(common);
 }
@@ -42,7 +54,9 @@ module.exports = function(config) {
 
 	// list of files / patterns to load in the browser
 	files: mergeFilesWithArgv([
-	    {% if not prod %}
+	    {% if prod %}
+           'lib/d3.min.js',
+        {% else %}
            'style/app.css',
 	       'lib/jquery.js',
            'lib/jQuery.XDomainRequest.js',
@@ -59,9 +73,9 @@ module.exports = function(config) {
 	       'lib/EPSG32631.js',
 	       'lib/EPSG32632.js',
            'lib/fastclick.js',
-          'lib/localforage.js',
-          'lib/filesaver.js',
-          'lib/moment-with-customlocales.js',
+           'lib/localforage.js',
+           'lib/filesaver.js',
+           'lib/moment-with-customlocales.js',
            'lib/ultimate-datatable.js',
            'lib/ol3.js',
            ${js_files}
