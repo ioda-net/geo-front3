@@ -331,7 +331,11 @@ describe('ga_kml_service', function() {
           var feats = olLayer.getSource().getFeatures();
           feats.forEach(function(feat, idx) {
             var hrefTest = hrefs[idx].replace(/^http:/, 'https:');
-            expect(feat.getStyleFunction().call(feat)[0].getImage().getSrc()).to.be(hrefTest);
+            var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
+            if (src.endsWith('/') && !hrefTest.endsWith('/')) {
+              hrefTest += '/';
+            }
+            expect(src).to.be(hrefTest);
             done();
           });
         });
@@ -356,6 +360,9 @@ describe('ga_kml_service', function() {
           feats.forEach(function(feat, idx) {
             var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
             var hrefTest = hrefs[idx];
+            if (src.endsWith('/') && !hrefTest.endsWith('/')) {
+              hrefTest += '/';
+            }
             if (/^http:/.test(hrefTest)) {
               hrefTest = hrefTest.replace(/^http:/, 'https:');
               expect(src).not.to.be(hrefTest);

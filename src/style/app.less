@@ -87,15 +87,15 @@ button, a, .ga-bg-layer, .ga-bg-layer-bt {
   touch-action: manipulation;
   -ms-touch-action: manipulation;
 }
- 
+
 .has-error {
-  
+
   input[type=url] {
     background-color: #f2dede!important;
   }
 
   .ga-message {
-    color: red; 
+    color: red;
   }
 }
 
@@ -189,7 +189,7 @@ button.ga-btn, .ol-control button {
     right: 0;
     color: #343434;
   }
-  
+
   .fa-ga-circle-bg {
     color: #fff;
   }
@@ -213,7 +213,7 @@ button.ga-btn, .ol-control button {
 
     .fa-ga-circle-bg {
       color: #fff;
-    }  
+    }
   }
 }
 
@@ -248,7 +248,7 @@ button.ga-icon, &.ga-btn-disabled {
   background-color: transparent;
   font-size: 1.3em;
   line-height: 1em; /* Critical css for alignment */
- 
+
   &[disabled] {
     color: #CCC;
     cursor: not-allowed;
@@ -295,7 +295,7 @@ button.ga-btn, .ol-control button {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  
+
   /* IE9+FontAwesome hack: https://github.com/FortAwesome/Font-Awesome/issues/1079*/
   &:before {
     content: "";
@@ -311,7 +311,7 @@ button.ga-btn, .ol-control button {
 }
 
 .ga-full-screen {
-  
+
   #header {
     background-color: transparent;
     box-shadow: none;
@@ -332,15 +332,15 @@ button.ga-btn, .ol-control button {
       padding: 1px 6px;
     }
   }
-  
-  &.ga-full-screen-no-inputs #search-container, 
+
+  &.ga-full-screen-no-inputs #search-container,
   #logo, #toptools, #pulldown, #footer {
     display: none;
   }
 }
 
 .ga-draw-active {
-  
+
   #header {
     top: unit(-@header-height, px);
   }
@@ -419,9 +419,9 @@ input[type=text][readonly] {
   cursor: default;
 }
 
-// ***** TABS 
+// ***** TABS
 .nav-tabs {
-  
+
   .active {
     cursor: default;
   }
@@ -553,7 +553,7 @@ input[type=text][readonly] {
     left: 44px;
     position: absolute;
   }
-  
+
   @media (max-width: @screen-phone) {
     right: 50px;
     width: auto;
@@ -581,7 +581,7 @@ input[type=text][readonly] {
     .fa-remove-sign {
       margin-right: 2%;
     }
-      
+
     .ga-search-dropdown {
       top: 37px !important;
       border-width: 1px 0;
@@ -723,10 +723,10 @@ input[type=text][readonly] {
   vertical-align: middle;
   padding: 6px 12px;
   background-color: #e6e6e6;
- 
+
   .btn-primary {
     margin-top: 1px;
-  } 
+  }
   .btn-primary .fa-arrow-left{
     vertical-align: middle;
   }
@@ -779,21 +779,21 @@ input[type=text][readonly] {
     line-height: unit(@footer-height, px);
     margin-right: 1em;
   }
-  
+
   [ga-scale-line] {
     line-height: 1.5em;
     height: 1.5em;
-    margin-top: .4em;  
+    margin-top: .4em;
   }
 
   @media (max-width: @screen-tablet) {
     background: transparent;
     padding-left: 2px;
-    
+
     & > div {
       display: none;
     }
-      
+
     [ga-scale-line] {
       display: inline-block;
       position: absolute;
@@ -802,7 +802,7 @@ input[type=text][readonly] {
       height: auto;
       line-height: 1.4em;
       margin: 0;
-      
+
       .ol-scale-line-inner {
         background: rgba(255,255,255,.7);
         outline: 2px solid rgba(255,255,255,.7);
@@ -877,8 +877,8 @@ a .ga-icon-separator {
     vertical-align: -2px;
   }
 
-  .collapsed .fa-caret-down {   
-    .rotate(-90deg);   
+  .collapsed .fa-caret-down {
+    .rotate(-90deg);
   }
 
   .panel {
@@ -974,7 +974,7 @@ a .ga-icon-separator {
       display: none;
     }
 
-    #share { 
+    #share {
       display: block!important;
       visibility: visible!important;
       height: auto!important;
@@ -1056,7 +1056,7 @@ a .ga-icon-separator {
     vertical-align: middle;
     .transition-transform(.2s ease);
   }
-  
+
   .ga-hidden-collapsed, .ga-visible-mobile {
     display: none;
   }
@@ -1084,7 +1084,7 @@ a .ga-icon-separator {
 
   .fa-caret-down {
     .rotate(-180deg);
-  } 
+  }
 
   .ga-visible-collapsed {
     display: none;
@@ -1143,7 +1143,7 @@ a .ga-icon-separator {
 
 // ****** SELECTION
 #selection {
-  
+
   .panel-body {
     padding: 0px 4px;
   }
@@ -1180,7 +1180,7 @@ a .ga-icon-separator {
   display: block;
   top: unit(@header-height, px);
   left: 2%;
-  right: 2%; 
+  right: 2%;
   margin: auto;
   max-width: 600px;
   max-height: none;
@@ -1193,9 +1193,9 @@ a .ga-icon-separator {
 
 .modal-header {
   .border-top-radius(6px);
-  
+
   @media (max-width: @screen-phone) {
-    padding: 5px 15px; 
+    padding: 5px 15px;
   }
 }
 .modal-body {
@@ -1203,7 +1203,7 @@ a .ga-icon-separator {
   overflow-y: auto;
 
   @media (max-width: @screen-phone) {
-    padding: 10px; 
+    padding: 10px;
     max-height: 340px;
   }
 }
@@ -1258,7 +1258,7 @@ a .ga-icon-separator {
 
 #featuretree-popup {
   width: 320px;
- 
+
   .ga-popup-content {
     padding: 5px 9px 5px 5px;
 
@@ -1288,7 +1288,7 @@ a .ga-icon-separator {
 }
 
 #profile-popup {
-  .popover-content { 
+  .popover-content {
     overflow: visible;
   }
 }
@@ -1297,10 +1297,10 @@ a .ga-icon-separator {
   width: 320px;
   margin: 18px 0 0 -160px;
   overflow: visible !important;
-  
+
   @media (max-width: @screen-phone) {
     margin: 0;
-  }  
+  }
 }
 
 
@@ -1354,7 +1354,7 @@ a.panel-heading {
   display: block;
 }
 
-// ***** POPOVER and MODAL (ga-popup and bs popover) 
+// ***** POPOVER and MODAL (ga-popup and bs popover)
 .popover {
   z-index: 3000;
 }
@@ -1436,11 +1436,11 @@ ul.panel-body-wide {
   padding: .7em .7em 0;
   display: table;
   width: 100%;
-  
+
   select, span {
     display: table-cell;
   }
-  
+
   span {
     font-size: 13px;
     font-weight: normal;
@@ -1564,7 +1564,7 @@ ul.panel-body-wide {
 // Only IE9
 .no-animation.online.ga-wait-cursor {
   cursor: wait;
- 
+
   #loader {
     display: none;
   }
@@ -1632,7 +1632,7 @@ input[type=range] {
 .ga-checkbox {
   cursor: pointer;
   -webkit-touch-callout: none;
-  
+
   input[type=checkbox] {
     cursor: inherit;
     display: inline;
@@ -1640,10 +1640,11 @@ input[type=range] {
 }
 
 .no-webkit .ga-checkbox {
-    
+
   input[type=checkbox] {
-    display: none;
-  
+    position: absolute;
+    opacity: 0;
+
     & + span:before {
       font-family: "FontAwesome";
       font-size: 14px;
@@ -1651,17 +1652,21 @@ input[type=range] {
       letter-spacing: 4px;
       vertical-align: -0.1em;
     }
-    
+
     &:checked + span:before {
       content: "\f046";
       color: #000;
       letter-spacing: 2px;
     }
   }
+
+  input[type=checkbox]:focus + span {
+    box-shadow: 0 0 3px 0px rgb(255, 0, 0);
+  }
 }
 
 .webkit .ga-checkbox {
-    
+
   input[type=checkbox] {
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -1669,14 +1674,14 @@ input[type=range] {
     border: 0;
     background: white;
     vertical-align: -3px;
-    
+
     &:after {
       font-size: 14px;
       content: "\f096";
       font-family: FontAwesome;
       letter-spacing: 2px;
     }
-    
+
     &:checked:after {
       content: "\f046";
       letter-spacing: 0px;
@@ -1738,7 +1743,7 @@ input[type=range] {
     height: unit(@control-btn-size, px);
     pointer-events: auto;
   }
- 
+
   button {
     padding: 0;
     background-color: transparent;
@@ -1746,7 +1751,7 @@ input[type=range] {
     width: unit(@control-btn-size, px);
     height: unit(@control-btn-size, px);
   }
-   
+
   [ga-offline-bt] {
     .bt-bottom-mixin();
   }
@@ -1777,7 +1782,7 @@ body:not(.embed) {
     @media (min-width: @screen-tablet) and (max-height: unit((@screen-height-step-1), px)),
            (max-width: @screen-tablet) and (max-height: unit((@screen-sm-height-step-1), px)) {
       right: @bt-right-col-1;
-    }  
+    }
 
     @media (min-width: @screen-tablet) and (max-height: @screen-height-step-2),
            (max-width: @screen-tablet) and (max-height: @screen-sm-height-step-2) {
@@ -1789,11 +1794,11 @@ body:not(.embed) {
       right: @bt-right-col-3;
     }
   }
-  
+
   /* When only 2 optional buttons are displayed */
   .ga-time-selector-enabled + .ga-rotate-enabled,
   .ga-time-selector-enabled ~ [ga-offline-bt],
-  .ga-rotate-enabled + [ga-offline-bt] { 
+  .ga-rotate-enabled + [ga-offline-bt] {
 
     @media (min-width: @screen-tablet) and (max-height: @screen-height-step-2),
            (max-width: @screen-tablet) and (max-height: @screen-sm-height-step-2) {
@@ -1806,7 +1811,7 @@ body:not(.embed) {
       right: @bt-right-col-2;
     }
   }
-  
+
   /* When only 1 optional button is displayed */
   .ga-time-selector-enabled,
   .ga-rotate-enabled,
@@ -1857,7 +1862,7 @@ body:not(.embed) {
       }
     }
   }
-  
+
   #buttonGroup {
     top: 0px;
     right: 5px;
@@ -1876,11 +1881,11 @@ body:not(.embed) {
     bottom: 0;
     z-index: 1000;
   }
-  
+
   #copyrightsdata {
     max-width: ~"calc(100% - 160px)";
   }
-  
+
   [ga-scale-line] {
     bottom: 2px;
     left: 2px;
@@ -1888,8 +1893,8 @@ body:not(.embed) {
     height: 15px;
     margin: 0;
     font-size: 11px;
-  }  
-  
+  }
+
   .ol-scale-line-inner {
     background: rgba(255,255,255,.7);
   }

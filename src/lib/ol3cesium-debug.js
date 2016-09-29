@@ -1,6 +1,6 @@
 // Ol3-Cesium. See https://github.com/openlayers/ol3-cesium/
 // License: https://github.com/openlayers/ol3-cesium/blob/master/LICENSE
-// Version: v1.20
+// Version: v1.20-6-g7041eae
 
 var CLOSURE_NO_DEPS = true;
 // Copyright 2006 The Closure Library Authors. All Rights Reserved.
@@ -40528,9 +40528,6 @@ olcs.OLCesium = function(options) {
   this.scene_ = new Cesium.Scene(sceneOptions);
 
   var sscc = this.scene_.screenSpaceCameraController;
-  sscc.inertiaSpin = 0;
-  sscc.inertiaTranslate = 0;
-  sscc.inertiaZoom = 0;
 
   sscc.tiltEventTypes.push({
     'eventType': Cesium.CameraEventType.LEFT_DRAG,
@@ -40568,7 +40565,7 @@ olcs.OLCesium = function(options) {
   });
 
   var synchronizers = goog.isDef(options.createSynchronizers) ?
-      options.createSynchronizers(this.map_, this.scene_) : [
+      options.createSynchronizers(this.map_, this.scene_, this.dataSourceCollection_) : [
         new olcs.RasterSynchronizer(this.map_, this.scene_),
         new olcs.VectorSynchronizer(this.map_, this.scene_)
       ];
