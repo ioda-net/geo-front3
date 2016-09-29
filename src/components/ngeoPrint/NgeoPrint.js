@@ -42,10 +42,55 @@
 goog.provide('ngeo.CreatePrint');
 goog.provide('ngeo.Print');
 
-goog.require('goog.color');
 goog.require('goog.math');
 goog.require('goog.object');
 goog.require('ngeo');
+
+
+/**
+ * Functions below are taken from
+ * to avoid goog.provide('goog.color') which breaks stuff
+ */
+ngeo.color = ngeo.color || {};
+/**
+ * Takes a hex value and prepends a zero if it's a single digit.
+ * Small helper method for use by goog.color and friends.
+ * @param {string} hex Hex value to prepend if single digit.
+ * @return {string} hex value prepended with zero if it was single digit,
+ *     otherwise the same value that was passed in.
+ */
+ngeo.color.prependZeroIfNecessaryHelper = function(hex) {
+  return hex.length == 1 ? '0' + hex : hex;
+};
+
+/**
+ * Converts a color from RGB to hex representation.
+ * @param {number} r Amount of red, int between 0 and 255.
+ * @param {number} g Amount of green, int between 0 and 255.
+ * @param {number} b Amount of blue, int between 0 and 255.
+ * @return {string} hex representation of the color.
+ */
+ngeo.color.rgbToHex = function(r, g, b) {
+  r = Number(r);
+  g = Number(g);
+  b = Number(b);
+  if (r != (r & 255) || g != (g & 255) || b != (b & 255)) {
+    throw Error('"(' + r + ',' + g + ',' + b + '") is not a valid RGB color');
+  }
+  var hexR = ngeo.color.prependZeroIfNecessaryHelper(r.toString(16));
+  var hexG = ngeo.color.prependZeroIfNecessaryHelper(g.toString(16));
+  var hexB = ngeo.color.prependZeroIfNecessaryHelper(b.toString(16));
+  return '#' + hexR + hexG + hexB;
+};
+
+/**
+ * Converts a color from RGB to hex representation.
+ * @param {goog.color.Rgb} rgb rgb representation of the color.
+ * @return {string} hex representation of the color.
+ */
+ngeo.color.rgbArrayToHex = function(rgb) {
+  return ngeo.color.rgbToHex(rgb[0], rgb[1], rgb[2]);
+};
 
 
 /**
@@ -577,7 +622,7 @@ ngeo.Print.prototype.encodeVectorStyleFill_ = function(symbolizer, fillStyle) {
   var fillColor = fillStyle.getColor();
   if (!goog.isNull(fillColor)) {
     var fillColorRgba = ol.color.asArray(fillColor);
-    symbolizer.fillColor = goog.color.rgbArrayToHex(fillColorRgba);
+    symbolizer.fillColor = ngeo.color.rgbArrayToHex(fillColorRgba);
     symbolizer.fillOpacity = fillColorRgba[3];
   }
 };
@@ -673,7 +718,7 @@ ngeo.Print.prototype.encodeVectorStyleStroke_ =
   var strokeColor = strokeStyle.getColor();
   if (!goog.isNull(strokeColor)) {
     var strokeColorRgba = ol.color.asArray(strokeColor);
-    symbolizer.strokeColor = goog.color.rgbArrayToHex(strokeColorRgba);
+    symbolizer.strokeColor = ngeo.color.rgbArrayToHex(strokeColorRgba);
     symbolizer.strokeOpacity = strokeColorRgba[3];
   }
   var strokeWidth = strokeStyle.getWidth();
@@ -725,7 +770,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
     var strokeStyle = textStyle.getStroke();
     if (!goog.isNull(strokeStyle)) {
       var strokeColorRgba = ol.color.asArray(strokeStyle.getColor());
-      symbolizer.haloColor = goog.color.rgbArrayToHex(strokeColorRgba);
+      symbolizer.haloColor = ngeo.color.rgbArrayToHex(strokeColorRgba);
       symbolizer.haloOpacity = strokeColorRgba[3];
       var width = strokeStyle.getWidth();
       if (goog.isDef(width)) {
@@ -736,7 +781,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
     var fillStyle = textStyle.getFill();
     if (!goog.isNull(fillStyle)) {
       var fillColorRgba = ol.color.asArray(fillStyle.getColor());
-      symbolizer.fontColor = goog.color.rgbArrayToHex(fillColorRgba);
+      symbolizer.fontColor = ngeo.color.rgbArrayToHex(fillColorRgba);
     }
 
     // Mapfish Print allows offset only if labelAlign is defined.

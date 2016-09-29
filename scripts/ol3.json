@@ -17,6 +17,7 @@
     "ol.Observable.unByKey",
     "ol.Overlay",
     "ol.Overlay#*",
+    "ol.VectorTile#setFeatures",
     "ol.View",
     "ol.View#*",
     "ol.animation.bounce",
