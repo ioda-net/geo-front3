@@ -400,6 +400,16 @@ goog.require('ga_urlutils_service');
           layerConfig.attributionUrl =
               capabilities.ServiceProvider.ProviderSite;
           layerConfig.extent = layerConfig.projection.extent_;
+          // Enable time selector if layer has multiple values for the time
+          // dimension
+          for (var i = 0; i < layer.Dimension.length; i++) {
+            var dimension = layer.Dimension[i];
+            if (dimension.Identifier === 'Time') {
+              layerConfig.timeEnabled = dimension.Value.length > 1;
+              layerConfig.timestamps = dimension.Value;
+              break;
+            }
+          }
         };
 
         var getLayerConfig = function(getCapabilities, layer) {
@@ -469,6 +479,8 @@ goog.require('ga_urlutils_service');
           layer.label = wmtsSourceOptions.Title;
           layer.url = wmtsSourceOptions.attributionUrl;
           layer.attributions = wmtsSourceOptions.attributions;
+          layer.timeEnabled = wmtsSourceOptions.timeEnabled;
+          layer.timestamps = wmtsSourceOptions.timestamps;
 
           return layer;
         };
