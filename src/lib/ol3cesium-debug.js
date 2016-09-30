@@ -77247,6 +77247,7 @@ ol.style.Icon = function(opt_options) {
   if ((src === undefined || src.length === 0) && image) {
     src = image.src || ol.getUid(image).toString();
   }
+  src = src || 'noimage';
   ol.asserts.assert(src !== undefined && src.length > 0,
       6); // A defined and non-empty `src` or `image` must be provided
 

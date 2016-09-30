@@ -1,0 +1,12 @@
+diff --git i/src/ol/style/icon.js w/src/ol/style/icon.js
+index 184ed42..f21c440 100644
+--- i/src/ol/style/icon.js
++++ w/src/ol/style/icon.js
+@@ -109,6 +109,7 @@ ol.style.Icon = function(opt_options) {
+   if ((src === undefined || src.length === 0) && image) {
+     src = image.src || ol.getUid(image).toString();
+   }
++  src = src || 'noimage';
+   ol.asserts.assert(src !== undefined && src.length > 0,
+       6); // A defined and non-empty `src` or `image` must be provided
+ 

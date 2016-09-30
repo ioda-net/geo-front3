@@ -10,7 +10,7 @@ geo_front_root="${geo_front_root/scripts/}"
 # Remove trailing /
 geo_front_root="${geo_front_root%/}"
 
-patch_dir="${geo_front_root}/patches"
+patch_dir="${geo_front_root}/scripts/ol3-patches"
 
 cd "${geo_front_root}"
 
@@ -48,6 +48,10 @@ cat "${geo_front_root}/scripts/ga-ol3-style.exports" >> src/ol/style/style.js
 cat "${geo_front_root}/scripts/ga-ol3-tilegrid.exports" >> src/ol/tilegrid/tilegrid.js
 cat "${geo_front_root}/scripts/ga-ol3-tilerange.exports" >> src/ol/tilerange.js
 cat "${geo_front_root}/scripts/ga-ol3-view.exports" >> src/ol/view.js
+
+for patchfile in ${patch_dir}/*.patch; do
+    patch -p1 < "${patchfile}"
+done
 
 npm install --production
 node tasks/build-ext.js
