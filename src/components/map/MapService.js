@@ -18,30 +18,34 @@ goog.require('ga_urlutils_service');
   ]);
 
   module.provider('gaTileGrid', function() {
-    var origin = [420000, 350000];
+    var defaultOrigin = [420000, 350000];
+    var epsgToOrigin = {
+      'EPSG:2056': [2420000.0, 1350000.0],
+      'EPSG:21781': defaultOrigin
+    };
     var defaultResolutions = [4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250,
         2000, 1750, 1500, 1250, 1000, 750, 650, 500, 250, 100, 50, 20, 10, 5,
         2.5, 2, 1.5, 1, 0.5];
     var wmsResolutions = defaultResolutions.concat([0.25, 0.1]);
 
-    function createTileGrid(resolutions, type) {
+    function createTileGrid(resolutions, type, epsg) {
       if (type === 'wms') {
         return new ol.tilegrid.TileGrid({
           tileSize: 512,
-          origin: origin,
+          origin: epsgToOrigin[epsg] || defaultOrigin,
           resolutions: resolutions
         });
       }
       return new ol.tilegrid.WMTS({
           matrixIds: $.map(resolutions, function(r, i) { return i + ''; }),
-          origin: origin,
+          origin: epsgToOrigin[epsg] || defaultOrigin,
           resolutions: resolutions
       });
     }
 
     this.$get = function() {
       return {
-        get: function(resolutions, minResolution, type) {
+        get: function(resolutions, minResolution, type, epsg) {
           if (!resolutions) {
             resolutions = (type == 'wms') ? wmsResolutions : defaultResolutions;
           }
@@ -53,7 +57,7 @@ goog.require('ga_urlutils_service');
               }
             }
           }
-          return createTileGrid(resolutions, type);
+          return createTileGrid(resolutions, type, epsg);
         }
       };
     };
@@ -809,11 +813,13 @@ goog.require('ga_urlutils_service');
               var tileMatrixSet = layer.epsg ?
                   layer.epsg : gaGlobalOptions.defaultEpsg;
               tileMatrixSet = tileMatrixSet.replace('EPSG:', '');
-              var wmtsTplUrl = getWmtsGetTileTpl(layer.serverLayerName, null,
-                  tileMatrixSet, layer.format, true)
+              var wmtsTplUrl = layer.templateUrl ||
+                  getWmtsGetTileTpl(layer.serverLayerName, null,
+                      tileMatrixSet, layer.format, true)
                   .replace('{z}', '{TileMatrix}')
                   .replace('{x}', '{TileCol}')
                   .replace('{y}', '{TileRow}');
+              var epsg = layer.epsg || gaGlobalOptions.defaultEpsg;
               olSource = layer.olSource = new ol.source.WMTS({
                 dimensions: {
                   'Time': timestamp
@@ -821,10 +827,10 @@ goog.require('ga_urlutils_service');
                 // Temporary until https://github.com/openlayers/ol3/pull/4964
                 // is merged upstream
                 cacheSize: 2048 * 3,
-                projection: layer.epsg || gaGlobalOptions.defaultEpsg,
+                projection: epsg,
                 requestEncoding: 'REST',
                 tileGrid: gaTileGrid.get(layer.resolutions,
-                    layer.minResolution),
+                    layer.minResolution, 'wmts', epsg),
                 tileLoadFunction: tileLoadFunction,
                 urls: getImageryUrls(wmtsTplUrl, dfltWmtsNativeSubdomains),
                 crossOrigin: crossOrigin,
@@ -879,19 +885,20 @@ goog.require('ga_urlutils_service');
             } else {
               if (!olSource) {
                 var subdomains = dfltWmsSubdomains;
+                var epsg = layer.epsg || gaGlobalOptions.defaultEpsg;
                 olSource = layer.olSource = new ol.source.TileWMS({
                   urls: getImageryUrls(
                       getWmsTpl(layer.wmsUrl), subdomains),
                   // Temporary until https://github.com/openlayers/ol3/pull/4964
                   // is merged upstream
                   cacheSize: 2048 * 3,
-                  projection: layer.epsg || gaGlobalOptions.defaultEpsg,
+                  projection: epsg,
                   params: wmsParams,
                   gutter: layer.gutter || 0,
                   crossOrigin: layer.crossOrigin === 'undefined' ?
                       undefined : crossOrigin,
                   tileGrid: gaTileGrid.get(layer.resolutions,
-                      layer.minResolution, 'wms'),
+                      layer.minResolution, 'wms', epsg),
                   tileLoadFunction: tileLoadFunction,
                   wrapX: false
                 });
