@@ -95,7 +95,7 @@ goog.require('ga_time_service');
   });
 
   module.directive('gaTimeSelector',
-    function(gaDebounce, gaLayers, gaTime, $timeout) {
+    function(gaDebounce, gaLayers, gaTime, gaMapUtils, $timeout) {
 
       // Magnetize a year to the closest available year
       var magnetize = function(currentYear, availableYears) {
@@ -262,11 +262,19 @@ goog.require('ga_time_service');
               var year = scope.options.years[i];
               year.available = false;
               olLayers.forEach(function(olLayer, opt) {
-                if (year.available || !olLayer.bodId) {
+                if (year.available ||
+                    (!olLayer.bodId &&
+                     !gaMapUtils.isExternalWmtsLayer(olLayer.id))) {
                   return;
                 }
-                var timestamps = gaLayers.getLayerProperty(olLayer.bodId,
-                    'timestamps') || [];
+                var timestamps;
+                if (gaMapUtils.isExternalWmtsLayer(olLayer.id)) {
+                  timestamps = olLayer.timestamps;
+                } else {
+                  timestamps = gaLayers.getLayerProperty(olLayer.bodId,
+                    'timestamps');
+                }
+                timestamps = timestamps || [];
                 for (var i = 0, length = timestamps.length; i < length; i++) {
                   var yearTimestamp = gaTime.getYearFromTimestamp(
                       timestamps[i]);
