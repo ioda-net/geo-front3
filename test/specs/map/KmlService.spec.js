@@ -332,7 +332,7 @@ describe('ga_kml_service', function() {
           feats.forEach(function(feat, idx) {
             var hrefTest = hrefs[idx].replace(/^http:/, 'https:');
             var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
-            if (src.endsWith('/') && !hrefTest.endsWith('/')) {
+            if (src.endsWith && src.endsWith('/') && !hrefTest.endsWith('/')) {
               hrefTest += '/';
             }
             expect(src).to.be(hrefTest);
@@ -360,7 +360,7 @@ describe('ga_kml_service', function() {
           feats.forEach(function(feat, idx) {
             var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
             var hrefTest = hrefs[idx];
-            if (src.endsWith('/') && !hrefTest.endsWith('/')) {
+            if (src.endsWith && src.endsWith('/') && !hrefTest.endsWith('/')) {
               hrefTest += '/';
             }
             if (/^http:/.test(hrefTest)) {
