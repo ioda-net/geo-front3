@@ -108,7 +108,7 @@ goog.require('ga_wms_service');
         var timestampValues = $.map(layers, function(layer) {
           if (layer.timeEnabled) {
             timestampTotal = true;
-            if (layer.time) {
+            if (layer.time && layer.time.indexOf(',') === -1) {
               return layer.time;
             }
           }
@@ -240,7 +240,7 @@ goog.require('ga_wms_service');
                 if (opacity) {
                   layer.setOpacity(opacity);
                 }
-                if (layer.timeEnabled && timestamp) {
+                if (layer.timeEnabled) {
                   // If a time permalink exist we use it instead of the
                   // timestamp, only if the layer is visible.
                   if (gaTime.get() && layer.visible) {

@@ -193,10 +193,15 @@ goog.require('ga_urlutils_service');
               return undefined;
             },
             set: function(val) {
-              if (this.time == val) {
+              if (this.time == val ||
+                  (val && angular.isString(val) && val.indexOf(',') !== -1)) {
                 // This 'if' avoid triggering a useless layer's 'propertychange'
                 // event.
                 return;
+              }
+              if (!val) {
+                var timestamps = this.get('timestamps') || [];
+                val = timestamps.join(',');
               }
               if (this instanceof ol.layer.Layer) {
                 var src = this.getSource();

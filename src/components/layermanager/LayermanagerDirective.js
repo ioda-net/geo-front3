@@ -40,7 +40,7 @@ goog.require('gf3');
             $translate.instant('time_all');
       }
       var yearNum = input;
-      if (angular.isString(input)) {
+      if (angular.isString(input) && input.indexOf(',') === -1) {
         yearNum = parseInt(input.substring(0, 4));
       }
       return (yearNum <= maxYear) ? yearNum : $translate.instant('time_all');
@@ -55,7 +55,8 @@ goog.require('gf3');
     var tpl =
       '<div class="ga-layer-timestamps">' +
         '<div tabindex="1" ng-if="tmpLayer.type == \'wms\'" ' +
-             'ng-class="{badge: !tmpLayer.time}" ' +
+             'ng-class="{badge: !tmpLayer.time || ' +
+                    'tmpLayer.time.indexOf(\',\') > -1}" ' +
              'ng-click="setLayerTime(tmpLayer)" ' +
              'translate>time_all</div> ' +
         '<div tabindex="1" ng-repeat="i in tmpLayer.timestamps" ' +
