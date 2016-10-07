@@ -6,7 +6,7 @@ describe('ga_contextpopup_directive', function() {
       '&northing=188192';
   var expectedReframeUrl = '//api.example.com/reframe/' +
       'lv03tolv95?easting=661473&northing=188192';
-  var expecteCommunesUrl = 'http://api3.geo.admin.ch/communes?x=661473&y=188192';
+  var expecteCommunesUrl = location.protocol + '//api3.geo.admin.ch/communes?x=661473&y=188192';
   var expectedw3wUrl = 'dummy.test.url.com/v2/reverse?coords=46.84203157398991,8.244528382656728&key=testkey&lang=de';
 
   beforeEach(function() {
