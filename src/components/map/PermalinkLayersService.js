@@ -110,6 +110,8 @@ goog.require('ga_wms_service');
             timestampTotal = true;
             if (layer.time && layer.time.indexOf(',') === -1) {
               return layer.time;
+            } else if (layer.time) {
+              return 'all';
             }
           }
           return '';
@@ -240,7 +242,7 @@ goog.require('ga_wms_service');
                 if (opacity) {
                   layer.setOpacity(opacity);
                 }
-                if (layer.timeEnabled) {
+                if (layer.timeEnabled && timestamp) {
                   // If a time permalink exist we use it instead of the
                   // timestamp, only if the layer is visible.
                   if (gaTime.get() && layer.visible) {

@@ -199,7 +199,7 @@ goog.require('ga_urlutils_service');
                 // event.
                 return;
               }
-              if (!val) {
+              if (val === 'all') {
                 var timestamps = this.get('timestamps') || [];
                 val = timestamps.join(',');
               }

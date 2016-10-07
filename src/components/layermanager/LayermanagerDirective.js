@@ -57,7 +57,7 @@ goog.require('gf3');
         '<div tabindex="1" ng-if="tmpLayer.type == \'wms\'" ' +
              'ng-class="{badge: !tmpLayer.time || ' +
                     'tmpLayer.time.indexOf(\',\') > -1}" ' +
-             'ng-click="setLayerTime(tmpLayer)" ' +
+             'ng-click="setLayerTime(tmpLayer, \'all\')" ' +
              'translate>time_all</div> ' +
         '<div tabindex="1" ng-repeat="i in tmpLayer.timestamps" ' +
              'ng-class="{badge: (tmpLayer.time == i)}" ' +
