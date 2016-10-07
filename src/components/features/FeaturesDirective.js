@@ -473,12 +473,14 @@ goog.require('gf3_features_service');
               // domain than the host
               var sameDomain =
                   new RegExp('^https?://' + $window.location.hostname);
+              var sourceUrl =
+                  source.getUrl ? source.getUrl() : source.getUrls()[0];
               var url = source.getGetFeatureInfoUrl(
                   sourceCoord || geometry,
                   resolution,
                   sourceProj || mapProj,
                   {
-                    INFO_FORMAT: sameDomain.test(source.getUrl()) ?
+                    INFO_FORMAT: sameDomain.test(sourceUrl) ?
                         'text/html' : 'text/plain',
                     FEATURE_COUNT: FEATURE_COUNT
                   });
