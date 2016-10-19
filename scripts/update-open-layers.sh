@@ -49,9 +49,11 @@ cat "${geo_front_root}/scripts/ga-ol3-tilegrid.exports" >> src/ol/tilegrid/tileg
 cat "${geo_front_root}/scripts/ga-ol3-tilerange.exports" >> src/ol/tilerange.js
 cat "${geo_front_root}/scripts/ga-ol3-view.exports" >> src/ol/view.js
 
-for patchfile in ${patch_dir}/*.patch; do
-    patch -p1 < "${patchfile}"
-done
+if [[ -d ${patch_dir} && -n "$(ls -A ${patch_dir})" ]]; then
+  for patchfile in ${patch_dir}/*.patch; do
+      patch -p1 < "${patchfile}"
+  done
+fi
 
 npm install --production
 node tasks/build-ext.js
