@@ -775,6 +775,10 @@ goog.require('gf3_webdav_service');
         // create/update the file
         ////////////////////////////////////
         var save = function(evt) {
+          if (!layer) {
+            // Do nothing if the layer does not exist
+            return;
+          }
           if (layer.getSource().getFeatures().length == 0) {
             //if no features to save, delete the file
             if (layer.adminId) {

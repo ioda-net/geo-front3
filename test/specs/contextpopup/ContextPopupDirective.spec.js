@@ -1,5 +1,12 @@
 describe('ga_contextpopup_directive', function() {
-  var element, handlers = {}, viewport, map, mapEvt, plugins, originalEvt;
+  var element,
+    handlers = {},
+    viewport,
+    map,
+    mapEvt,
+    plugins,
+    originalEvt,
+    $rootScope;
 
   var expectedHeightUrl = '//api.geo.admin.ch/height' +
       '?easting=661473&elevationModel=COMB' +
@@ -44,8 +51,9 @@ describe('ga_contextpopup_directive', function() {
       coordinate: [661473, 188192]
     };
 
-    inject(function($rootScope, $compile, gf3Plugins) {
+    inject(function(_$rootScope_, $compile, gf3Plugins) {
       plugins = gf3Plugins;
+      $rootScope = _$rootScope_;
       map = new ol.Map({});
       $rootScope.map = map;
       $rootScope.options = {
@@ -130,6 +138,12 @@ describe('ga_contextpopup_directive', function() {
 
     describe('On device without contextmenu event', function() {
       beforeEach(inject(function($rootScope, $compile, gaBrowserSniffer) {
+        mapEvt = {
+           stopPropagation: function() {},
+           preventDefault: function() {},
+           pixel: [25, 50],
+           coordinate: [661473, 188192]
+        };
         gaBrowserSniffer.touchDevice = true;
         gaBrowserSniffer.msie = false;
         gaBrowserSniffer.events.menu = undefined;

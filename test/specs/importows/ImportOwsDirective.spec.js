@@ -10,6 +10,9 @@ describe('gf3_importows_directive', function() {
         $provide.value('gaLang', {
           get: function() {
             return 'somelang';
+          },
+          getNoRm: function() {
+            return 'somelang';
           }
         });
       });

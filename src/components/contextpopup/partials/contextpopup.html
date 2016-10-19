@@ -3,7 +3,7 @@
   <div class="popover-title">
     <span translate>position</span>
     <button type="button" class="ga-icon ga-btn fa fa-remove"
-            translate translate-attr-title="close"
+            translate-attr="{title: 'close'}"
             ng-click="hidePopover()"></button>
   </div>
   <div class="popover-content">
@@ -19,7 +19,7 @@
               <td>{{coordSecondaryEpsg}}</td>
           </tr>
           <tr>
-              <td>WGS 84 (lat/lon)</td>
+              <td><a href="https://epsg.io/4326" target="_blank">WGS 84 (lat/lon)</a></td>
               <td>{{coord4326}}</td>
           </tr>
           <tr>
@@ -27,11 +27,11 @@
               <td>{{coordiso4326}}</td>
           </tr>
           <tr>
-              <td>UTM</td>
+              <td><a href="https://epsg.io/32632" target="_blank">UTM</a></td>
               <td>{{coordutm}}</td>
           </tr>
           <tr>
-              <td>MGRS</td>
+              <td><a href="http://earth-info.nga.mil/GandG/publications/tm8358.1/tr83581b.html#ZZ26" target="_blank">MGRS</a></td>
               <td>{{coordmgrs}}</td>
           </tr>
           <tr ng-if="commune">

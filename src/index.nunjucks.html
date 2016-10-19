@@ -44,7 +44,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <link rel="styleSheet" href="style/font-awesome-4.5.0/css/font-awesome.min.css" />
 
     <!-- Description is translated 'by hand' in the MainController -->
-    <meta name="description" translate translate-attr-content="page_description" content=""/>
+    <meta name="description" translate-attr="{content: 'page_description'}" content=""/>
     <meta name="keywords" content=""/>
     <meta name="news_keywords" content=""/>
 
@@ -52,7 +52,7 @@ itemscope itemtype="http://schema.org/WebApplication"
     <!-- Open Graph metas SMO -->
     <meta property="og:site_name" content="${geoportal.name}"/>
     <meta property="og:title" content="Geoportal"/>
-    <meta property="og:description" translate translate-attr-content="page_description" content=""/>
+    <meta property="og:description" translate-attr="{content: 'page_description'}" content=""/>
     <meta property="og:type" content="WebApplication"/>
     <meta property="og:url" content=""/>
     <meta property="og:image" content="${versionslashed}img/logo_geoportal.png"/>
@@ -273,7 +273,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       <div class="pull-right">
         <a target="_blank"
            translate="{{topicId + '_service_link_label'}}"
-           translate-attr-href="{{topicId + '_service_link_href'}}"></a>
+           translate-attr="{href: topicId + '_service_link_href'}"></a>
       </div>
       #}
   {% endif %}
@@ -503,7 +503,7 @@ itemscope itemtype="http://schema.org/WebApplication"
               <hr>
               <p>
                 {# <!-- Remove fix temp https://github.com/ioda-net/geo-front3/issues/58 -->
-                <a target="_blank" translate translate-attr-href="{{topicId + '_service_link_href'}}" >{{topicId + '_service_link_label'}}</a>
+                <a target="_blank" translate translate-attr="{href: topicId + '_service_link_href'}">{{topicId + '_service_link_label'}}</a>
                 <br>
                 #}
                 {% if front.get('url', {}).get('copyrights', None) %}
@@ -800,6 +800,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{y}/{x}.{Format}';
           gaLayersProvider.wmtsMapProxyGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{x}/{y}.{Format}';
           gaLayersProvider.terrainTileUrlTemplate = '//3d.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
+          gaLayersProvider.imageryMetadataUrl = '//3d.geo.admin.ch/imagery/';
 
           gaLayersProvider.layersConfigUrlTemplate = '/json/layersConfig_{Lang}.json';
 

@@ -23,10 +23,16 @@ goog.require('ga_urlutils_service');
       'EPSG:2056': [2420000.0, 1350000.0],
       'EPSG:21781': defaultOrigin
     };
-    var defaultResolutions = [4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250,
-        2000, 1750, 1500, 1250, 1000, 750, 650, 500, 250, 100, 50, 20, 10, 5,
-        2.5, 2, 1.5, 1, 0.5];
-    var wmsResolutions = defaultResolutions.concat([0.25, 0.1]);
+
+    function getDefaultResolutions() {
+        return [4000, 3750, 3500, 3250, 3000, 2750, 2500, 2250,
+                2000, 1750, 1500, 1250, 1000, 750, 650, 500, 250,
+                100, 50, 20, 10, 5, 2.5, 2, 1.5, 1, 0.5];
+    }
+
+    function getWmsResolutions() {
+        return getDefaultResolutions().concat([0.25, 0.1]);
+    }
 
     function createTileGrid(resolutions, type, epsg) {
       if (type === 'wms') {
@@ -47,7 +53,8 @@ goog.require('ga_urlutils_service');
       return {
         get: function(resolutions, minResolution, type, epsg) {
           if (!resolutions) {
-            resolutions = (type == 'wms') ? wmsResolutions : defaultResolutions;
+            resolutions = (type == 'wms') ? getWmsResolutions() :
+                getDefaultResolutions();
           }
           if (minResolution) { // we remove useless resolutions
             for (var i = 0, ii = resolutions.length; i < ii; i++) {
@@ -530,14 +537,14 @@ goog.require('ga_urlutils_service');
     this.$get = function($http, $q, $rootScope, $translate, $window,
         gaBrowserSniffer, gaDefinePropertiesForLayer, gaMapUtils,
         gaNetworkStatus, gaStorage, gaTileGrid, gaUrlUtils,
-        gaStylesFromLiterals, gaGlobalOptions, gaPermalink, 
+        gaStylesFromLiterals, gaGlobalOptions, gaPermalink,
         gaLang, gaTime) {
 
       var Layers = function(dfltWmsSubdomains,
           dfltWmtsNativeSubdomains, dfltWmtsMapProxySubdomains,
           wmsUrlTemplate, wmtsGetTileUrlTemplate,
           wmtsMapProxyGetTileUrlTemplate, terrainTileUrlTemplate,
-          layersConfigUrlTemplate, legendUrlTemplate) {
+          layersConfigUrlTemplate, legendUrlTemplate, imageryMetadataUrl) {
         var layers;
 
         // Returns a unique WMS template url (e.g. //wms{s}.geo.admin.ch)
@@ -755,14 +762,11 @@ goog.require('ga_urlutils_service');
                 window.minimumRetrievingLevel;
             var maxRetLod = gaMapUtils.getLodFromRes(config3d.minResolution);
             // Set maxLod as undefined deactivate client zoom.
-            var maxLod = (maxRetLod) ? undefined : 17;
+            var maxLod = (maxRetLod) ? undefined : 18;
             if (maxLod && config3d.resolutions) {
               maxLod = gaMapUtils.getLodFromRes(
                   config3d.resolutions[config3d.resolutions.length - 1]);
             }
-
-            var terrainTimestamp = this.getLayerTimestampFromYear(
-                gaGlobalOptions.defaultTerrain, gaTime.get());
             provider = new Cesium.UrlTemplateImageryProvider({
               url: params.url,
               subdomains: params.subdomains,
@@ -776,9 +780,9 @@ goog.require('ga_urlutils_service');
               tileHeight: params.tileSize,
               hasAlphaChannel: (format == 'png'),
               availableLevels: window.imageryAvailableLevels,
-              // Experimental: restrict all rasters to terrain availability
-              metadataUrl: getTerrainTileUrl(
-                  gaGlobalOptions.defaultTerrain, terrainTimestamp) + '/'
+              // Experimental: restrict all rasters from 0 - 17 to terrain
+              // availability and 18 to Swiss bbox
+              metadataUrl: imageryMetadataUrl
             });
           }
           if (provider) {
@@ -829,9 +833,10 @@ goog.require('ga_urlutils_service');
                 dimensions: {
                   'Time': timestamp
                 },
-                // Temporary until https://github.com/openlayers/ol3/pull/4964
-                // is merged upstream
-                cacheSize: 2048 * 3,
+                // Workaround: Set a cache size of zero when layer is
+                // timeEnabled see:
+                // https://github.com/geoadmin/mf-geoadmin3/issues/3491
+                cacheSize: layer.timeEnabled ? 0 : 2048,
                 projection: epsg,
                 requestEncoding: 'REST',
                 tileGrid: gaTileGrid.get(layer.resolutions,
@@ -1104,11 +1109,11 @@ goog.require('ga_urlutils_service');
         };
       };
 
-      return new Layers(this.dfltWmsSubdomains,
-          this.dfltWmtsNativeSubdomains, this.dfltWmtsMapProxySubdomains,
-          this.wmsUrlTemplate, this.wmtsGetTileUrlTemplate,
-          this.wmtsMapProxyGetTileUrlTemplate, this.terrainTileUrlTemplate,
-          this.layersConfigUrlTemplate, this.legendUrlTemplate);
+      return new Layers(this.dfltWmsSubdomains, this.dfltWmtsNativeSubdomains,
+          this.dfltWmtsMapProxySubdomains, this.wmsUrlTemplate,
+          this.wmtsGetTileUrlTemplate, this.wmtsMapProxyGetTileUrlTemplate,
+          this.terrainTileUrlTemplate, this.layersConfigUrlTemplate,
+          this.legendUrlTemplate, this.imageryMetadataUrl);
     };
 
   });

@@ -179,6 +179,30 @@ describe('ga_kml_service', function() {
       });
     });
 
+    describe('#getFormat()', function() {
+
+      it('returns an ol.format.KML object', function() {
+        var getStyle = gaStyleFactoryMock.expects('getStyle').once()
+            .withArgs('kml').returns(dfltStyle);
+        var spy = sinon.spy(ol.format, 'KML');
+        var f = gaKml.getFormat();
+        expect(f).to.be.a(ol.format.KML);
+        getStyle.verify();
+        expect(spy.calledTwice).to.be(true);
+        expect(spy.args[1][0].extractStyles).to.be(true);
+        expect(spy.args[1][0].defaultStyle[0]).to.be(dfltStyle);
+      });
+
+      it('returns the same object on 2nd call', function() {
+        var getStyle = gaStyleFactoryMock.expects('getStyle').once()
+            .withArgs('kml').returns(dfltStyle);
+        var f = gaKml.getFormat();
+        var f2 = gaKml.getFormat();
+        expect(f).to.be(f2);
+        getStyle.verify();
+      });
+    });
+
     describe('#addKmlToMap()', function() {
 
       it('doesn\'t add layer if kml string is not defined', function(done) {
@@ -754,7 +778,7 @@ describe('ga_kml_service', function() {
         var kml = '<kml><Document>' +
             createValidPlkPoint('measure_bbbb') +
           '</Document></kml>';
-        var isMeasFeat = gaMapUtilsMock.expects('isMeasureFeature').once().returns(true);
+        var isMeasFeat = gaMapUtilsMock.expects('isMeasureFeature').twice().returns(true);
         var getStyle = gaStyleFactoryMock.expects('getFeatureStyleFunction').once()
              .withArgs('measure').returns(new ol.style.Style());
 
@@ -815,7 +839,7 @@ describe('ga_kml_service', function() {
         $rootScope.$digest();
       });
 
-      it('adds Overlays for measure feature', function() {
+      it('adds Overlays for measure feature from a public.geo.admin.ch KML', function() {
         var addOverlays, registerOverlaysEvents, kml = '<kml><Document>' +
             createValidPlkLineString('measure_bbbb') +
           '</Document></kml>';
@@ -823,6 +847,20 @@ describe('ga_kml_service', function() {
         var regOverlays = gaMeasureMock.expects('registerOverlaysEvents').once();
         gaKml.addKmlToMap(map, kml, {
            url: 'http://public.geo.admin.ch/nciusdhfjsbnduvishfjknl'
+        });
+        $rootScope.$digest();
+        addOverlays.verify();
+        regOverlays.verify();
+      });
+
+      it('adds Overlays for measure feature from a local KML', function() {
+        var addOverlays, registerOverlaysEvents, kml = '<kml><Document>' +
+            createValidPlkLineString('measure_bbbb') +
+          '</Document></kml>';
+        var addOverlays = gaMeasureMock.expects('addOverlays').once();
+        var regOverlays = gaMeasureMock.expects('registerOverlaysEvents').once();
+        gaKml.addKmlToMap(map, kml, {
+           url: 'foo/kml.kml'
         });
         $rootScope.$digest();
         addOverlays.verify();
@@ -866,7 +904,7 @@ describe('ga_kml_service', function() {
         fit.verify();
       });
 
-      it(' zoom to data extent if intersects with default extent', function() {
+      it('zooms to data extent if intersects with default extent (ol.source.Vector)', function() {
         // We set an dflt extent in 3857
         gaGlobalOptions.defaultExtent = [-20000000, -20000000, 20000000, 20000000];
         var kml = '<kml><Document>' +
@@ -875,6 +913,22 @@ describe('ga_kml_service', function() {
         var fit = sinon.mock(map.getView()).expects('fit').once().withArgs([1013007.36621878961, 5844682.851056053, 1235646.3478053366, 5909489.863677091]);
         gaKml.addKmlToMap(map, kml, {
           zoomToExtent: true
+        });
+        $rootScope.$digest();
+        fit.verify();
+      });
+
+      it('zooms to data extent if intersects with default extent (ol.source.ImageVector)', function() {
+        // We set an dflt extent in 3857
+        gaGlobalOptions.defaultExtent = [-20000000, -20000000, 20000000, 20000000];
+        var kml = '<kml><Document>' +
+            createValidPlkLineString() +
+          '</Document></kml>';
+        sinon.stub(gaKml, 'useImageVector').returns(true);
+        var fit = sinon.mock(map.getView()).expects('fit').once().withArgs([1013007.36621878961, 5844682.851056053, 1235646.3478053366, 5909489.863677091]);
+        gaKml.addKmlToMap(map, kml, {
+          zoomToExtent: true,
+          useImageVector: true
         });
         $rootScope.$digest();
         fit.verify();

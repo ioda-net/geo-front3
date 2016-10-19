@@ -37,7 +37,7 @@ DEPLOY_TARGET ?= dev
 LESS_PARAMETERS ?= -ru
 KEEP_VERSION ?= 'false'
 LAST_VERSION := $(shell if [ -f .build-artefacts/last-version ]; then cat .build-artefacts/last-version 2> /dev/null; else echo '-none-'; fi)
-VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else date '+%s'; fi)
+VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else date '+%y%m%d%H%M'; fi)
 GIT_BRANCH := $(shell if [ -f .build-artefacts/deployed-git-branch ]; then cat .build-artefacts/deployed-git-branch 2> /dev/null; else git rev-parse --symbolic-full-name --abbrev-ref HEAD; fi)
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
 BRANCH_TO_DELETE ?=
@@ -306,7 +306,8 @@ ol3cesium: .build-artefacts/ol3-cesium
 	cp dist/ol3cesium.js ../../src/lib/ol3cesium.js; \
 	rm -rf ../../src/lib/Cesium; \
 	cp -r cesium/Build/CesiumUnminified ../../src/lib/Cesium; \
-	cp cesium/Build/Cesium/Cesium.js ../../src/lib/Cesium.min.js;
+	cp cesium/Build/Cesium/Cesium.js ../../src/lib/Cesium.min.js; \
+	cp Cesium.externs.js ../../externs/Cesium.externs.js;
 
 .PHONY: filesaver
 filesaver: .build-artefacts/filesaver

@@ -24,7 +24,7 @@ goog.require('ga_translation_service');
 
         //Returns a promise
         this.get = function(id) {
-          var lang = fixLang(gaLang.get());
+          var lang = gaLang.getNoRm();
 
           var helpUrl = url
               .replace('{id}', id)
@@ -35,11 +35,6 @@ goog.require('ga_translation_service');
             return response.data;
           });
         };
-
-        //we only support certain languages
-        function fixLang(l) {
-          return (l == 'rm') ? 'de' : l;
-        }
       };
 
       return new Help();

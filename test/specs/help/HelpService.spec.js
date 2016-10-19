@@ -10,6 +10,9 @@ describe('ga_help_service', function() {
         $provide.value('gaLang', {
           get: function() {
             return 'fr';
+          },
+          getNoRm: function() {
+            return 'fr';
           }
         });
       });
@@ -55,7 +58,7 @@ describe('ga_help_service', function() {
       });
 
       it('gets help in de when lang is rm', function(done) {
-        gaLang.get = function() {return 'rm';};
+        gaLang.getNoRm = function() {return 'de';};
         $httpBackend.expectGET(deUrl).respond({columns: [], rows: []});
         gaHelp.get('31').then(function() {
           done();
