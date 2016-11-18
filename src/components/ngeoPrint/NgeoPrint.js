@@ -42,6 +42,8 @@
 goog.provide('ngeo.CreatePrint');
 goog.provide('ngeo.Print');
 
+goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.object');
 goog.require('ngeo');
 

@@ -2,6 +2,7 @@ goog.provide('gf3_features_service');
 
 goog.require('ga_map_service');
 goog.require('gf3_features_templates_service');
+goog.require('goog.string');
 
 (function() {
   var module = angular.module('gf3_features_service', [
