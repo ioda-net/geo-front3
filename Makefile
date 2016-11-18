@@ -43,9 +43,9 @@ GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat 
 BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
 DEPLOYCONFIG ?=
-OL3_VERSION ?= 394c338ff882a940e598dc7ce05c308ca56ecf61 # v3.18.2, 1 september 2016
-OL3_CESIUM_VERSION ?= 7041eaed4251b3d85f058ace4ecb95c4943863a2 # master after v1.19, 12 september 2016
-CESIUM_VERSION ?= 1ff99debdac51f38c88e1e82eaf2590f1da3271e # camptocamp/c2c_patches, 9 september 2016 (cesium 1.25, 1 september 2016)
+OL3_VERSION ?= 5498f5f7db503bb408f74f2f463a5340910bc29b # v3.19, 21 october 2016
+OL3_CESIUM_VERSION ?= 2f42726ad105cc2408154428a37251413163670f # master, 24 october 2016
+CESIUM_VERSION ?= f4c5349888fe6d250177fd36ff30851f40f8a5e2 # camptocamp/c2c_patches, 25 october 2016 (cesium 1.26, 3 october 2016)
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"en\", \"fr\", \"it\", \"rm\"]'
@@ -118,14 +118,14 @@ help:
 	@echo "- s3deploybranch     Build a branch and deploy it to S3 int. Defaults to the current branch name."
 	@echo "- s3deployint        Deploys a snapshot specified with SNAPSHOT=xxx to s3 int."
 	@echo "- s3deployprod       Deploys a snapshot specified with SNAPSHOT=xxx to s3 prod."
-	@echo "- s3activateint      Activate a version at the root of a remote bucket. (usage: make s3activateint S3_VERSION_PATH=<branch>/<sha>/<version>)"
-	@echo "- s3activateprod     Activate a version at the root of a remote bucket. (usage: make s3activateprod S3_VERSION_PATH=<branch>/<sha>/<version>)"
+	@echo "- s3activateint      Activate a version at the root of a remote bucket. (usage only: make s3activateint S3_VERSION_PATH=<branch>/<sha>/<version>)"
+	@echo "- s3activateprod     Activate a version at the root of a remote bucket. (usage only: make s3activateprod S3_VERSION_PATH=<branch>/<sha>/<version>)"
 	@echo "- s3listint          List availables branches, revision and build on int bucket."
 	@echo "- s3listprod         List availables branches, revision and build on prod bucket."
-	@echo "- s3infoint          Get version info on remote int bucket. (usage: make s3info S3_VERSION_PATH=<branch>/<sha>/<version>)"
-	@echo "- s3infoprod         Get version info on remote prod bucket. (usage: make s3info S3_VERSION_PATH=<branch>/<sha>/<version>)"
-	@echo "- s3deleteint        Delete a project version in a remote int bucket. (usage: make s3delete S3_VERSION_PATH=<branch>/<sha>/<version>)"
-	@echo "- s3deleteprod       Delete a project version in a remote prod bucket. (usage: make s3delete S3_VERSION_PATH=<branch>/<sha>/<version>)"
+	@echo "- s3infoint          Get version info on remote int bucket. (usage only: make s3infoint S3_VERSION_PATH=<branch>/<sha>/<version>)"
+	@echo "- s3infoprod         Get version info on remote prod bucket. (usage only: make s3infoprod S3_VERSION_PATH=<branch>/<sha>/<version>)"
+	@echo "- s3deleteint        Delete a project version in a remote int bucket. (usage: make s3deleteint S3_VERSION_PATH=<branch> or <branch>/<sha>/<version>)"
+	@echo "- s3deleteprod       Delete a project version in a remote prod bucket. (usage: make s3deleteprod S3_VERSION_PATH=<branch> or <branch>/<sha>/<version>)"
 	@echo "- ol3cesium          Update ol3cesium.js, ol3cesium-debug.js, Cesium.min.js and Cesium folder"
 	@echo "- libs               Update js librairies used in index.html, see npm packages defined in section 'dependencies' of package.json"
 	@echo "- translate          Generate the translation files (requires db user pwd in ~/.pgpass: dbServer:dbPort:*:dbUser:dbUserPwd)"
@@ -275,6 +275,7 @@ ol3cesium: .build-artefacts/ol3-cesium
 	git reset HEAD --hard; \
 	git fetch --all; \
 	git checkout $(OL3_CESIUM_VERSION); \
+	git show; \
 	git submodule update --recursive --init --force; \
 	cd ol3; \
 	git reset HEAD --hard; \
@@ -292,8 +293,8 @@ ol3cesium: .build-artefacts/ol3-cesium
 	git remote | grep c2c || git remote add c2c git://github.com/camptocamp/cesium; \
 	git fetch --all; \
 	git checkout $(CESIUM_VERSION); \
-	cd ..; \
 	git show; \
+	cd ..; \
 	ln -T -f -s ../../../../ol3-cesium-plugin/ src/plugins/geoadmin; \
 	( cd cesium; [ -f node_modules/.bin/gulp ] || npm install ); \
 	( cd cesium; if [ -f "Build/Cesium/Cesium.js" ] ; then echo 'Skipping Cesium minified build'; else node_modules/.bin/gulp minifyRelease; fi ); \
@@ -666,40 +667,22 @@ $(addprefix .build-artefacts/annotated/, $(SRC_JS_FILES) src/TemplateCacheModule
 	    --namespace="__ga_template_cache__" \
 	    --output_mode=list > $@
 
-.build-artefacts/lint.timestamp: ${GJSLINT_CMD} $(SRC_JS_FILES)
+.build-artefacts/lint.timestamp: .build-artefacts/requirements.timestamp $(SRC_JS_FILES)
 	${GJSLINT_CMD} -r src/components -r src/js
 	touch $@
 
-${MAKO_CMD}: ${PYTHON_VENV}
-	${PIP_CMD} install "Mako==1.0.0"
-	touch $@
-	@if [ ! -e ${PYTHON_VENV}/local ]; then \
-	    ln -s . ${PYTHON_VENV}/local; \
-	fi
-	cp scripts/cmd.py ${PYTHON_VENV}/local/lib/python2.7/site-packages/mako/cmd.py
-
-${HTMLMIN_CMD}: ${PYTHON_VENV}
-	${PIP_CMD} install "htmlmin==0.1.6"
-	touch $@
-
-${GJSLINT_CMD}: ${PYTHON_VENV}
-	${PIP_CMD} install \
-	    "https://github.com/google/closure-linter/archive/v2.3.19.tar.gz"
-	touch $@
-
-${FLAKE8_CMD}: ${PYTHON_VENV}
-	${PIP_CMD} install flake8
-
-${AUTOPEP8_CMD}: ${PYTHON_VENV}
-	${PIP_CMD} install autopep8
-
 .build-artefacts/requirements.timestamp: ${PYTHON_VENV} requirements.txt
 	${PIP_CMD} install -r requirements.txt
+	@if [ ! -e ${PYTHON_VENV}/local ]; then \
+	  ln -s . ${PYTHON_VENV}/local; \
+	fi
+	cp scripts/cmd.py ${PYTHON_VENV}/local/lib/python2.7/site-packages/mako/cmd.py
 	touch $@
 
 ${PYTHON_VENV}:
 	mkdir -p .build-artefacts
 	virtualenv --no-site-packages $@
+	${PIP_CMD} install -U pip
 
 .build-artefacts/last-version::
 	mkdir -p $(dir $@)

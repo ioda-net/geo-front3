@@ -750,18 +750,23 @@ goog.require('gf3_webdav_service');
             $rootScope.$broadcast('gaProfileActive');
             $rootScope.$broadcast('gaDrawStyleActive');
             scope.$applyAsync();
-          } else if (gaMapUtils.isMeasureFeature(scope.feature)) {
+            return;
+          }
+          var geometry = scope.feature.getGeometry();
+          if (geometry instanceof ol.geom.LineString ||
+              geometry instanceof ol.geom.Polygon) {
             if (!clickCoord) {
               // Hide or show the Profile popup
               $rootScope.$broadcast('gaProfileActive', scope.feature, layer,
                   onClosePopup);
               scope.$applyAsync();
             }
-          } else {
+          }
+          if (!gaMapUtils.isMeasureFeature(scope.feature)) {
             // Move the popup on the closest coordinate of the click event
             var coord = clickCoord ?
-                feature.getGeometry().getClosestPoint(clickCoord) :
-                feature.getGeometry().getLastCoordinate();
+                geometry.getClosestPoint(clickCoord) :
+                geometry.getLastCoordinate();
             var pixel = map.getPixelFromCoordinate(coord);
 
             $rootScope.$broadcast('gaDrawStyleActive', scope.feature, layer,

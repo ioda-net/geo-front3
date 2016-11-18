@@ -12,10 +12,21 @@ goog.require('gf3_print_service');
   module.directive('gaPopup',
     function($rootScope, $translate, $window, gaBrowserSniffer,
         gf3PrintService) {
-      var zIndex = 2000;
+      var zIndex;
+      var screenLimit = 0;
+      var screenTabletLimit = 768;
+      var screenMobileLimit = 480;
+
       var bringUpFront = function(el) {
-        zIndex += 1;
-        el.css('z-index', zIndex);
+        // We get the initial z-index css.
+        var currZIndex = parseInt(el.css('z-index'));
+        if (!zIndex) {
+          zIndex = 2500; // same as in popup.less
+          zIndex++;
+        }
+        if (!currZIndex || zIndex > currZIndex) {
+          el.css('z-index', ++zIndex);
+        }
         $rootScope.$emit('gaPopupFocused', el);
       };
       var updatePosition = function(scope, element, pixel) {
@@ -44,6 +55,15 @@ goog.require('gf3_print_service');
           // Init css
           element.addClass('popover');
 
+          // Init some utilities variables.
+          var className = element[0].className;
+          if (/ga-popup-tablet/.test(className)) {
+            screenLimit = screenTabletLimit;
+          }
+          if (/ga-popup-mobile/.test(className)) {
+            screenLimit = screenMobileLimit;
+          }
+
           // Initialize the popup properties
           scope.toggle = scope.toggle || false;
           scope.options = scope.optionsFunc() || {title: ''};
@@ -66,8 +86,7 @@ goog.require('gf3_print_service');
           }
           // Bring the popup to front on click on it.
           element.find('.popover-content').click(function(evt) {
-            if (!scope.options.isReduced && scope.toggle &&
-                element.css('z-index') != zIndex) {
+            if (!scope.options.isReduced && scope.toggle) {
               bringUpFront(element);
             }
           });
@@ -227,6 +246,30 @@ goog.require('gf3_print_service');
               return;
             }
             setSize();
+
+            var winWidth = win.width();
+            if (winWidth > screenLimit) {
+              var winHeight = win.height();
+              var popupWidth = element.outerWidth();
+              var popupHeight = element.outerHeight();
+              var offset = element.offset();
+              var x = offset.left;
+              var y = offset.top;
+              if (x + popupWidth > winWidth) {
+                x = winWidth - popupWidth;
+              }
+              if (y + popupHeight > winHeight) {
+                y = winHeight - popupHeight;
+                if (y < 0) {
+                  y = 0;
+                }
+              }
+              element.css({
+                width: popupWidth + 'px',
+                top: y + 'px',
+                left: x + 'px'
+              });
+            }
           };
 
           if (!scope.options.position && !scope.map) {

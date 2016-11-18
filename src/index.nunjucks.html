@@ -154,6 +154,9 @@ itemscope itemtype="http://schema.org/WebApplication"
   {% if device == 'index' %}
         <span ga-help="24,31,25" ga-help-options="{showOnHover:true}"></span>
   {% endif %}
+        <div class="warning-not-prod" ng-if="!globals.hostIsProd">
+          <span translate>test_host_warning</span>
+        </div>
       </div>
   {% if device == 'index' %}
       <div id="toptools">
@@ -733,6 +736,10 @@ itemscope itemtype="http://schema.org/WebApplication"
         var module = angular.module('geoadmin');
         var cacheAdd = '';// '${version}' != '' ? '/' + '${version}' : '';
         var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
+        var hostIsProd = true;
+        if ((new RegExp('${front.build.dev_host_regexp}')).test(location.hostname)) {
+          hostIsProd = false;
+        }
 
         module.constant('gaGlobalOptions', {
           //dev3d to be removed once 3d goes live
@@ -778,7 +785,8 @@ itemscope itemtype="http://schema.org/WebApplication"
           dpUrl: '/lib/IE/bootstrap-datetimepicker.js',
           defaultTerrain: '${default_terrain}',
           languages: ${geoportal.langs},
-          feedbackRecipient: '${front.build.feedback_recipient}'
+          feedbackRecipient: '${front.build.feedback_recipient}',
+          hostIsProd: hostIsProd
         });
 
         module.config(function($translateProvider, gaGlobalOptions) {

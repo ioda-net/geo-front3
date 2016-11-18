@@ -36,11 +36,11 @@ goog.require('ga_urlutils_service');
       // Create the parser/writer KML
       var setKmlFormat = function() {
         if (!kmlFormat) {
-          // TO FIX
-          // Hack for #3531: Should be fix with next version of ol >3.18.2
-          // We create an empty format first to create the default style
-          // variables.
+          // TO FIX, caused by OL 3.18.2
+          // Hack for #3531: We create an empty format first to create the
+          // default style variables.
           // https://github.com/openlayers/ol3/blob/master/src/ol/format/kml.js#L143
+          // https://github.com/openlayers/ol3/pull/5587
           ol.format.KML();
 
           kmlFormat = new ol.format.KML({
@@ -73,7 +73,7 @@ goog.require('ga_urlutils_service');
         // Replace all old maki urls image by the color service url
         // Test regex here: https://regex101.com/r/rF2tA1/3
         kml = kml.replace(
-          /<href>https?:\/\/[a-z\d\.\-]*(bgdi|geo.admin)\.ch[a-zA-Z\d\-_\/]*img\/maki\/([a-z]*-24@2x\.png)/g,
+          /<href>https?:\/\/[a-z\d\.\-]*(bgdi|geo.admin)\.ch[a-zA-Z\d\-_\/]*img\/maki\/([a-z\-]*-24@2x\.png)/g,
           '<href>' + gaGlobalOptions.apiUrl + '/color/255,0,0/$2'
         );
 
@@ -121,7 +121,9 @@ goog.require('ga_urlutils_service');
         }
         geom.transform('EPSG:4326', projection);
         var styles = feature.getStyleFunction().call(feature);
-        var style = styles[0];
+
+        // The use of clone is part of the scale fix line 156
+        var style = styles[0].clone();
 
         // The canvas draws a stroke width=1 by default if width=0, so we
         // remove the stroke style in that case.
@@ -147,6 +149,14 @@ goog.require('ga_urlutils_service');
             image = gaStyleFactory.getStyle('kml').getImage();
           }
 
+          // TO FIX, caused by OL 3.19.0
+          // OL applies a default scale multiplier to 0.5
+          // https://github.com/openlayers/ol3/blob/master/src/ol/format/kml.js#L622
+          // https://github.com/openlayers/ol3/pull/5745
+          if (image && image.getScale() && image.getScale() != 1) {
+            image.setScale(Math.sqrt(image.getScale() * 2));
+          }
+
           // If the feature has name we display it on the map as Google does
           if (feature.get('name') && style.getText() &&
               style.getText().getScale() != 0) {
@@ -163,6 +173,15 @@ goog.require('ga_urlutils_service');
                   style.getText().getFill().getColor()),
               scale: style.getText().getScale()
             });
+
+            // TO FIX, caused by OL 3.19.0
+            // OL changes the formula of scale.
+            // https://github.com/openlayers/ol3/pull/5745/commits/e0d75555c5a110b24fe63e618966ac73993c198c#diff-b3122a19e97ec2c9c92546ce1e5bd101R539
+            // https://github.com/openlayers/ol3/pull/5745
+            if (text && text.getScale()) {
+              text.setScale(Math.sqrt(text.getScale()));
+            }
+
             fill = undefined;
             stroke = undefined;
           }

@@ -51,6 +51,7 @@
     "ol.extent.intersects",
     "ol.format.GeoJSON",
     "ol.format.GeoJSON#*",
+    "ol.format.IGC",
     "ol.format.KML",
     "ol.format.KML#*",
     "ol.format.WMSCapabilities",
@@ -159,9 +160,7 @@
       "externs/topojson.js"
     ],
     "define": [
-      "goog.array.ASSUME_NATIVE_FUNCTIONS=true",
       "goog.DEBUG=false",
-      "ol.ENABLE_DOM=false",
       "ol.ENABLE_WEBGL=false"
     ],
     "jscomp_error": [

@@ -34,13 +34,9 @@ goog.require('ga_price_filter');
         }
 
         var getFeatureIdToRequest = function() {
-          // If a map number is specified in the properties we use this as
-          // feature's id
+          // Use feature's id for id to resquest
           var feat = scope.clipperFeatures[scope.orderType] || scope.feature;
           var idToRequest = feat.featureId;
-          if (scope.feature.properties && scope.feature.properties.number) {
-            idToRequest = scope.feature.properties.number;
-          }
           return idToRequest;
         };
 
@@ -48,19 +44,25 @@ goog.require('ga_price_filter');
         var layerBodId = (scope.feature instanceof ol.Feature) ?
             scope.feature.get('layerId') : scope.feature.layerBodId;
 
+        var layerConfig = gaLayers.getLayer(layerBodId);
+
         // Remove the element if no layerBodId associated
-        if (!layerBodId) {
+        if (!layerConfig) {
           elt.remove();
           return;
         }
-        var layerConfig = gaLayers.getLayer(layerBodId);
 
         // Remove the element if no shop config available
-        if (!layerConfig || !layerConfig.shop ||
-            layerConfig.shop.length == 0 || (scope.feature.properties &&
-            !angular.isDefined(scope.feature.properties.available))) {
+        if (!layerConfig.shop || layerConfig.shop.length == 0) {
           elt.remove();
           return;
+        }
+
+        // We consider a shopable feature as available by default if not
+        // explicitly defined.
+        if (scope.feature.properties &&
+            !angular.isDefined(scope.feature.properties.available)) {
+          scope.feature.properties.available = true;
         }
 
         // The feature is not available in the shop so we display a message
