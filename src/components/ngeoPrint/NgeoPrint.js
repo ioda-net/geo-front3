@@ -42,16 +42,21 @@
 goog.provide('ngeo.CreatePrint');
 goog.provide('ngeo.Print');
 
-goog.require('goog.math');
 goog.require('goog.object');
 goog.require('ngeo');
 
 
 /**
- * Functions below are taken from
- * to avoid goog.provide('goog.color') which breaks stuff
+ * Functions below are taken from closure
+ * to avoid goog.require('goog.color') and goog.require('goog.math') which
+ * breaks stuff.
  */
 ngeo.color = ngeo.color || {};
+/**
+ * To store stuff from goog.math
+ * @type ngeo.math
+ */
+ngeo.math = ngeo.math || {};
 /**
  * Takes a hex value and prepends a zero if it's a single digit.
  * Small helper method for use by goog.color and friends.
@@ -90,6 +95,16 @@ ngeo.color.rgbToHex = function(r, g, b) {
  */
 ngeo.color.rgbArrayToHex = function(rgb) {
   return ngeo.color.rgbToHex(rgb[0], rgb[1], rgb[2]);
+};
+
+
+/**
+ * Converts radians to degrees.
+ * @param {number} angleRadians Angle in radians.
+ * @return {number} Angle in degrees.
+ */
+ngeo.math.toDegrees = function(angleRadians) {
+  return angleRadians * 180 / Math.PI;
 };
 
 
@@ -676,7 +691,7 @@ ngeo.Print.prototype.encodeVectorStylePoint_ =
       });
       var rotation = imageStyle.getRotation();
       if (rotation !== 0) {
-        symbolizer.rotation = goog.math.toDegrees(rotation);
+        symbolizer.rotation = ngeo.math.toDegrees(rotation);
       }
     }
   }
