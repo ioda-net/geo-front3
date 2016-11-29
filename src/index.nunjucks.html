@@ -737,7 +737,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         var cacheAdd = '';// '${version}' != '' ? '/' + '${version}' : '';
         var pathname = location.pathname.replace(/(index|mobile|embed)\.html$/g, '');
         var hostIsProd = true;
-        if ((new RegExp('${front.build.dev_host_regexp}')).test(location.hostname)) {
+        if ('${front.build.dev_host_regexp}' && (new RegExp('${front.build.dev_host_regexp}')).test(location.hostname)) {
           hostIsProd = false;
         }
 
