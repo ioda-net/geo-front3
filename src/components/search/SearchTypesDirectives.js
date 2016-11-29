@@ -318,7 +318,7 @@ goog.require('ga_urlutils_service');
   module.directive('gaSearchLocations',
       function($http, $q, $sce, $translate, gaUrlUtils, gaBrowserSniffer,
                gaMarkerOverlay, gaSearchLabels, gaMapUtils, gaDebounce,
-               gaGlobalOptions) {
+               gaGlobalOptions, gf3GlobalOptions) {
         return {
           restrict: 'A',
           templateUrl: 'components/search/partials/searchtypes.html',
@@ -380,6 +380,11 @@ goog.require('ga_urlutils_service');
                 l += ' <span>' + $translate.instant('parcel') + ' ' +
                      '</span>';
               }
+
+              if (gf3GlobalOptions.displayOrigins) {
+                l += ' <em>' + $translate.instant(attrs.origin) + '</em>';
+              }
+
               return $sce.trustAsHtml(l);
             };
 

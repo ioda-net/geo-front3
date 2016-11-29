@@ -860,6 +860,11 @@ itemscope itemtype="http://schema.org/WebApplication"
           allowWebdav: ${front.gf3.allow_webdav | lower},
           allowOffline: ${front.gf3.allow_offline | lower},
           allowInfobox: ${front.gf3.allow_infobox | lower},
+          {%- if front.gf3.display_origins is defined %}
+          displayOrigins: ${front.gf3.display_origins | lower},
+          {%- else %}
+          displayOrigins: false,
+          {%- endif %}
           styles: {
             hlFill: {
               color: ${front.gf3.styles.hlFill.color}
