@@ -409,6 +409,48 @@ describe('ga_kml_service', function() {
         $rootScope.$digest();
       });
 
+      it('should not add ogcproxy for current domain', function(done) {
+        var hrefs = [
+          'http://' + location.host,
+          'https://' + location.host,
+        ];
+        var kml = '<kml>';
+        hrefs.forEach(function(href) {
+          kml += createPlacemarkWithHref(href);
+        });
+        kml += '</kml>';
+        gaKml.addKmlToMap(map, kml).then(function(olLayer) {
+          var feats = olLayer.getSource().getFeatures();
+          feats.forEach(function(feat, idx) {
+            var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
+            expect(src.indexOf('ogcproxy')).to.be(-1);
+          });
+          done();
+        });
+        $rootScope.$digest();
+      });
+
+      it('should not ogcproxy for external domains', function(done) {
+        var hrefs = [
+          'http://notthecurrentdomain.com',
+          'https://notthecurrentdomain.com',
+        ];
+        var kml = '<kml>';
+        hrefs.forEach(function(href) {
+          kml += createPlacemarkWithHref(href);
+        });
+        kml += '</kml>';
+        gaKml.addKmlToMap(map, kml).then(function(olLayer) {
+          var feats = olLayer.getSource().getFeatures();
+          feats.forEach(function(feat, idx) {
+            var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
+            expect(src.indexOf('ogcproxy') !== -1).to.be(true);
+          });
+          done();
+        });
+        $rootScope.$digest();
+      });
+
       it('replaces old maki urls by color service', function(done) {
         var hrefs = [
           'http://map.geo.admin.ch/1465993254/img/maki/square-stroked-24@2x.png',
@@ -428,6 +470,7 @@ describe('ga_kml_service', function() {
           feats.forEach(function(feat, idx) {
             var src = feat.getStyleFunction().call(feat)[0].getImage().getSrc();
             expect(src.indexOf('/color/255,0,0') != -1).to.be(true);
+            expect(src.indexOf('ogcproxy')).to.be(-1);
           });
           done();
         });

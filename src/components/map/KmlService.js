@@ -25,7 +25,7 @@ goog.require('ga_urlutils_service');
    */
   module.provider('gaKml', function() {
 
-    this.$get = function($http, $q, $rootScope, $timeout, $translate,
+    this.$get = function($http, $q, $translate,
         gaDefinePropertiesForLayer, gaGlobalOptions, gaMapClick, gaMapUtils,
         gaNetworkStatus, gaStorage, gaStyleFactory, gaUrlUtils, gaMeasure,
         gaGeomUtils) {
@@ -53,13 +53,17 @@ goog.require('ga_urlutils_service');
       // Read a kml string then return a list of features.
       var readFeatures = function(kml) {
         // Replace all hrefs to prevent errors if image doesn't have
-        // CORS headers. Exception for *.geo.admin.ch, *.bgdi.ch and google
-        // markers icons (only https)
+        // CORS headers. Exception for *.geo.admin.ch, *.bgdi.ch, google
+        // markers icons (only https) and current domain
         // to keep the OL3 magic for anchor origin.
         // Test regex here: http://regex101.com/r/tF3vM0/9
         // List of google icons: http://www.lass.it/Web/viewer.aspx?id=4
+        // Don't use $location here: injection fails.
+        var re =
+            '<href>http(?!(s:\\/\\/maps\\.(google|gstatic)\\.com[a-zA-Z\\d\\.\\-\\/_]*\\.png|s?:\\/\\/[a-z\\d\\.\\-]*((bgdi|geo\\.admin)\\.ch|';
+        re += location.host.replace(/\./g, '\\.') + ')))';
         kml = kml.replace(
-          /<href>http(?!(s:\/\/maps\.(google|gstatic)\.com[a-zA-Z\d\.\-\/_]*\.png|s?:\/\/[a-z\d\.\-]*(bgdi|geo.admin)\.ch))/g,
+          new RegExp(re, 'g'),
           '<href>' + gaGlobalOptions.ogcproxyUrl + 'http'
         );
 
