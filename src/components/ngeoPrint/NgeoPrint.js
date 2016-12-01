@@ -37,6 +37,12 @@
  * - ol.style.Icon may use a sprite image, and offsets to define to rectangle
  *   to use within the sprite. This type of icons won't be printed correctly
  *   as MapFish Print does not support sprite icons.
+ *
+ *
+ * READ THIS
+ * geo-front3 particularities:
+ * - We rewrite the URL of images from KML to remove ogcproxy: this will let
+ *   tomcat fetch the resource directly and will prevent authentication issues.
  */
 
 goog.provide('ngeo.CreatePrint');
@@ -687,6 +693,13 @@ ngeo.Print.prototype.encodeVectorStylePoint_ =
   } else if (imageStyle instanceof ol.style.Icon) {
     var src = imageStyle.getSrc();
     if (goog.isDef(src)) {
+      var re = new RegExp('^https?:\\/\\/' +
+          location.host.replace(/\./g, '\\.') +
+          '\\/api\\/ogcproxy\\?url=(.*)');
+      var match = re.exec(src);
+      if (match !== null) {
+        src = match[1];
+      }
       symbolizer = /** @type {MapFishPrintSymbolizerPoint} */ ({
         type: 'point',
         externalGraphic: src
