@@ -14,8 +14,8 @@ goog.provide('gf3_print_controller');
         legendUrl: gaGlobalOptions.apiUrl + '/static/images/legends/',
         qrcodeUrl: gaGlobalOptions.apiUrl + '/qrcodegenerator?url=',
         shortenUrl: gaGlobalOptions.apiUrl + '/shorten.json',
-        markerUrl: gaGlobalOptions.resourceUrl + 'img/marker.png',
-        bubbleUrl: gaGlobalOptions.resourceUrl + 'img/bubble.png',
+        markerUrl: gaGlobalOptions.apiUrl + '/color/255,0,0/print-marker.png',
+        bubbleUrl: gaGlobalOptions.apiUrl + '/color/255,0,0/print-bubble.png',
         heightMargin: $('#header').height(),
         widthMargin: $('#pulldown').width(),
         // Hardcode listd of legends that should be downloaded in

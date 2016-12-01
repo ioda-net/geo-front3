@@ -193,7 +193,7 @@ ngeo.Print = function(url, $http, gaGlobalOptions) {
    */
   this.$http_ = $http;
 
-  this.apiUrl_ = gaGlobalOptions.resourceUrl;
+  this.printImagesUrl_ = gaGlobalOptions.printImagesUrl;
 };
 
 
@@ -855,7 +855,7 @@ ngeo.Print.prototype.getWmtsUrl_ = function(source) {
  * @private
  */
 ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
-  var apiUrl = this.apiUrl_;
+  var printImagesUrl = this.printImagesUrl_;
   var yOffset =
       (27 / ngeo.PrintUtils.DOTS_PER_INCH_ /
         ngeo.PrintUtils.INCHES_PER_METER_ * scale);
@@ -884,7 +884,7 @@ ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
                 fontFamily: 'Helvetica'
               }, {
                 type: 'Point',
-                externalGraphic: apiUrl + '/img/bubble.png',
+                externalGraphic: printImagesUrl + '/print-bubble.png',
                 graphicWidth: $(elt).width() / 5
               }]
           }

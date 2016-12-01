@@ -150,13 +150,13 @@ goog.require('gf3');
 
     this.$get = function(gaGlobalOptions, gaMeasure) {
 
-      var imgPath = gaGlobalOptions.resourceUrl + 'img/';
+      var imgPath = gaGlobalOptions.printImagesUrl + '/';
       styles['marker'] = new ol.style.Style({
         image: new ol.style.Icon({
           anchor: [0.5, 1],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction',
-          src: imgPath + 'marker.png'
+          src: imgPath + 'print-marker.png'
         })
       });
       styles['bowl'] = new ol.style.Style({
@@ -164,7 +164,7 @@ goog.require('gf3');
           anchor: [0.5, 0.5],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction',
-          src: imgPath + 'bowl.png'
+          src: imgPath + 'print-bowl.png'
         })
       });
       styles['circle'] = new ol.style.Style({
@@ -172,7 +172,7 @@ goog.require('gf3');
           anchor: [0.5, 0.5],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction',
-          src: imgPath + 'circle.png'
+          src: imgPath + 'print-circle.png'
         })
       });
       styles['cross'] = new ol.style.Style({
@@ -180,7 +180,7 @@ goog.require('gf3');
           anchor: [0.5, 0.5],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction',
-          src: imgPath + 'cross.png'
+          src: imgPath + 'print-cross.png'
         })
       });
       styles['point'] = new ol.style.Style({
@@ -188,13 +188,13 @@ goog.require('gf3');
           anchor: [0.5, 0.5],
           anchorXUnits: 'fraction',
           anchorYUnits: 'fraction',
-          src: imgPath + 'point.png'
+          src: imgPath + 'print-point.png'
         })
       });
       var headingStyle = new ol.style.Style({
         image: new ol.style.Icon({
           rotateWithView: true,
-          src: imgPath + 'geolocation_heading_marker.png'
+          src: imgPath + 'print-geolocation_heading_marker.png'
         })
       });
 

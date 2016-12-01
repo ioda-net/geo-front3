@@ -748,6 +748,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           externalWmsHostnames: ${front.default_values.external_wms_hostnames},
           mapUrl: location.origin + '${front.build.apache_base_path}',
           apiUrl: location.protocol + '${front.build.api_url}',
+          printImagesUrl: location.protocol + '${front.build.api_url}' + '/color/255,0,0',
           publicUrl : location.protocol + '${front.build.public_url}',
           publicUrlRegexp: new RegExp('${front.build.public_url}'),
           adminUrlRegexp: new RegExp('${front.build.api_url}'),
