@@ -77,7 +77,7 @@ describe('ga_storage_service', function() {
         var arg = spy.firstCall.args[0];
         expect(arg.name).to.be('map.geo.admin.ch');
         expect(arg.storeName).to.be('ga');
-        expect(arg.size).to.be(52428800);
+        expect(arg.size).to.be(52377600);
         expect(arg.version).to.be('1.0');
         expect(arg.description).to.be('Storage for map.geo.admin.ch');
         spy.restore();
@@ -114,6 +114,17 @@ describe('ga_storage_service', function() {
         expect(gaStorage.getItem('key')).to.be('test');
         expect(spy.calledWithExactly('key'));
         spy.restore();
+      });
+
+      it('returns a boolean if the string value returned is true or false', function() {
+        gaStorage.setItem('key', true);
+        expect(gaStorage.getItem('key')).to.be(true);
+        gaStorage.setItem('key', false);
+        expect(gaStorage.getItem('key')).to.be(false);
+        gaStorage.setItem('key', 'True');
+        expect(gaStorage.getItem('key')).to.be(true);
+        gaStorage.setItem('key', 'foo');
+        expect(gaStorage.getItem('key')).to.be('foo');
       });
     });
 

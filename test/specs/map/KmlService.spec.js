@@ -136,9 +136,11 @@ describe('ga_kml_service', function() {
   });
 
   describe('gaKml', function() {
-    var map, gaKml, $rootScope, $httpBackend, gaNetworkStatus, gaStorageMock, gaUrlUtilsMock, gaStyleFactoryMock, gaMapUtilsMock, gaMeasureMock, gaGlobalOptions;
+    var map, gaKml, $rootScope, $httpBackend, gaNetworkStatus, gaStorageMock, gaUrlUtilsMock,
+        gaStyleFactoryMock, gaMapUtilsMock, gaMeasureMock, gaGlobalOptions, $windowMock;
 
     beforeEach(function() {
+
       inject(function($injector) {
         gaKml = $injector.get('gaKml');
         $httpBackend = $injector.get('$httpBackend');
@@ -150,8 +152,13 @@ describe('ga_kml_service', function() {
         gaMapUtilsMock = sinon.mock($injector.get('gaMapUtils'));
         gaMeasureMock = sinon.mock($injector.get('gaMeasure'));
         gaStorageMock = sinon.mock($injector.get('gaStorage'));
+        $windowMock = sinon.mock($injector.get('$window'));
       });
       map = new ol.Map({});
+    });
+
+    afterEach(function() {
+      $windowMock.restore();
     });
 
     describe('#useImageVector()', function() {
@@ -168,6 +175,7 @@ describe('ga_kml_service', function() {
 
     describe('#isValidFileSize()', function() {
       it('tests validity of a file size', function() {
+        $windowMock.expects('alert').withExactArgs('file_too_large (max. 20 MB)').twice();
         expect(gaKml.isValidFileSize(10000000)).to.be(true);
         expect(gaKml.isValidFileSize(30000000)).to.be(false);
         expect(gaKml.isValidFileSize('10000000')).to.be(true);
@@ -175,17 +183,19 @@ describe('ga_kml_service', function() {
         expect(gaKml.isValidFileSize(undefined)).to.be(true);
         expect(gaKml.isValidFileSize(null)).to.be(true);
         expect(gaKml.isValidFileSize('sdfsdfdsfsd')).to.be(true);
-
+        $windowMock.verify();
       });
     });
 
     describe('#isValidFileContent()', function() {
       it('tests validity of a file content', function() {
+        $windowMock.expects('alert').withExactArgs('file_is_not_kml').exactly(4);
         expect(gaKml.isValidFileContent('<html></html>')).to.be(false);
         expect(gaKml.isValidFileContent('<kml></kml>')).to.be(true);
         expect(gaKml.isValidFileContent(undefined)).to.be(false);
         expect(gaKml.isValidFileContent(null)).to.be(false);
         expect(gaKml.isValidFileContent(212334)).to.be(false);
+        $windowMock.verify();
       });
     });
 
@@ -458,7 +468,8 @@ describe('ga_kml_service', function() {
           'http://map.geo.admin.ch/aaa/aA4-aA4_aA61470313709/img/maki/marker-24@2x.png',
           'http://mf-geoadmin3.dev.bgdi.ch/aaa/aA4-aA4_aA6/img/maki/marker-24@2x.png',
           'https://map.geo.admin.ch/1470313709/img/maki/marker-24@2x.png',
-          'https://mf-geoadmin3.int.bgdi.ch/aaa/aA4-aA4_aA6/img/maki/marker-24@2x.png'
+          'https://mf-geoadmin3.int.bgdi.ch/aaa/aA4-aA4_aA6/img/maki/marker-24@2x.png',
+          'https://mf-geoadmin3.int.bgdi.ch/aaa/aA4-aA4_aA6/img/maki/marker2-24@2x.png'
         ];
         var kml = '<kml>';
         hrefs.forEach(function(href) {

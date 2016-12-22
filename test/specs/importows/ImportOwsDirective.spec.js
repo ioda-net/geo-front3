@@ -1,7 +1,7 @@
 describe('gf3_importows_directive', function() {
 
   describe('a good WMS GetCapabilities is received', function() {
-    var element, scope, map, httpBackend;
+    var element, scope, map, httpBackend, $windowMock;
 
     beforeEach(function() {
 
@@ -19,6 +19,7 @@ describe('gf3_importows_directive', function() {
 
       inject(function($injector, $rootScope, $compile,
           $translate, $httpBackend) {
+        $windowMock = sinon.mock($injector.get('$window'));
         httpBackend = $httpBackend;
         map = new ol.Map({});
         map.setSize([600, 300]);
@@ -61,6 +62,7 @@ describe('gf3_importows_directive', function() {
     afterEach(function () {
       httpBackend.verifyNoOutstandingExpectation();
       httpBackend.verifyNoOutstandingRequest();
+      $windowMock.restore();
     });
 
     it('verifies html elements', inject(function($rootScope) {
@@ -191,6 +193,7 @@ describe('gf3_importows_directive', function() {
       }));
       
       it('adds a selected layer to the map', inject(function() {
+        $windowMock.expects('alert').withExactArgs('add_wms_layer_succeeded').once();
         scope.toggleLayerSelected(evt, scope.layers[0]);
         scope.addLayerSelected();
         expect(scope.map.getLayers().getLength()).to.be(1);      

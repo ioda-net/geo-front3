@@ -4,7 +4,7 @@ describe('ga_shop_service', function() {
     var gaShop, gaGlobalOptions;
     var mapsheetParams = '?layer=layerBodId&product=featureId';
     var mapsheetParamsExceptTpl = '?layer={layerBodId}&featureid=featureId';
-    var mapsheetWithClipperParamsTpl = '?layer={layerBodId}&clipper={clipper}&product=featureId';
+    var tileWithClipperParamsTpl = '?layer={layerBodId}&clipper={clipper}&featureid=featureId';
     var communeParams = '?layer=layerBodId&clipper=ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill&featureid=featureId';
     var districtParams = '?layer=layerBodId&clipper=ch.swisstopo.swissboundaries3d-bezirk-flaeche.fill&featureid=featureId';
     var cantonParams = '?layer=layerBodId&clipper=ch.swisstopo.swissboundaries3d-kanton-flaeche.fill&featureid=featureId';
@@ -16,12 +16,12 @@ describe('ga_shop_service', function() {
       'ch.swisstopo.lubis-luftbilder_infrarot',
       'ch.swisstopo.lubis-luftbilder_farbe'
     ];
-    var mapsheetClippers = {
-      'ch.swisstopo.pixelkarte-farbe-pk25.noscale': 'ch.swisstopo.pixelkarte-pk25.metadata',
-      'ch.swisstopo.pixelkarte-farbe-pk50.noscale': 'ch.swisstopo.pixelkarte-pk50.metadata',
-      'ch.swisstopo.pixelkarte-farbe-pk100.noscale': 'ch.swisstopo.pixelkarte-pk100.metadata',
-      'ch.swisstopo.pixelkarte-farbe-pk200.noscale': 'ch.swisstopo.pixelkarte-pk200.metadata'
-      //,'ch.swisstopo.digitales-hoehenmodell_25_reliefschattierung': '
+    var tileLayers = {
+      'ch.swisstopo.images-swissimage.metadata': 'ch.swisstopo.swissimage-product',
+      'ch.swisstopo.pixelkarte-pk25.metadata': 'ch.swisstopo.pixelkarte-farbe-pk25.noscale',
+      'ch.swisstopo.pixelkarte-pk50.metadata': 'ch.swisstopo.pixelkarte-farbe-pk50.noscale',
+      'ch.swisstopo.pixelkarte-pk100.metadata': 'ch.swisstopo.pixelkarte-farbe-pk100.noscale',
+      'ch.swisstopo.pixelkarte-pk200.metadata': 'ch.swisstopo.pixelkarte-farbe-pk200.noscale',
     };
     var bodIds = [
       'ch.swisstopo.pixelkarte-farbe-pk25.noscale',
@@ -132,19 +132,19 @@ describe('ga_shop_service', function() {
         it('opens a good mapsheet url of exceptions', function() {
           gaShop.dispatch('mapsheet', mapsheetExeptions[m], 'featureId');
           var mapsheetParamsExcept = mapsheetParamsExceptTpl
-            .replace('{layerBodId}', mapsheetExeptions[m])
+            .replace('{layerBodId}', mapsheetExeptions[m]);
           sinon.assert.calledWith(openStub,
               dispatchUrl + mapsheetParamsExcept);
         });
       }
 
-      for (var i in mapsheetClippers) {
-        it('opens a good mapsheet url with clipper', function() {
-          gaShop.dispatch('mapsheet', i, 'featureId');
-          var mapsheetWithClipperParams = mapsheetWithClipperParamsTpl
-            .replace('{layerBodId}', i)
-            .replace('{clipper}', mapsheetClippers[i]);
-          sinon.assert.calledWith(openStub, dispatchUrl + mapsheetWithClipperParams);
+      for (var i in tileLayers) {
+        it('opens a good tile url with clipper', function() {
+          gaShop.dispatch('tile', i, 'featureId');
+          var withClipperParams = tileWithClipperParamsTpl
+            .replace('{layerBodId}', tileLayers[i])
+            .replace('{clipper}', i);
+          sinon.assert.calledWith(openStub, dispatchUrl + withClipperParams);
         });
       }
 
@@ -192,7 +192,7 @@ describe('ga_shop_service', function() {
       });
 
       it('returns a promise', function(done) {
-        gaShop.getPrice().catch (function() {
+        gaShop.getPrice().catch(function() {
           done();
         });
         $rootScope.$digest();
@@ -208,13 +208,13 @@ describe('ga_shop_service', function() {
         $httpBackend.flush();
       });
 
-      for (var i in mapsheetClippers) {
-        it('send a good mapsheet with clipper url', function(done) {
-          var mapsheetWithClipperParams = mapsheetWithClipperParamsTpl
-              .replace('{layerBodId}', i)
-              .replace('{clipper}', mapsheetClippers[i]);
-          $httpBackend.expectGET(priceUrl + mapsheetWithClipperParams).respond(200, {productPrice: 30});
-          gaShop.getPrice('mapsheet', i, 'featureId').then(function(price) {
+      for (var i in tileLayers) {
+        it('send a good tile with clipper url', function(done) {
+          var withClipperParams = tileWithClipperParamsTpl
+              .replace('{layerBodId}', tileLayers[i])
+              .replace('{clipper}', i);
+          $httpBackend.expectGET(priceUrl + withClipperParams).respond(200, {productPrice: 30});
+          gaShop.getPrice('tile', i, 'featureId').then(function(price) {
             expect(price).to.eql(30);
             done();
           });
@@ -274,20 +274,52 @@ describe('ga_shop_service', function() {
       });
     });
 
+    describe('#cut()', function() {
+      var $httpBackend, $rootScope;
+      var url;
+      var cutParams = 'layers=all:ch.swisstopo.pixelkarte-farbe-pk25.noscale&geometryType=esriGeometryEnvelope&geometry=1,3,2,1';
+
+      beforeEach(function() {
+        inject(function($injector) {
+          $httpBackend = $injector.get('$httpBackend');
+          $rootScope = $injector.get('$rootScope');
+        });
+        url = gaGlobalOptions.apiUrl + '/rest/services/all/GeometryServer/cut?';
+      });
+
+      afterEach(function() {
+        $httpBackend.verifyNoOutstandingExpectation();
+        $httpBackend.verifyNoOutstandingRequest();
+      });
+
+      it('irejects the promis if no geometry param', function(done) {
+        gaShop.cut().then(null, function() {
+          done();
+        });
+        $rootScope.$digest();
+      });
+
+      it('send a good cut url', function(done) {
+        var layerBodId = 'ch.swisstopo.pixelkarte-farbe-pk25.noscale';
+        var response = {};
+        response[layerBodId] = [{
+          area: '120'
+        }];
+        $httpBackend.expectGET(url + cutParams).respond(200, response);
+        gaShop.cut('1,3,2,1', layerBodId).then(function(area) {
+          expect(area).to.eql(120);
+          done();
+        });
+        $rootScope.$digest();
+        $httpBackend.flush();
+      });
+    });
+
     describe('#getClipperFromOrderType()', function() {
 
       it('returns the clipper associated to an orderType', function() {
         orderTypes.forEach(function(item) {
           expect(gaShop.getClipperFromOrderType(item)).to.be(clipper[item]);
-        });
-      });
-    });
-
-    describe('#getMapsheetClipperFromBodId()', function() {
-
-      it('returns the clipper associated to a bod id', function() {
-        bodIds.forEach(function(item) {
-          expect(gaShop.getMapsheetClipperFromBodId(item)).to.be(mapsheetClippers[item]);
         });
       });
     });

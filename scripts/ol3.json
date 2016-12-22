@@ -76,6 +76,7 @@
     "ol.geom.Point#*",
     "ol.geom.Polygon",
     "ol.geom.Polygon#*",
+    "ol.geom.Polygon.fromExtent",
     "ol.geom.SimpleGeometry",
     "ol.geom.SimpleGeometry#*",
     "ol.has.DEVICE_ORIENTATION",

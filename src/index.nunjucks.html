@@ -300,6 +300,9 @@ itemscope itemtype="http://schema.org/WebApplication"
            ga-time-selector-options="options">
       </div>
     </div>
+
+    <!-- Display a modal if the page has been open by th shop -->
+    <div ga-shop-msg></div>
   {% endif %}
 
     <div ng-controller="gf3FeaturesController">
@@ -421,17 +424,11 @@ itemscope itemtype="http://schema.org/WebApplication"
 
         <!-- Catalog -->
         <div class="panel" ng-hide="globals.isDrawActive">
-  {% if device == 'index' %}
           <div class="theme-toggle">
-            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+              <a class="topic-modal-toggle" data-toggle="modal" data-target="#topicSelector .modal" href="#">
               <span translate>choose_theme</span>
-              <i class="fa fa-chevron-sign-right"></i>
             </a>
-            <div class="dropdown-menu">
-              <div ga-topic ga-topic-ui="list"></div>
-            </div>
           </div>
-  {% endif %}
           <a id="catalogHeading" class="panel-heading accordion-toggle light collapsed"
              data-toggle="collapse" href="#catalog"
              ga-collapsible-show="globals.catalogShown">
@@ -443,12 +440,6 @@ itemscope itemtype="http://schema.org/WebApplication"
 
           </a>
           <div id="catalog" class="collapse" ng-controller="GaCatalogtreeController">
-  {% if device == 'mobile' %}
-            <label class="topic-container">
-              <span translate>change_topic</span>
-              <div ga-topic ga-topic-ui="select"></div>
-            </label>
-  {% endif %}
             <div class="panel-body panel-body-wide accordion-inner-catalog"
                  ng-if="!globals.offline"
                  ga-catalogtree ga-catalogtree-map="map" ga-catalogtree-options="options">
@@ -533,6 +524,9 @@ itemscope itemtype="http://schema.org/WebApplication"
     <!-- Modal: offline menu -->
     <div ng-cloak translate-cloak ga-offline-menu ga-offline-menu-map="map"></div>
   {% endif %}
+
+    <!-- Modal: topics selection -->
+    <div id="topicSelector" ng-cloak translate-cloak ga-topic></div>
 
     <!-- Modal: draw share -->
     <div ng-cloak translate-cloak ga-share-draw></div>
@@ -710,13 +704,12 @@ itemscope itemtype="http://schema.org/WebApplication"
     </script>
 {% endif %}
 
-{% if device == 'mobile' %}
     <script>
       window.addEventListener('load', function() {
         FastClick.attach(document.body);
       }, false);
     </script>
-{% elif device == 'embed' %}
+{% if device == 'embed' %}
     <script>
       window.addEventListener('load', function() {
         if (window.name !== "embed" && window.location == window.parent.location) {

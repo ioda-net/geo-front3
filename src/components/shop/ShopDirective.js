@@ -12,12 +12,11 @@ goog.require('ga_price_filter');
   ]);
 
   module.directive('gaShop', function($rootScope, gaLayers, gaMapUtils,
-      gaShop, gaIdentify) {
+      gaShop, gaIdentify, gaPreviewFeatures) {
+    var geojson = new ol.format.GeoJSON();
     return {
       restrict: 'A',
-      templateUrl: function(element, attrs) {
-        return 'components/shop/partials/shop.html';
-      },
+      templateUrl: 'components/shop/partials/shop.html',
       scope: {
         map: '=gaShopMap',
         feature: '=gaShopFeature',
@@ -32,6 +31,7 @@ goog.require('ga_price_filter');
           elt.remove();
           return;
         }
+        var previewFeat;
 
         var getFeatureIdToRequest = function() {
           // Use feature's id for id to resquest
@@ -40,9 +40,10 @@ goog.require('ga_price_filter');
           return idToRequest;
         };
 
-
         var layerBodId = (scope.feature instanceof ol.Feature) ?
             scope.feature.get('layerId') : scope.feature.layerBodId;
+        // For rectangle directive
+        scope.layerBodId = layerBodId;
 
         var layerConfig = gaLayers.getLayer(layerBodId);
 
@@ -72,6 +73,13 @@ goog.require('ga_price_filter');
           return;
         }
 
+        // On hover, we highlight the preview feature
+        elt.on('mouseenter', function() {
+          gaPreviewFeatures.highlight(scope.map, previewFeat);
+        }).on('mouseleave', function() {
+          gaPreviewFeatures.clearHighlight(scope.map);
+        });
+
         scope.getClipperFeatureLabel = function(orderType) {
           var feat = scope.clipperFeatures[orderType];
           if (!feat) {
@@ -89,7 +97,7 @@ goog.require('ga_price_filter');
           return str += ')';
         };
 
-        // {mapsheet,commune,district,canton,rectangle,whole}
+        // {tile,commune,district,canton,rectangle,whole}
         // commune: ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill
         // district: ch.swisstopo.swissboundaries3d-bezirk-flaeche.fill
         // canton: ch.swisstopo.swissboundaries3d-kanton-flaeche.fill
@@ -101,38 +109,48 @@ goog.require('ga_price_filter');
           }
         };
 
-        scope.onChangeOrderType = function(orderType) {
+        scope.onChangeOrderType = function(orderType, silent) {
           scope.orderType = orderType;
-          // Warn all shop directives that the ordertyope has changed.
-          $rootScope.$broadcast('gaShopOrderTypeChange', scope);
+          scope.price = null;
 
+          if (!silent) {
+            // Warn all shop directives that the ordertyope has changed.
+            $rootScope.$broadcast('gaShopOrderTypeChange', scope);
+          }
           // We try to find the correct clipper to use
-          var clipper = (orderType == 'mapsheet') ?
-              gaShop.getMapsheetClipperFromBodId(layerBodId) :
-              gaShop.getClipperFromOrderType(scope.orderType);
-
+          var clipper = gaShop.getClipperFromOrderType(scope.orderType,
+              layerBodId);
+          gaPreviewFeatures.clearHighlight(scope.map);
+          gaPreviewFeatures.remove(scope.map, previewFeat);
+          previewFeat = null;
           if (!scope.clipperFeatures[scope.orderType] && clipper) {
             var layers = [
               gaLayers.getOlLayerById(clipper)
             ];
-            gaIdentify.get(scope.map, layers, scope.clipperGeometry, 1, false,
+            gaIdentify.get(scope.map, layers, scope.clipperGeometry, 1, true,
                 null, 1).then(function(response) {
               var results = response.data.results;
               if (results.length) {
                 scope.clipperFeatures[scope.orderType] = results[0];
+                scope.addPreview();
                 scope.updatePrice();
-              } else {
-                scope.price = null;
               }
-            }, function() {
-              scope.price = null;
             });
           } else {
+            if (clipper) {
+              scope.addPreview();
+            }
             scope.updatePrice();
           }
         };
 
-        scope.updatePrice = function(geometry) {
+        scope.addPreview = function() {
+          var gFeat = scope.clipperFeatures[scope.orderType];
+          previewFeat = geojson.readFeature(gFeat);
+          gaPreviewFeatures.add(scope.map, previewFeat);
+        };
+
+        scope.updatePrice = function(geometry, cutArea) {
           if (scope.orderType == 'rectangle') {
             if (!geometry) {
               geometry = scope.geometry;
@@ -140,9 +158,8 @@ goog.require('ga_price_filter');
               scope.geometry = geometry;
             }
           }
-          if ((scope.orderType == 'rectangle' && geometry) ||
+          if ((scope.orderType == 'rectangle' && geometry && cutArea) ||
               (scope.orderType != 'rectangle' && !geometry)) {
-
             gaShop.getPrice(scope.orderType, layerBodId,
                 getFeatureIdToRequest(), geometry).then(function(price) {
               scope.price = price;
@@ -156,17 +173,17 @@ goog.require('ga_price_filter');
 
         // Init orderType variables
         scope.orderTypes = layerConfig.shop;
-        scope.orderType = '';
-        if (scope.orderTypes.length == 1) {
-           // papierkarte(mapsheet), swissbuildings3d 2.0(commune)
-           scope.orderType = scope.orderTypes[0];
-           scope.onChangeOrderType(scope.orderType);
+        if (scope.orderTypes.length) {
+          scope.orderType = scope.orderTypes[0];
+          scope.onChangeOrderType(scope.orderType);
         }
 
-        // Reset order type if another shop directive has changed one
+        // Reset order type if another shop directive has activated the
+        // rectangle.
         scope.$on('gaShopOrderTypeChange', function(evt, shopScope) {
-          if (shopScope !== scope && scope.orderTypes.length > 1) {
-            scope.orderType = '';
+          if (shopScope !== scope && scope.orderTypes.length > 1 &&
+              scope.orderType == 'rectangle') {
+            scope.onChangeOrderType(scope.orderTypes[0], true);
           }
         });
       }

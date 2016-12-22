@@ -14,11 +14,12 @@ goog.require('ga_measure_filter');
     return {
       restrict: 'A',
       templateUrl: function(element, attrs) {
-        return 'components/shop/partials/shop-rectangle.html';
+        return 'components/shop/partials/shoprectangle.html';
       },
       scope: {
         map: '=gaShopRectangleMap',
         isActive: '=gaShopRectangleActive',
+        layerBodId: '=gaShopRectangleLayerBodId',
         updatePrice: '=gaShopRectangleUpdatePrice'
       },
       link: function(scope, elt, attrs, controller) {
@@ -43,14 +44,16 @@ goog.require('ga_measure_filter');
         });
 
         var activate = function() {
-          map.addLayer(layer);
+          layer.setMap(map);
           map.addInteraction(scope.dragBox);
           scope.dragBox.setActive(true);
+          // Reload price.
+          scope.onInputChange();
         };
 
         var deactivate = function() {
           map.removeInteraction(scope.dragBox);
-          map.removeLayer(layer);
+          layer.setMap(null);
         };
 
         scope.$watch('isActive', function(isActive) {
@@ -65,7 +68,7 @@ goog.require('ga_measure_filter');
           deactivate();
         });
 
-        scope.onInputChange = function(evt) {
+        scope.onInputChange = function() {
           source.clear();
           var extent = gaMapUtils.intersectWithDefaultExtent([
             scope.west, scope.south, scope.east, scope.north
@@ -79,20 +82,24 @@ goog.require('ga_measure_filter');
 
         var updateInputs = function(geom) {
           var extent = geom.getExtent();
-          scope.north = extent[3];
-          scope.south = extent[1];
-          scope.west = extent[0];
-          scope.east = extent[2];
-          updatePriceDebounced(extent);
-          scope.area = geom.getArea();
+          scope.north = parseInt(extent[3], 10);
+          scope.south = parseInt(extent[1], 10);
+          scope.west = parseInt(extent[0], 10);
+          scope.east = parseInt(extent[2], 10);
+          scope.onInputChange();
         };
 
         var updateInputsDebounced = gaDebounce.debounce(updateInputs, 300,
             false, true);
         var updatePriceDebounced = gaDebounce.debounce(function(extent) {
-          scope.updatePrice(extent.toString());
+          // Get the area from the cut service
+          gaShop.cut(extent.toString(), scope.layerBodId).then(function(area) {
+            scope.updatePrice(extent.toString(), area);
+            scope.area = area * 1000 * 1000;
+          }, function() {
+            scope.area = null;
+          });
         }, 300, false, false);
-
       }
     };
   });

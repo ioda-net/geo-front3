@@ -656,6 +656,9 @@ describe('ga_map_service', function() {
 
       beforeEach(function() {
         $httpBackend.whenGET(expectedUrl).respond(layersConfig);
+
+        // Avoid log from Cesium
+        Cesium.TileProviderError.handleError = function() {};
       });
 
       it('returns undefined when layer\'s type is not managed', function(done) {
@@ -1567,8 +1570,13 @@ describe('ga_map_service', function() {
 
     describe('#getTileKey()', function() {
       it('gets the tile\'s key', function() {
-        var tileUrl = '//wmts5.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20140520/21781/18/15/20.jpeg';
-        expect(gaMapUtils.getTileKey(tileUrl)).to.eql('.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20140520/21781/18/15/20.jpeg');
+        [
+          '//wmts5.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20140520/21781/18/15/20.jpeg',
+          '//wmts54.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20140520/21781/18/15/20.jpeg',
+          '//wmts540.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20140520/21781/18/15/20.jpeg'
+        ].forEach(function(url) {
+          expect(gaMapUtils.getTileKey(url)).to.eql('.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/20140520/21781/18/15/20.jpeg');
+        });
       });
     });
 
