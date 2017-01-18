@@ -2,10 +2,12 @@ describe('ga_urlutils_service', function() {
 
   describe('gaUrlUtils', function() {
     var gaUrlUtils;
+    var gaGlobalOptions;
 
     beforeEach(function() {
       inject(function($injector) {
         gaUrlUtils = $injector.get('gaUrlUtils');
+        gaGlobalOptions = $injector.get('gaGlobalOptions');
       });
     });
 
@@ -100,7 +102,7 @@ describe('ga_urlutils_service', function() {
       it('shorten a url successfully', function(done) {
         $httpBackend.expectGET(shortenUrl).respond({shorturl: 'shortenfoo'});
         gaUrlUtils.shorten('foo').then(function(url) {
-          expect(url).to.be('shortenfoo');
+          expect(url).to.be(gaGlobalOptions.apiUrl + 'shortenfoo');
           done();
         });
         $httpBackend.flush();

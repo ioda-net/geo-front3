@@ -54,7 +54,7 @@ goog.provide('ga_urlutils_service');
               url: url
             }
           }).then(function(response) {
-            return response.data.shorturl;
+            return gaGlobalOptions.apiUrl + response.data.shorturl;
           }, function(reason) {
             $window.console.error(reason);
             return url;
