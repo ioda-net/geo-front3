@@ -180,8 +180,8 @@ goog.require('gf3_plugins');
               if (gf3Plugins.communes) {
                 scope.commune = undefined;
                 gf3Plugins.communes(coordDefaultEpsg)
-                  .success(function(response) {
-                    scope.commune = response.commune;
+                    .then(function(response) {
+                    scope.commune = response.data.commune;
                   });
               }
 

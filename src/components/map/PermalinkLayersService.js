@@ -306,7 +306,8 @@ goog.require('ga_wms_service');
               }
             } else if (gaMapUtils.isExternalWmtsLayer(layerSpec)) {
               var infos = layerSpec.split('||');
-              $http.get(infos[3]).success(function(data) {
+              $http.get(infos[3]).then(function(response) {
+                var data = response.data;
                 try {
                   var getCapabilities =
                       new ol.format.WMTSCapabilities().read(data);
@@ -319,7 +320,7 @@ goog.require('ga_wms_service');
                   console.error('Loading of external WMTS layer ' + layerSpec +
                           ' failed. ' + e);
                 }
-              }).error(function() {
+              }, function() {
                 console.error('Loading of external WMTS layer ' + layerSpec +
                         ' failed. Failed to get capabilities from server.');
               });

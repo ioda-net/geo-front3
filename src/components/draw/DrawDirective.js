@@ -711,9 +711,9 @@ goog.require('gf3_webdav_service');
               var req = gf3Webdav['delete'](layer, map, scope.webdav.url,
                 scope.webdav.file, scope.webdav.user, scope.webdav.password);
               if (req) {
-                req.success(function() {
+                req.then(function() {
                   scope.statusMsgId = $translate.instant('draw_delete_success');
-                }).error(function(data, status) {
+                }, function(response, status) {
                   scope.statusMsgId = gf3Webdav.getWebdavErrorMessage(
                     $translate.instant('draw_delete_error'), status);
                 });
@@ -841,15 +841,14 @@ goog.require('gf3_webdav_service');
           } else {
             gf3Webdav.exists(scope.webdav.url, scope.webdav.file,
                 scope.webdav.user, scope.webdav.password)
-            .success(function() {
+            .then(function() {
               var message =
                   $translate.instant('draw_webdav_can_override_file');
               scope.webdav.canOverrideFile = confirm(message);
               if (scope.webdav.canOverrideFile) {
                 performWebdavSave();
               }
-            })
-            .error(function(data, status) {
+            }, function() {
               scope.webdav.canOverrideFile = true;
               performWebdavSave();
             });
@@ -859,9 +858,9 @@ goog.require('gf3_webdav_service');
         var performWebdavSave = function() {
           gf3Webdav.save(layer, map, scope.webdav.url, scope.webdav.file,
             scope.webdav.user, scope.webdav.password)
-          .success(function() {
+          .then(function() {
             scope.statusMsgId = 'draw_file_saved';
-          }).error(function(data, status) {
+          }, function(response, status) {
             scope.statusMsgId = gf3Webdav.getErrorMessage(
               $translate.instant('draw_save_error'), status);
           });

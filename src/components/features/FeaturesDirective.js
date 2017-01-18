@@ -298,8 +298,8 @@ goog.require('gf3_features_service');
               $http.get(identifyUrl, {
                 timeout: canceler.promise,
                 params: params
-              }).success(function(features) {
-                showFeatures(features.results);
+              }).then(function(response) {
+                showFeatures(response.data.results);
               });
             }
 

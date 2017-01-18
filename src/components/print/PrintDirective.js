@@ -120,10 +120,9 @@ goog.require('ngeo.PrintUtils');
       var legend = getLengend(map);
 
       if (gf3Plugins.communes) {
+        // If we cannot get the commune name, launch the print anyway
         gf3Plugins.communes(mapCenter)
-                .success(doPrint)
-                // If we cannot get the commune name, launch the print anyway
-                .error(doPrint);
+            .then(doPrint, doPrint);
       } else {
         doPrint();
       }
