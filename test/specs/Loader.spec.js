@@ -127,6 +127,11 @@ beforeEach(function() {
         gaGlobalOptions.apiUrl + '/rest/services/profile.json';
   });
 
+  module(function(gaUrlUtilsProvider, gaGlobalOptions) {
+    gaUrlUtilsProvider.shortenUrl =
+        gaGlobalOptions.apiUrl + '/shorten.json';
+  });
+
   module(function($sceDelegateProvider, gaGlobalOptions) {
     var whitelist = $sceDelegateProvider.resourceUrlWhitelist();
     whitelist = whitelist.concat(gaGlobalOptions.whitelist);

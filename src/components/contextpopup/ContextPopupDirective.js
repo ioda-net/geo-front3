@@ -156,8 +156,8 @@ goog.require('gf3_plugins');
                     northing: coordDefaultEpsg[1],
                     elevationModel: gaGlobalOptions.defaultElevationModel
                   }
-                }).success(function(response) {
-                  scope.altitude = parseFloat(response.height);
+                }).then(function(response) {
+                  scope.altitude = parseFloat(response.data.height);
                 });
 
                 if (defaultToSecondaryEpsgUrl) {
@@ -166,8 +166,8 @@ goog.require('gf3_plugins');
                       easting: coordDefaultEpsg[0],
                       northing: coordDefaultEpsg[1]
                     }
-                  }).success(function(response) {
-                    coordSecondaryEpsg = response.coordinates;
+                  }).then(function(response) {
+                    coordSecondaryEpsg = response.data.coordinates;
                     scope.coordSecondaryEpsg =
                         formatCoordinates(coordSecondaryEpsg, 1);
                   });

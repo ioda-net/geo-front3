@@ -837,6 +837,11 @@ itemscope itemtype="http://schema.org/WebApplication"
               gaGlobalOptions.apiUrl + '/rest/services/profile.json';
         });
 
+        module.config(function(gaUrlUtilsProvider, gaGlobalOptions) {
+          gaUrlUtilsProvider.shortenUrl =
+              gaGlobalOptions.apiUrl + '/shorten.json';
+        });
+
         module.config(function($sceDelegateProvider, gaGlobalOptions) {
           var whitelist = $sceDelegateProvider.resourceUrlWhitelist();
           whitelist = whitelist.concat(gaGlobalOptions.whitelist);
