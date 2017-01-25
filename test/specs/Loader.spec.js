@@ -43,8 +43,8 @@ beforeEach(function() {
       ],
       defaultEpsg: 'EPSG:21781',
       secondaryEpsg: 'EPSG:2056',
-      defaultToSecondaryEpsgUrl: '//api.example.com/reframe/' +
-          'lv03tolv95?easting=661473&northing=188192',
+      defaultToSecondaryEpsgUrl: '//api.example.com/reframe/lv03tolv95',
+      secondaryToDefaultEpsgUrl: '//api.example.com/reframe/lv95tolv03',
       defaultTopicId: 'sometopic',
       translationFallbackCode: 'somelang',
       defaultExtent: [420000, 30000, 900000, 350000],

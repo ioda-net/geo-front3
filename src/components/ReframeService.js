@@ -12,6 +12,10 @@ goog.provide('ga_reframe_service');
 
       var lv03tolv95Url = gaGlobalOptions.lv03tolv95Url;
       var lv95tolv03Url = gaGlobalOptions.lv95tolv03Url;
+      var defaultToSecondaryEpsgUrl =
+          gaGlobalOptions.defaultToSecondaryEpsgUrl;
+      var secondaryToDefaultEpsgUrl =
+          gaGlobalOptions.secondaryToDefaultEpsgUrl;
 
       var Reframe = function() {
         this.get03To95 = function(coordinates) {
@@ -45,6 +49,52 @@ goog.provide('ga_reframe_service');
             defer.resolve(ol.proj.transform(coordinates,
                 'EPSG:2056', 'EPSG:21781'));
           });
+          return defer.promise;
+        };
+
+        this.getDefaultToSecondary = function(coordinates) {
+          var defer = $q.defer();
+          if (defaultToSecondaryEpsgUrl) {
+            $http.get(defaultToSecondaryEpsgUrl, {
+              params: {
+                easting: coordinates[0],
+                northing: coordinates[1]
+              }
+            }).then(function(response) {
+              defer.resolve(response.data.coordinates);
+            }, function() {
+              // Use proj4js on error
+              defer.resolve(ol.proj.transform(coordinates,
+                  gaGlobalOptions.defaultEpsg, gaGlobalOptions.secondaryEpsg));
+            });
+          } else {
+            defer.resolve(ol.proj.transform(coordinates,
+                gaGlobalOptions.defaultEpsg, gaGlobalOptions.secondaryEpsg));
+          }
+
+          return defer.promise;
+        };
+
+        this.getSecondaryToDefault = function(coordinates) {
+          var defer = $q.defer();
+          if (secondaryToDefaultEpsgUrl) {
+            $http.get(secondaryToDefaultEpsgUrl, {
+              params: {
+                easting: coordinates[0],
+                northing: coordinates[1]
+              }
+            }).then(function(response) {
+              defer.resolve(response.data.coordinates);
+            }, function() {
+              // Use proj4js on error
+              defer.resolve(ol.proj.transform(coordinates,
+                  gaGlobalOptions.secondaryEpsg, gaGlobalOptions.defaultEpsg));
+            });
+          } else {
+            defer.resolve(ol.proj.transform(coordinates,
+                gaGlobalOptions.secondaryEpsg, gaGlobalOptions.defaultEpsg));
+          }
+
           return defer.promise;
         };
       };

@@ -109,6 +109,7 @@ describe('ga_contextpopup_directive', function() {
     });
 
     it('correctly handles map contextmenu events', function() {
+      var spy = sinon.spy(gaReframe, 'getDefaultToSecondary');
       $httpBackend.expectGET(expectedHeightUrl);
       $httpBackend.expectGET(expectedReframeUrl);
       if (plugins.communes) {
@@ -124,6 +125,7 @@ describe('ga_contextpopup_directive', function() {
       var tables = element.find('div.popover-content table');
       var tds = $(tables[0]).find('td');
 
+      expect(spy.callCount).to.eql(1);
       expect($(tds[1]).text()).to.be('661\'473.0, 188\'192.0');
       expect($(tds[3]).text()).to.be('2\'725\'984.4, 1\'180\'787.4');
       if (plugins.communes) {

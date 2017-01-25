@@ -108,7 +108,7 @@ goog.require('ga_reframe_service');
           position = [left > right ? left : right,
               right < left ? right : left];
 
-          // LV03 or EPSG:21781
+          // Default EPSG
           if (ol.extent.containsCoordinate(extent, position)) {
             return $q.when(roundCoordinates(position));
           }
@@ -125,8 +125,9 @@ goog.require('ga_reframe_service');
             }
           }
 
-          // Match LV95 coordinates
-          return gaReframe.get95To03(position).then(function(position) {
+          // Secondary EPSG
+          return gaReframe.getSecondaryToDefault(position)
+              .then(function(position) {
             if (ol.extent.containsCoordinate(extent, position)) {
               return roundCoordinates(position);
             }

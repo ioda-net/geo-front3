@@ -31,8 +31,6 @@ goog.require('gf3_plugins');
           link: function(scope, element, attrs) {
             var heightUrl = scope.options.heightUrl;
             var qrcodeUrl = scope.options.qrcodeUrl;
-            var defaultToSecondaryEpsgUrl =
-                scope.options.defaultToSecondaryEpsgUrl;
 
             scope.defaultEpsgContextPopupTitle =
                 gaGlobalOptions.defaultEpsgContextPopupTitle;
@@ -151,20 +149,12 @@ goog.require('gf3_plugins');
                   scope.altitude = parseFloat(response.data.height);
                 });
 
-                if (defaultToSecondaryEpsgUrl) {
-                  $http.get(defaultToSecondaryEpsgUrl, {
-                    params: {
-                      easting: coordDefaultEpsg[0],
-                      northing: coordDefaultEpsg[1]
-                    }
-                  }).then(function(response) {
-                    coordSecondaryEpsg = response.data.coordinates;
-                    scope.coordSecondaryEpsg =
-                        formatCoordinates(coordSecondaryEpsg, 1);
-                  });
-
-                }
-                  updateW3W();
+                gaReframe.getDefaultToSecondary(coordDefaultEpsg)
+                    .then(function(coords) {
+                  scope.coordSecondaryEpsg =
+                      formatCoordinates(coords, 1);
+                });
+                updateW3W();
               });
 
 
