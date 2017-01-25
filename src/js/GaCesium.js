@@ -10,11 +10,13 @@ goog.provide('ga_cesium');
  * @param {Object} gaBrowserSniffer
  * @param {Object} $q
  * @param {Object} $translate
+ * @param {Object} $rootScope
+ * @param {Object} gaBackground
  *
  * @constructor
  */
 var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
-    gaBrowserSniffer, $q, $translate) {
+    gaBrowserSniffer, $q, $translate, $rootScope, gaBackground) {
   // Url of ol3cesium library
   var ol3CesiumLibUrl = gaGlobalOptions.resourceUrl;
   if (gaGlobalOptions.buildMode === 'prod') {
@@ -72,6 +74,11 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     var fogDensity = floatParam('fogDensity', '0.0001');
     var fogSseFactor = floatParam('fogSseFactor', '25');
     var terrainLevels = [8, 11, 14, 16, 17];
+    // Set good time for lighting
+    var d = new Date();
+    d.setUTCHours(8);
+    var jDate = Cesium.JulianDate.fromDate(d);
+
     window.minimumRetrievingLevel = intParam('minimumRetrievingLevel', '8');
     window.terrainAvailableLevels = arrayParam('terrainLevels', terrainLevels);
     window.imageryAvailableLevels = arrayParam('imageryLevels', undefined);
@@ -80,10 +87,14 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     try {
       cesiumViewer = new olcs.OLCesium({
         map: map,
-        createSynchronizers: function(map, scene) {
+        time: function() {
+          return jDate;
+        },
+        createSynchronizers: function(map, scene, dataSources) {
            return [
              new olcs.GaRasterSynchronizer(map, scene),
-             new olcs.VectorSynchronizer(map, scene)
+             new olcs.GaVectorSynchronizer(map, scene),
+             new olcs.GaKmlSynchronizer(map, scene, dataSources)
            ];
         }
       });
@@ -93,6 +104,7 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
 
       var corrector = new SSECorrector(gaPermalink);
       cesiumViewer.getCesiumScene().globe._surface.sseCorrector = corrector;
+
     } catch (e) {
       alert(e.message);
       window.console.error(e.stack);
@@ -115,8 +127,58 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     scene.screenSpaceCameraController.inertiaSpin = 0.5;
     scene.screenSpaceCameraController.inertiaTranslate = 0.8;
     scene.screenSpaceCameraController.inertiaZoom = 0.9;
+    scene.screenSpaceCameraController.minimumZoomDistance = 2;
+
     enableOl3d(cesiumViewer, enabled);
+
+    // Tileset 3D
+    var tileset3d = [
+      'ch.swisstopo.swisstlm3d.3d'
+    ];
+
+    var primitives = [];
+    var params = gaPermalink.getParams();
+    var pTileset3d = params['tileset3d'];
+
+    tileset3d = pTileset3d ? pTileset3d.split(',') : tileset3d;
+
+    tileset3d.forEach(function(tileset3dId) {
+      if (tileset3dId) {
+        var tileset = gaLayers.getCesiumTileset3DById(tileset3dId);
+        if (/names3d\.3d/.test(tileset3dId)) {
+          tileset.style = new Cesium.Cesium3DTileStyle({
+            show: true,
+            color: 'rgb(255, 255, 255)',
+            outlineColor: 'rgb(0, 0, 0)',
+            outlineWidth: 3,
+            labelStyle: 2,
+            font: "'24px arial'"
+          });
+        }
+        if (tileset) {
+          primitives.push(tileset);
+        }
+      }
+    });
+
+    // show/hide/add tilesets when needed
+    manageTilesets(primitives, scene, gaBackground.get());
+
+    $rootScope.$on('gaBgChange', function(evt, bg) {
+      manageTilesets(primitives, scene, bg);
+    });
+
     return cesiumViewer;
+  };
+
+  var manageTilesets = function(primitives, scene, bg) {
+    var show = !/^voidLayer$/.test(bg.id);
+    primitives.forEach(function(prim) {
+      if (!scene.primitives.contains(prim)) {
+        scene.primitives.add(prim);
+      }
+      prim.show = show;
+    });
   };
 
   var limitCamera = function() {
@@ -138,10 +200,6 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
         }
       });
     }
-    // Set the minimumZoomDistance according to the camera height
-    var minimumZoomDistance = pos.height > 1800 ? 400 : 200;
-    this.screenSpaceCameraController.minimumZoomDistance =
-        gaGlobalOptions.pegman ? 2 : minimumZoomDistance;
   };
 
   var enableOl3d = function(ol3d, enable) {
@@ -151,8 +209,7 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
     var transform = Cesium.Matrix4.fromTranslation(bottom);
     if (enable) {
       //Show warning on IE browsers
-      if (gaBrowserSniffer.msie &&
-          gaBrowserSniffer.msie <= 11) {
+      if (gaBrowserSniffer.msie && gaBrowserSniffer.msie <= 11) {
         alert($translate.instant('3d_ie11_alert'));
       }
       // 2d -> 3d transition

@@ -38,14 +38,14 @@ DEPLOY_TARGET ?= dev
 LESS_PARAMETERS ?= -ru
 KEEP_VERSION ?= 'false'
 LAST_VERSION := $(shell if [ -f .build-artefacts/last-version ]; then cat .build-artefacts/last-version 2> /dev/null; else echo '-none-'; fi)
-VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo $(LAST_VERSION); else date '+%y%m%d%H%M'; fi)
+VERSION := $(shell if [ '$(KEEP_VERSION)' = 'true' ] && [ '$(LAST_VERSION)' != '-none-' ]; then echo '$(LAST_VERSION)'; else date '+%y%m%d%H%M'; fi)
 GIT_BRANCH := $(shell if [ -f .build-artefacts/deployed-git-branch ]; then cat .build-artefacts/deployed-git-branch 2> /dev/null; else git rev-parse --symbolic-full-name --abbrev-ref HEAD; fi)
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
 BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
-OL3_VERSION ?= 5498f5f7db503bb408f74f2f463a5340910bc29b # v3.19, 21 october 2016
-OL3_CESIUM_VERSION ?= 2f42726ad105cc2408154428a37251413163670f # master, 24 october 2016
-CESIUM_VERSION ?= afe04e31e705aa26bb1fc34c1db014c8eec35743 # camptocamp/c2c_patches, 21 november 2016 (cesium 1.26, 3 october 2016)
+OL3_VERSION ?= v3.20.1 # v3.20.1, 21 december 2016
+OL3_CESIUM_VERSION ?= fc863aa92ceba9a1b2baec75d0ba4376db39d160 # master, 23 january 2017
+CESIUM_VERSION ?= 3dddac53f24811a4e11989fc21cd9e7d39459a82 # camptocamp/c2c_patches_vector_tiles_labels, 18 january 2017
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"en\", \"fr\", \"it\", \"rm\"]'
@@ -77,7 +77,6 @@ S3_BASE_PATH ?=
 S3_SRC_BASE_PATH ?=
 CLONEDIR = /home/$(USER_NAME)/tmp/branches/${DEPLOY_GIT_BRANCH}
 DEEP_CLEAN ?= "false"
-NEW_VERSION ?= "false"
 NAMED_BRANCH ?= "true"
 
 ## Python interpreter can't have space in path name
@@ -228,11 +227,11 @@ deploydev:
 
 .PHONY: s3deployint
 s3deployint: guard-SNAPSHOT guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
-	./scripts/deploysnapshot.sh $(SNAPSHOT) int $(NEW_VERSION);
+	./scripts/deploysnapshot.sh $(SNAPSHOT) int;
 
 .PHONY: s3deployprod
 s3deployprod: guard-SNAPSHOT guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
-	./scripts/deploysnapshot.sh $(SNAPSHOT) prod $(NEW_VERSION);
+	./scripts/deploysnapshot.sh $(SNAPSHOT) prod;
 
 .PHONY: s3deploybranch
 s3deploybranch: guard-S3_MF_GEOADMIN3_INT \

@@ -6,7 +6,8 @@ describe('ga_contextpopup_directive', function() {
     mapEvt,
     plugins,
     originalEvt,
-    $rootScope;
+    $rootScope,
+    gaReframe;
 
   var expectedHeightUrl = '//api.geo.admin.ch/height' +
       '?easting=661473&elevationModel=COMB' +
@@ -51,9 +52,10 @@ describe('ga_contextpopup_directive', function() {
       coordinate: [661473, 188192]
     };
 
-    inject(function(_$rootScope_, $compile, gf3Plugins) {
+    inject(function(_$rootScope_, _gaReframe_, $compile, gf3Plugins) {
       plugins = gf3Plugins;
       $rootScope = _$rootScope_;
+      gaReframe = _gaReframe_;
       map = new ol.Map({});
       $rootScope.map = map;
       $rootScope.options = {

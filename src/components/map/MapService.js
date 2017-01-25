@@ -235,6 +235,14 @@ goog.require('ga_urlutils_service');
               this.set('getCesiumImageryProvider', val);
             }
           },
+          getCesiumDataSource: {
+            get: function() {
+              return this.get('getCesiumDataSource') || angular.noop;
+            },
+            set: function(val) {
+              this.set('getCesiumDataSource', val);
+            }
+          },
           altitudeMode: {
             get: function() {
               return this.get('altitudeMode');
@@ -540,11 +548,12 @@ goog.require('ga_urlutils_service');
         gaStylesFromLiterals, gaGlobalOptions, gaPermalink,
         gaLang, gaTime) {
 
-      var Layers = function(dfltWmsSubdomains,
-          dfltWmtsNativeSubdomains, dfltWmtsMapProxySubdomains,
+      var Layers = function(dfltWmsSubdomains, dfltWmtsNativeSubdomains,
+          dfltWmtsMapProxySubdomains, dfltVectorTilesSubdomains,
           wmsUrlTemplate, wmtsGetTileUrlTemplate,
           wmtsMapProxyGetTileUrlTemplate, terrainTileUrlTemplate,
-          layersConfigUrlTemplate, legendUrlTemplate, imageryMetadataUrl) {
+          vectorTilesUrlTemplate, layersConfigUrlTemplate,
+          legendUrlTemplate, imageryMetadataUrl) {
         var layers;
 
         // Returns a unique WMS template url (e.g. //wms{s}.geo.admin.ch)
@@ -588,6 +597,18 @@ goog.require('ga_urlutils_service');
               .replace('{Layer}', layer)
               .replace('{Time}', time);
         };
+
+        var cpt;
+        var getVectorTilesUrl = function(layer, time, subdomains) {
+          if (cpt === undefined || cpt >= subdomains.length) {
+            cpt = 0;
+          }
+          return vectorTilesUrlTemplate
+              .replace('{s}', subdomains[cpt++])
+              .replace('{Layer}', layer)
+              .replace('{Time}', time);
+        };
+
         var getLayersConfigUrl = function(lang) {
           return layersConfigUrlTemplate
               .replace('{Lang}', lang);
@@ -678,30 +699,54 @@ goog.require('ga_urlutils_service');
          * Returns an Cesium terrain provider.
          */
         this.getCesiumTerrainProviderById = function(bodId) {
-          var provider;
           var config3d = this.getConfig3d(layers[bodId]);
-          if (config3d.type == 'terrain') {
-            var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
-            var requestedLayer = config3d.serverLayerName || bodId;
-            provider = new Cesium.CesiumTerrainProvider({
-              url: getTerrainTileUrl(requestedLayer, timestamp),
-              availableLevels: window.terrainAvailableLevels,
-              rectangle: gaMapUtils.extentToRectangle(
-                gaGlobalOptions.defaultExtent)
-            });
-            provider.bodId = bodId;
+          if (!/^terrain$/.test(config3d.type)) {
+            return;
           }
+          var timestamp = this.getLayerTimestampFromYear(config3d,
+              gaTime.get());
+          var requestedLayer = config3d.serverLayerName || bodId;
+          var provider = new Cesium.CesiumTerrainProvider({
+            url: getTerrainTileUrl(requestedLayer, timestamp),
+            availableLevels: window.terrainAvailableLevels,
+            rectangle: gaMapUtils.extentToRectangle(
+              gaGlobalOptions.defaultExtent)
+          });
+          provider.bodId = bodId;
           return provider;
+        };
+
+        /**
+         * Returns an Cesium 3D Tileset.
+         */
+        this.getCesiumTileset3DById = function(bodId) {
+          var config3d = this.getConfig3d(layers[bodId]);
+          if (!/^tileset3d$/.test(config3d.type)) {
+            return;
+          }
+          var timestamp = this.getLayerTimestampFromYear(config3d,
+              gaTime.get());
+          var requestedLayer = config3d.serverLayerName || bodId;
+          var tileset = new Cesium.Cesium3DTileset({
+            url: getVectorTilesUrl(requestedLayer, timestamp,
+                dfltVectorTilesSubdomains),
+            maximumNumberOfLoadedTiles: 3
+          });
+          tileset.bodId = bodId;
+          return tileset;
         };
 
         /**
          * Returns an Cesium imagery provider.
          */
         this.getCesiumImageryProviderById = function(bodId) {
-          var provider, params, config = layers[bodId];
-          bodId = config.config3d || bodId;
+          var config = layers[bodId];
           var config3d = this.getConfig3d(config);
-          // Only native tiles have a 3d config
+          if (!/^(wms|wmts|aggregate)$/.test(config3d.type)) {
+            return;
+          }
+          var params;
+          bodId = config.config3d || bodId;
           var timestamp = this.getLayerTimestampFromYear(bodId, gaTime.get());
           var requestedLayer = config3d.wmsLayers || config3d.serverLayerName ||
               bodId;
@@ -744,7 +789,7 @@ goog.require('ga_urlutils_service');
                     '{eastProjected},{northProjected}',
               width: tileSize,
               height: tileSize,
-              styles: 'default'
+              styles: ''
             };
             if (timestamp) {
               wmsParams.time = timestamp;
@@ -766,7 +811,7 @@ goog.require('ga_urlutils_service');
               maxLod = gaMapUtils.getLodFromRes(
                   config3d.resolutions[config3d.resolutions.length - 1]);
             }
-            provider = new Cesium.UrlTemplateImageryProvider({
+            var provider = new Cesium.UrlTemplateImageryProvider({
               url: params.url,
               subdomains: params.subdomains,
               minimumRetrievingLevel: minRetLod,
@@ -783,13 +828,28 @@ goog.require('ga_urlutils_service');
               // availability and 18 to Swiss bbox
               metadataUrl: imageryMetadataUrl
             });
-          }
-          if (provider) {
             provider.bodId = bodId;
+            return provider;
           }
-          return provider;
         };
 
+        /**
+         * Returns a promise of Cesium DataSource.
+         */
+        this.getCesiumDataSourceById = function(bodId, scene) {
+          var config = layers[bodId];
+          bodId = config.config3d;
+          var config3d = this.getConfig3d(config);
+          if (!/^kml$/.test(config3d.type)) {
+            return;
+          }
+          var dsP = Cesium.KmlDataSource.load(config3d.url, {
+            camera: scene.camera,
+            canvas: scene.canvas,
+            proxy: new Cesium.DefaultProxy(gaGlobalOptions.ogcproxyUrl)
+          });
+          return dsP;
+        };
 
         /**
          * Return an ol.layer.Layer object for a layer id.
@@ -983,6 +1043,9 @@ goog.require('ga_urlutils_service');
             olLayer.getCesiumImageryProvider = function() {
               return that.getCesiumImageryProviderById(bodId);
             };
+            olLayer.getCesiumDataSource = function(scene) {
+              return that.getCesiumDataSourceById(bodId, scene);
+            };
           }
 
           return olLayer;
@@ -1027,9 +1090,9 @@ goog.require('ga_urlutils_service');
           var layer = angular.isString(configOrBodId) ?
               this.getLayer(configOrBodId) : configOrBodId;
           if (!layer.timeEnabled) {
-            // a WMTS/Terrain layer has at least one timestamp
-            return (layer.type == 'wmts' || layer.type == 'terrain') ?
-                layer.timestamps[0] : undefined;
+            // a WMTS/Terrain/Tileset3D layer has at least one timestamp
+            return (layer.type == 'wmts' || layer.type == 'terrain' ||
+                layer.type == 'tileset3d') ? layer.timestamps[0] : undefined;
           }
           var timestamps = layer.timestamps || [];
           if (angular.isNumber(yearStr)) {
@@ -1108,12 +1171,12 @@ goog.require('ga_urlutils_service');
       };
 
       return new Layers(this.dfltWmsSubdomains, this.dfltWmtsNativeSubdomains,
-          this.dfltWmtsMapProxySubdomains, this.wmsUrlTemplate,
-          this.wmtsGetTileUrlTemplate, this.wmtsMapProxyGetTileUrlTemplate,
-          this.terrainTileUrlTemplate, this.layersConfigUrlTemplate,
+          this.dfltWmtsMapProxySubdomains, this.dfltVectorTilesSubdomains,
+          this.wmsUrlTemplate, this.wmtsGetTileUrlTemplate,
+          this.wmtsMapProxyGetTileUrlTemplate, this.terrainTileUrlTemplate,
+          this.vectorTilesUrlTemplate, this.layersConfigUrlTemplate,
           this.legendUrlTemplate, this.imageryMetadataUrl);
     };
-
   });
 
   /**
@@ -1121,7 +1184,7 @@ goog.require('ga_urlutils_service');
    */
   module.provider('gaMapUtils', function() {
     this.$get = function($window, gaGlobalOptions, gaUrlUtils, $q,
-        gaDefinePropertiesForLayer, $http) {
+        gaDefinePropertiesForLayer, $http, $rootScope) {
       var resolutions = gaGlobalOptions.resolutions;
       var lodsForRes = gaGlobalOptions.lods;
       var isExtentEmpty = function(extent) {
@@ -1224,7 +1287,7 @@ goog.require('ga_urlutils_service');
           return layer;
         },
 
-        flyToAnimation: function(ol3d, center, extent, defer) {
+        flyToAnimation: function(ol3d, center, extent) {
           var dest;
           var scene = ol3d.getCesiumScene();
 
@@ -1234,12 +1297,13 @@ goog.require('ga_urlutils_service');
             center = ol.extent.getCenter(extent);
           }
 
-          $http.get(gaGlobalOptions.apiUrl + '/rest/services/height', {
+          return $http.get(gaGlobalOptions.apiUrl + '/rest/services/height', {
             params: {
               easting: center[0],
               northing: center[1]
             }
           }).then(function(response) {
+            var defer = $q.defer();
             var pitch = 50; // In degrees
             // Default camera field of view
             // https://cesiumjs.org/Cesium/Build/Documentation/Camera.html
@@ -1266,104 +1330,101 @@ goog.require('ga_urlutils_service');
               orientation: {
                 pitch: Cesium.Math.toRadians(-pitch)
               },
-              complete: defer.resolve,
-              cancel: defer.resolve
+              complete: function() {
+                defer.resolve();
+                $rootScope.$digest();
+              },
+              cancel: function() {
+                defer.resolve();
+                $rootScope.$digest();
+              }
             });
+            return defer.promise;
           });
         },
 
         moveTo: function(map, ol3d, zoom, center) {
-          var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
-            this.flyToAnimation(ol3d, center, null, defer);
-          } else {
-            var view = map.getView();
-            view.setZoom(zoom);
-            view.setCenter(center);
-            defer.resolve();
+            return this.flyToAnimation(ol3d, center, null);
           }
-          return defer.promise;
+          var view = map.getView();
+          view.setZoom(zoom);
+          view.setCenter(center);
+          return $q.when();
         },
 
         zoomToExtent: function(map, ol3d, extent) {
-          var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
-            this.flyToAnimation(ol3d, null, extent, defer);
-          } else {
-            map.getView().fit(extent, map.getSize());
-            defer.resolve();
+            return this.flyToAnimation(ol3d, null, extent);
           }
-          return defer.promise;
+          map.getView().fit(extent, map.getSize());
+          return $q.when();
         },
 
         // This function differs from moveTo because it adds panning effect in
         // 2d
         panTo: function(map, ol3d, dest) {
-          var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
             return this.moveTo(null, ol3d, null, dest);
-          } else {
-            var source = map.getView().getCenter();
-            var dist = Math.sqrt(Math.pow(source[0] - dest[0], 2),
-                Math.pow(source[1] - dest[1], 2));
-            var duration = Math.min(Math.sqrt(300 + dist /
-                map.getView().getResolution() * 1000), 3000);
-            var start = +new Date();
-            var pan = ol.animation.pan({
-              duration: duration,
-              source: map.getView().getCenter(),
-              start: start
-            });
-            map.beforeRender(pan);
-            map.getView().setCenter(dest);
-            defer.resolve();
           }
+          var defer = $q.defer();
+          var view = map.getView();
+          var source = view.getCenter();
+          var dist = Math.sqrt(Math.pow(source[0] - dest[0], 2),
+              Math.pow(source[1] - dest[1], 2));
+          var duration = Math.min(Math.sqrt(300 + dist /
+              view.getResolution() * 1000), 3000);
+          view.animate({
+            center: dest,
+            duration: 0
+          }, function(success) {
+            defer.resolve();
+            $rootScope.$digest();
+          });
           return defer.promise;
         },
 
         // This function differs from zoomToExtent because it adds flying effect
         // in 2d
         flyTo: function(map, ol3d, dest, extent) {
-          var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
             return this.zoomToExtent(null, ol3d, extent);
-          } else {
-            var size = map.getSize();
-            var source = map.getView().getCenter();
-            var sourceRes = map.getView().getResolution();
-            var dist = Math.sqrt(Math.pow(source[0] - dest[0], 2),
-                Math.pow(source[1] - dest[1], 2));
-            var duration = Math.min(Math.sqrt(300 + dist / sourceRes * 1000),
-                3000);
-            var destRes = Math.max(
-              (extent[2] - extent[0]) / size[0],
-              (extent[3] - extent[1]) / size[1]);
-            destRes = Math.max(map.getView().constrainResolution(destRes, 0, 0),
-                2.5);
-            var start = +new Date();
-            var pan = ol.animation.pan({
-              duration: duration,
-              source: source,
-              start: start
-            });
-            var bounce = ol.animation.bounce({
-              duration: duration,
-              resolution: Math.max(sourceRes, dist / 1000,
-                  // needed to don't have up an down and up again in zoom
-                  destRes * 1.2),
-              start: start
-            });
-            var zoom = ol.animation.zoom({
-              resolution: sourceRes,
-              duration: duration,
-              start: start
-            });
-            map.beforeRender(pan, zoom, bounce);
-            map.getView().setCenter(dest);
-            map.getView().setResolution(destRes);
-            defer.resolve();
           }
-          return defer.promise;
+          var deferPan = $q.defer();
+          var deferZoom = $q.defer();
+          var size = map.getSize();
+          var source = map.getView().getCenter();
+          var sourceRes = map.getView().getResolution();
+          var dist = Math.sqrt(Math.pow(source[0] - dest[0], 2),
+              Math.pow(source[1] - dest[1], 2));
+          var duration = Math.min(Math.sqrt(300 + dist / sourceRes * 1000),
+              3000);
+          var destRes = Math.max(
+            (extent[2] - extent[0]) / size[0],
+            (extent[3] - extent[1]) / size[1]);
+          destRes = Math.max(map.getView().constrainResolution(destRes, 0, 0),
+              2.5);
+          var view = map.getView();
+          view.animate({
+            center: dest,
+            duration: duration
+          }, function() {
+            deferPan.resolve();
+            $rootScope.$digest();
+          });
+          view.animate({
+            // destRes * 1.2 needed to don't have up an down and up again
+            // in zoom.
+            resolution: Math.max(sourceRes, dist / 1000, destRes * 1.2),
+            duration: duration / 2
+          }, {
+            resolution: destRes,
+            duration: duration / 2
+          }, function(success) {
+            deferZoom.resolve();
+            $rootScope.$digest();
+          });
+          return $q.all([deferPan.promise, deferZoom.promise]);
         },
 
         // Test if a layer is a KML layer added by the ImportKML tool or
@@ -1442,34 +1503,34 @@ goog.require('ga_urlutils_service');
          * Reset map rotation to North
          */
         resetMapToNorth: function(map, ol3d) {
-          var currentRotation, scene;
+          var defer = $q.defer();
           if (ol3d && ol3d.getEnabled()) {
-            scene = ol3d.getCesiumScene();
-            currentRotation = -scene.camera.heading;
-          } else {
-            currentRotation = map.getView().getRotation();
-          }
-          while (currentRotation < -Math.PI) {
-            currentRotation += 2 * Math.PI;
-          }
-          while (currentRotation > Math.PI) {
-            currentRotation -= 2 * Math.PI;
-          }
+            var scene = ol3d.getCesiumScene();
+            var currentRotation = -scene.camera.heading;
 
-          if (scene) {
+            while (currentRotation < -Math.PI) {
+              currentRotation += 2 * Math.PI;
+            }
+
+            while (currentRotation > Math.PI) {
+              currentRotation -= 2 * Math.PI;
+            }
             var bottom = olcs.core.pickBottomPoint(scene);
             if (bottom) {
               olcs.core.setHeadingUsingBottomCenter(scene, currentRotation,
                   bottom);
             }
+            defer.resolve();
           } else {
-            map.beforeRender(ol.animation.rotate({
-              rotation: currentRotation,
-              duration: 1000,
+            map.getView().animate({
+              rotation: 0,
               easing: ol.easing.easeOut
-            }));
-            map.getView().setRotation(0);
+            }, function() {
+              defer.resolve();
+              $rootScope.$digest();
+            });
           }
+          return defer.promise;
         },
 
         intersectWithDefaultExtent: function(extent) {

@@ -2,6 +2,7 @@ goog.provide('ga_contextpopup_directive');
 
 goog.require('ga_networkstatus_service');
 goog.require('ga_permalink');
+goog.require('ga_reframe_service');
 goog.require('ga_what3words_service');
 goog.require('gf3_plugins');
 (function() {
@@ -9,6 +10,7 @@ goog.require('gf3_plugins');
   var module = angular.module('ga_contextpopup_directive', [
     'ga_networkstatus_service',
     'ga_permalink',
+    'ga_reframe_service',
     'ga_what3words_service',
     'pascalprecht.translate'
   ]);
@@ -16,7 +18,7 @@ goog.require('gf3_plugins');
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
           gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions,
-          gaWhat3Words, gf3Plugins) {
+          gaWhat3Words, gaReframe, gf3Plugins) {
         return {
           restrict: 'A',
           replace: true,
@@ -105,17 +107,6 @@ goog.require('gf3_plugins');
               coordSecondaryEpsg = ol.proj.transform(coordDefaultEpsg,
                   gaGlobalOptions.defaultEpsg, gaGlobalOptions.secondaryEpsg);
 
-              // recenter on phones
-              /* istanbul ignore next */
-              if (gaBrowserSniffer.phone) {
-                var pan = ol.animation.pan({
-                  duration: 200,
-                  source: view.getCenter()
-                });
-                map.beforeRender(pan);
-                view.setCenter(coordDefaultEpsg);
-              }
-
               scope.coordDefaultEpsg = formatCoordinates(coordDefaultEpsg, 1);
               scope.coord4326 = ol.coordinate.format(coord4326, '{y}, {x}', 5);
               var coord4326String = ol.coordinate.toStringHDMS(coord4326, 3).
@@ -172,8 +163,8 @@ goog.require('gf3_plugins');
                         formatCoordinates(coordSecondaryEpsg, 1);
                   });
 
-                  updateW3W();
                 }
+                  updateW3W();
               });
 
 
@@ -187,10 +178,15 @@ goog.require('gf3_plugins');
 
               updatePopupLinks();
 
-              /* istanbul ignore next: didn't find out a way to test this. */
-              view.once('change:center', function() {
-                hidePopover();
-              });
+              if (gaBrowserSniffer.phone) {
+                view.animate({
+                  center: coordDefaultEpsg,
+                  duration: 200
+                }, hidePopoverOnNextChange);
+
+              } else {
+                hidePopoverOnNextChange();
+              }
 
               overlay.setPosition(coordDefaultEpsg);
               showPopover();
@@ -254,6 +250,12 @@ goog.require('gf3_plugins');
               }
               hidePopover();
             };
+
+            function hidePopoverOnNextChange() {
+              view.once('change:center', function() {
+                hidePopover();
+              });
+            }
 
             function showPopover() {
               element.css('display', 'block');

@@ -152,7 +152,9 @@
   "compile": {
     "externs": [
       "externs/bingmaps.js",
+      "externs/cartodb.js",
       "externs/closure-compiler.js",
+      "externs/esrijson.js",
       "externs/geojson.js",
       "externs/oli.js",
       "externs/olx.js",

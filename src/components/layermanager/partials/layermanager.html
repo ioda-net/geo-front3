@@ -13,7 +13,7 @@
         {{layer.label}}
       </label>
       <div class="ga-layer-time" ng-if="layer.timeEnabled">
-        <button class="ga-btn badge" tabindex="1"
+        <button class="ga-btn badge"
                 ng-class="isDefaultValue(layer.time)"
                 ng-click="displayTimestamps($event, layer)">{{layer.time | gaTimeLabel:layer}}
         </button>

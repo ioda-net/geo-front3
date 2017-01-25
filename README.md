@@ -2,7 +2,7 @@
 
 Checkout the source code:
 
-    $ git clone https://github.com/ioda-net/mf-geoadmin3.git
+    $ git clone https://github.com/ioda-net/geo-front3.git
 
 View the [getting started](https://docs.geoportal.xyz/getting-started.html) to start with this project. To learn more specifically about the frontend, look at the [frontend page of the developer guide](https://docs.geoportal.xyz/dev/front.html). You can also look at [the documentation](https://docs.geoportal.xyz/).
 

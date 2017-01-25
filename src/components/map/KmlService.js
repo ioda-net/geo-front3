@@ -50,8 +50,8 @@ goog.require('ga_urlutils_service');
         }
       };
 
-      // Read a kml string then return a list of features.
-      var readFeatures = function(kml) {
+      // Sanitize KML changing href links if necessary
+      var sanitizeKml = function(kml) {
         // Replace all hrefs to prevent errors if image doesn't have
         // CORS headers. Exception for *.geo.admin.ch, *.bgdi.ch, google
         // markers icons (only https) and current domain
@@ -80,6 +80,12 @@ goog.require('ga_urlutils_service');
           /<href>https?:\/\/[a-z\d\.\-]*(bgdi|geo.admin)\.ch[a-zA-Z\d\-_\/]*img\/maki\/([a-z\-0-9]*-24@2x\.png)/g,
           '<href>' + gaGlobalOptions.apiUrl + '/color/255,0,0/$2'
         );
+
+        return kml;
+      };
+
+      // Read a kml string then return a list of features.
+      var readFeatures = function(kml) {
 
         // Create the parser
         setKmlFormat();
@@ -153,14 +159,6 @@ goog.require('ga_urlutils_service');
             image = gaStyleFactory.getStyle('kml').getImage();
           }
 
-          // TO FIX, caused by OL 3.19.0
-          // OL applies a default scale multiplier to 0.5
-          // https://github.com/openlayers/ol3/blob/master/src/ol/format/kml.js#L622
-          // https://github.com/openlayers/ol3/pull/5745
-          if (image && image.getScale() && image.getScale() != 1) {
-            image.setScale(Math.sqrt(image.getScale() * 2));
-          }
-
           // If the feature has name we display it on the map as Google does
           if (feature.get('name') && style.getText() &&
               style.getText().getScale() != 0) {
@@ -177,14 +175,6 @@ goog.require('ga_urlutils_service');
                   style.getText().getFill().getColor()),
               scale: style.getText().getScale()
             });
-
-            // TO FIX, caused by OL 3.19.0
-            // OL changes the formula of scale.
-            // https://github.com/openlayers/ol3/pull/5745/commits/e0d75555c5a110b24fe63e618966ac73993c198c#diff-b3122a19e97ec2c9c92546ce1e5bd101R539
-            // https://github.com/openlayers/ol3/pull/5745
-            if (text && text.getScale()) {
-              text.setScale(Math.sqrt(text.getScale()));
-            }
 
             fill = undefined;
             stroke = undefined;
@@ -249,6 +239,9 @@ goog.require('ga_urlutils_service');
             return deferred.promise;
           }
 
+          // Sanitize KML
+          kml = sanitizeKml(kml);
+
           // Read features available in a kml string, then create an ol layer.
           return readFeatures(kml).then(function(features) {
             var sanitizedFeatures = [];
@@ -265,6 +258,7 @@ goog.require('ga_urlutils_service');
               features: sanitizedFeatures,
               useSpatialIndex: !gaMapUtils.isStoredKmlLayer(options.id)
             });
+
             var layerOptions = {
               id: options.id,
               adminId: options.adminId,
@@ -293,6 +287,11 @@ goog.require('ga_urlutils_service');
             }
             gaDefinePropertiesForLayer(olLayer);
             olLayer.useThirdPartyData = true;
+
+            // Save the kml content for 3d parsing
+            olLayer.getSource().setProperties({
+              'kmlString': kml
+            });
 
             return olLayer;
           });
