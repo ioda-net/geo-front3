@@ -122,17 +122,19 @@ goog.require('ngeo.PrintUtils');
       if (gf3Plugins.communes) {
         // If we cannot get the commune name, launch the print anyway
         gf3Plugins.communes(mapCenter)
-            .then(doPrint, doPrint);
+            .then(function(response) {
+              doPrint(response.data.commune);
+        }, doPrint);
       } else {
         doPrint();
       }
 
-      function doPrint(data) {
+      function doPrint(commune) {
         // If the commune plugin is not activated, data is undefined.
         // If the commune plugin is actiaved, data.commune may be undefined (no
         // commune at given point. In this case, mapfish print expect an empty
         // string or will crash.
-        var commune = (data && data.commune) ? data.commune : '';
+        commune = commune || '';
         var username = $scope.username || '';
         var name = $scope.options.title ? $scope.options.title :
             $translate.instant($scope.options.titlePlaceholder);
