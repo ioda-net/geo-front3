@@ -194,6 +194,8 @@ ngeo.Print = function(url, $http, gaGlobalOptions) {
   this.$http_ = $http;
 
   this.printImagesUrl_ = gaGlobalOptions.printImagesUrl;
+  this.printBaseTextSize_ = gaGlobalOptions.printBaseTextSize || 10;
+  this.printBaseTextHaloSize_ = gaGlobalOptions.printBaseTextHaloSize || 1;
 };
 
 
@@ -790,9 +792,10 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
     var fontStyle = textStyle.getFont();
     if (goog.isDef(fontStyle)) {
       var font = fontStyle.split(' ');
+      var scale = textStyle.getScale() || 1;
       if (font.length >= 3) {
         symbolizer.fontWeight = font[0];
-        symbolizer.fontSize = font[1];
+        symbolizer.fontSize = this.printBaseTextSize_ * scale + 'px';
         symbolizer.fontFamily = font.splice(2).join(' ');
       }
     }
@@ -804,7 +807,7 @@ ngeo.Print.prototype.encodeTextStyle_ = function(symbolizers, textStyle) {
       symbolizer.haloOpacity = strokeColorRgba[3];
       var width = strokeStyle.getWidth();
       if (goog.isDef(width)) {
-        symbolizer.haloRadius = width;
+        symbolizer.haloRadius = this.printBaseTextHaloSize_;
       }
     }
 

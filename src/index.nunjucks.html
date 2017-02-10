@@ -781,6 +781,12 @@ itemscope itemtype="http://schema.org/WebApplication"
           defaultTerrain: '${default_terrain}',
           languages: ${geoportal.langs},
           feedbackRecipient: '${front.build.feedback_recipient}',
+          {% if print.base_text_size %}
+          printBaseTextSize: ${print.base_text_size},
+          {% endif %}
+          {% if print.base_text_halo_size %}
+          printBaseTextHaloSize: ${print.base_text_halo_size },
+          {% endif %}
           hostIsProd: hostIsProd
         });
 
