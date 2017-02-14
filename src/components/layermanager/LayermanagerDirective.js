@@ -343,6 +343,10 @@ goog.require('gf3');
             }
           });
         });
+
+        scope.edit = function(layer) {
+          scope.$emit('gf3EditLayer', layer);
+        };
       }
     };
   });

@@ -280,6 +280,8 @@ goog.require('ga_topic_service');
       if (active) {
         $scope.globals.feedbackPopupShown = false;
         $scope.globals.isSwipeActive = false;
+      } else {
+        $scope.vectorLayerToEdit = null;
       }
     });
     // Deactivate all tools when 3d is opening
@@ -420,6 +422,12 @@ goog.require('ga_topic_service');
         });
       });
     }
+
+    // Set up vector layer editing
+    $rootScope.$on('gf3EditLayer', function(evt, layer) {
+      $scope.vectorLayerToEdit = layer;
+      $scope.globals.isDrawActive = true;
+    });
 
   });
 })();

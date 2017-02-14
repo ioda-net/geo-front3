@@ -25,6 +25,9 @@
       </div>
       <button class="ga-icon ga-btn fa fa-user"
               ng-click="showWarning(layer)"></button>
+      <button class="ga-icon fa fa-edit"
+              ng-if="layer.editable"
+              ng-click="edit(layer)"></button>
       <button class="ga-icon fa fa-gear"></button>
     </div><!--ga-layer-infos-->
     <div class="ga-layer-tools">
