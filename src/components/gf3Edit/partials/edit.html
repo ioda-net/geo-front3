@@ -1,3 +1,8 @@
 <div>
-  {{ layer.label }}
+  <p ng-if="message">{{ message }}</p>
+
+  <div class="gf3-centered-text">
+    <button class="btn btn-danger" ng-click="cancel()" translate>Cancel</button>
+    <button class="btn btn-default" ng-click="save()" translate>Save</button>
+  </div>
 </div>

@@ -945,12 +945,17 @@ goog.require('ga_urlutils_service');
                   olSource.addFeatures(formatWFS.readFeatures(response));
                 });
               },
+              url: layer.wfsUrl,
               strategy: ol.loadingstrategy.bbox,
               epsg: epsg
             });
             olLayer = new ol.layer.Vector({
               source: olSource
             });
+            olLayer.featureNS = layer.featureNS;
+            olLayer.featureType = [layer.serverLayerName];
+            olLayer.srsName = epsg;
+            olLayer.featurePrefix = layer.featurePrefix;
           }
           if (angular.isDefined(olLayer)) {
             gaDefinePropertiesForLayer(olLayer);
