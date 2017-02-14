@@ -108,6 +108,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           'online': !globals.offline,
           'embed': globals.embed,
           'ga-draw-active': globals.isDrawActive,
+          'gf3-edit-active': globals.isEditActive,
           'ga-3d-active': globals.is3dActive
         }">
     <!-- The below conditional is ignored by >= IE10 and all other browsers -->
@@ -190,6 +191,21 @@ itemscope itemtype="http://schema.org/WebApplication"
       {# css animation doesnt work on pseudo element, let use this instead #}
       <div class="ga-offline-msg alert-danger" translate>offline_sorry</div>
     </div><!-- #drawModeHeader -->
+
+    <div id="editModeHeader" class="navbar navbar-fixed-top" ng-if="globals.isEditActive">
+      <div class="ga-centered ga-title">
+        <span translate>edit_mode_title</span>
+        <strong>{{ editedLayerLabel }}</strong>
+      </div>
+      <button class="btn btn-primary pull-left" ng-click="globals.isEditActive = false">
+        <i class="fa fa-arrow-left"></i>
+        <span translate>edit_back</span>
+      </button>
+      <span ga-help="9066"></span>
+      <button class="btn ga-menu-bt" ng-click="globals.pulldownShown=true" translate>menu</button>
+      {# css animation doesnt work on pseudo element, let use this instead #}
+      <div class="ga-offline-msg alert-danger" translate>offline_sorry</div>
+    </div><!-- #editModeHeader -->
 
 {% endif %}
     <div id="loader"></div>
@@ -310,7 +326,7 @@ itemscope itemtype="http://schema.org/WebApplication"
       <div gf3-features
            gf3-features-map="map"
            gf3-features-options="options"
-           gf3-features-active="!globals.isDrawActive && !globals.feedbackPopupShown"></div>
+           gf3-features-active="!globals.isDrawActive && !globals.feedbackPopupShown && !globals.isEditActive"></div>
     </div>
 {% if device != 'embed' %}
     <div  id="pulldown" ng-cloak translate-cloak
@@ -375,6 +391,20 @@ itemscope itemtype="http://schema.org/WebApplication"
           </div>
         </div> <!-- .panel -->
 
+        <!-- Edit (not displayed as an entry in the "normal" panel) -->
+        <div class="panel" ng-show="globals.isEditActive">
+          <div id="gf3-edit" ng-if="vectorLayerToEdit">
+            <div class="panel-body" ng-controller="Gf3EditController">
+              <div gf3-edit
+                   gf3-edit-map="map"
+                   gf3-edit-layer="vectorLayerToEdit"
+                   gf3-edit-options="options"
+                   gf3-edit-active="globals.isEditActive">
+              </div>
+            </div>
+          </div>
+        </div> <!-- .panel -->
+
         <!-- Tools -->
         <div class="panel">
           <a id="toolsHeading" class="panel-heading accordion-toggle collapsed"
@@ -408,7 +438,7 @@ itemscope itemtype="http://schema.org/WebApplication"
   {% endif %}
 
         <!-- Catalog -->
-        <div class="panel" ng-hide="globals.isDrawActive">
+        <div class="panel" ng-hide="globals.isDrawActive || globals.isEditActive">
           <div class="theme-toggle">
               <a class="topic-modal-toggle" data-toggle="modal" data-target="#topicSelector .modal" href="#">
               <span translate>choose_theme</span>
@@ -432,7 +462,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           </div>
         </div> <!-- .panel -->
 
-        <div class="panel">
+        <div class="panel" ng-hide="globals.isEditActive">
           <a id="selectionHeading" class="panel-heading accordion-toggle light collapsed"
              data-toggle="collapse" href="#selection"
              ga-collapsible-show="globals.selectionShown">

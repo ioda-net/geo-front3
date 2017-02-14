@@ -1,0 +1,99 @@
+@import "../components/gf3Edit/style/edit.less";
+
+
+.gf3-edit-active {
+
+  #header {
+    top: unit(-@header-height, px);
+  }
+
+  #draw .panel-body {
+
+    @media (max-width: @screen-phone) {
+      padding-top: 0;
+      padding-bottom: 5px;
+    }
+  }
+
+  #editModeHeader {
+    top: 0px;
+  }
+
+  #buttonGroup, #pulldown {
+    top: unit(@small-header-height, px);
+  }
+
+  #pulldown-content .panel-heading, #search-container {
+    display: none;
+  }
+
+  #pulldown-content {
+    top: unit(@small-header-height, px);
+
+    @media (max-width: @screen-phone) {
+      top: 0px;
+    }
+    .panel-body {
+      max-height: none;
+    }
+  }
+
+  #pulldown-content #share {
+    @media (max-width: @screen-phone) {
+      display: none!important;
+    }
+  }
+}
+
+
+// ***** EDIT  MODE HEADER
+#editModeHeader {
+  top: unit(-15-@small-header-height, px); //-15 for the shadow
+  height: unit(@small-header-height, px);
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+  padding: 6px 12px;
+  background-color: #e6e6e6;
+
+  .btn-primary {
+    margin-top: 1px;
+  }
+  .btn-primary .fa-arrow-left{
+    vertical-align: middle;
+  }
+
+  [ga-help] {
+    visibility: visible;
+    height: 100%;
+    float: left;
+    width: 30px;
+  }
+
+  .ga-title {
+    font-size: 2em;
+    line-height: 1.7em;
+    left: 260px;
+    right: 260px;
+
+    @media (max-width: @screen-tablet) {
+      left: 260px;
+      right: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      @media (max-width: @screen-phone) {
+        left: 50px;
+        right: 50px;
+      }
+    }
+  }
+
+  .fa-arrow-left + span {
+    padding-left: 5px;
+
+    @media (max-width: @screen-phone) {
+      display: none;
+    }
+  }
+}

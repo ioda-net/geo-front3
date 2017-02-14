@@ -272,6 +272,7 @@ goog.require('ga_topic_service');
       isFeatureTreeActive: false,
       isSwipeActive: false,
       is3dActive: startWith3D,
+      isEditActive: false,
       hostIsProd: gaGlobalOptions.hostIsProd
     };
 
@@ -426,7 +427,8 @@ goog.require('ga_topic_service');
     // Set up vector layer editing
     $rootScope.$on('gf3EditLayer', function(evt, layer) {
       $scope.vectorLayerToEdit = layer;
-      $scope.globals.isDrawActive = true;
+      $scope.editedLayerLabel = layer.label;
+      $scope.globals.isEditActive = true;
     });
 
   });
