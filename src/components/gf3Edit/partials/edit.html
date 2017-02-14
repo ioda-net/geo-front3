@@ -10,6 +10,16 @@
             }">
       <i class="fa fa-remove"></i>
     </button>
+    <button class="btn btn-success"
+            ng-class="{
+              'adding-feature': addingFeature,
+            }"
+            ng-click="toggleAddFeature()"
+            translate-attr="{
+              'title': 'add',
+            }">
+      <i class="fa fa-plus"></i>
+    </button>
   </div>
 
   <div class="gf3-buttons-bar">

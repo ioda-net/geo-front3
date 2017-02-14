@@ -20,7 +20,9 @@ goog.provide('gf3_edit_directive');
         var select;
         var interaction;
         var snap;
+        var add;
 
+        var addedFeatures;
         var updatedFeatures;
         var updatedFeaturesId;
         var deletedFeatures;
@@ -38,7 +40,8 @@ goog.provide('gf3_edit_directive');
               e.element.on('change', function(e) {
                 var feature = e.target;
                 var id = feature.getId();
-                if (updatedFeaturesId.indexOf(id) === -1) {
+                // Newly added features don't have an id yet.
+                if (updatedFeaturesId.indexOf(id) === -1 && id) {
                   updatedFeatures.push(feature);
                   updatedFeaturesId.push(id);
                 }
@@ -65,7 +68,45 @@ goog.provide('gf3_edit_directive');
           }
         });
 
+        scope.addingFeature = false;
+        scope.$watch('addingFeature', function(adding) {
+          if (adding) {
+            var source = scope.layer.getSource();
+
+            switch (scope.layer.geometry) {
+              case 'POINT':
+                add = new ol.interaction.Draw({
+                  type: 'Point',
+                  source: source
+                });
+                break;
+              case 'POLYGON':
+                add = new ol.interaction.Draw({
+                  type: 'Polygon',
+                  source: source
+                });
+                break;
+              case 'LINE':
+              case 'LINESTRING':
+              case 'LINE_STRING':
+                add = new ol.interaction.Draw({
+                  type: 'LineString',
+                  source: source
+                });
+                break;
+            }
+
+            add.on('drawend', function(e) {
+              addedFeatures.push(e.feature);
+            });
+            scope.map.addInteraction(add);
+          } else {
+            scope.map.removeInteraction(add);
+          }
+        });
+
         function clearModified() {
+          addedFeatures = [];
           updatedFeatures = [];
           updatedFeaturesId = [];
           deletedFeatures = [];
@@ -87,7 +128,8 @@ goog.provide('gf3_edit_directive');
             featurePrefix: scope.layer.featurePrefix
           };
           var node = formatWFS.writeTransaction(
-              null, updatedFeatures, deletedFeatures, serializeOptions);
+              addedFeatures, updatedFeatures,
+              deletedFeatures, serializeOptions);
           scope.message = $translate.instant('edit_saving');
 
           $http({
@@ -121,6 +163,10 @@ goog.provide('gf3_edit_directive');
           deletedFeatures.push(scope.selectedFeature);
           deletedFeaturesId.push(id);
           scope.selectedFeature = null;
+        };
+
+        scope.toggleAddFeature = function() {
+          scope.addingFeature = !scope.addingFeature;
         };
       }
     };
