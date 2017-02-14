@@ -24,9 +24,7 @@ goog.provide('gf3_edit_directive');
 
         var addedFeatures;
         var updatedFeatures;
-        var updatedFeaturesId;
         var deletedFeatures;
-        var deletedFeaturesId;
 
         scope.$watch('isActive', function(active) {
           if (active) {
@@ -41,9 +39,8 @@ goog.provide('gf3_edit_directive');
                 var feature = e.target;
                 var id = feature.getId();
                 // Newly added features don't have an id yet.
-                if (updatedFeaturesId.indexOf(id) === -1 && id) {
+                if (updatedFeatures.indexOf(feature) === -1 && id) {
                   updatedFeatures.push(feature);
-                  updatedFeaturesId.push(id);
                 }
               });
             });
@@ -109,9 +106,7 @@ goog.provide('gf3_edit_directive');
         function clearModified() {
           addedFeatures = [];
           updatedFeatures = [];
-          updatedFeaturesId = [];
           deletedFeatures = [];
-          deletedFeaturesId = [];
         }
 
         scope.cancel = function() {
@@ -152,17 +147,17 @@ goog.provide('gf3_edit_directive');
         scope.deleteFeature = function() {
           select.getFeatures().clear();
 
-          var id = scope.selectedFeature.getId();
-          if (updatedFeaturesId.indexOf(id) > -1) {
-            var index = updatedFeaturesId.indexOf(id);
+          if (updatedFeatures.indexOf(scope.selectedFeature) > -1) {
+            var index = updatedFeatures.indexOf(scope.selectedFeature);
             updatedFeatures.splice(index, 1);
-            updatedFeaturesId.splice(index, 1);
+          } else if (addedFeatures.indexOf(scope.selectedFeature) > -1) {
+            var index = addedFeatures.indexOf(scope.selectedFeature);
+            addedFeatures.splice(index, 1);
           }
 
           scope.layer.getSource().removeFeature(scope.selectedFeature);
 
           deletedFeatures.push(scope.selectedFeature);
-          deletedFeaturesId.push(id);
           scope.selectedFeature = null;
         };
 
