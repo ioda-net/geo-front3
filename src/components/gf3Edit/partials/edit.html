@@ -1,7 +1,18 @@
 <div>
   <p ng-if="message">{{ message }}</p>
 
-  <div class="gf3-centered-text">
+  <div class="gf3-buttons-bar">
+    <button class="btn btn-danger"
+            ng-click="deleteFeature()"
+            ng-disabled="!selectedFeature"
+            translate-attr="{
+              'title': 'remove',
+            }">
+      <i class="fa fa-remove"></i>
+    </button>
+  </div>
+
+  <div class="gf3-buttons-bar">
     <button class="btn btn-danger" ng-click="cancel()" translate>Cancel</button>
     <button class="btn btn-default" ng-click="save()" translate>Save</button>
   </div>

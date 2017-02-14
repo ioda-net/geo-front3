@@ -23,6 +23,8 @@ goog.provide('gf3_edit_directive');
 
         var updatedFeatures;
         var updatedFeaturesId;
+        var deletedFeatures;
+        var deletedFeaturesId;
 
         scope.$watch('isActive', function(active) {
           if (active) {
@@ -32,6 +34,7 @@ goog.provide('gf3_edit_directive');
               }
             });
             select.getFeatures().on('add', function(e) {
+              scope.selectedFeature = e.element;
               e.element.on('change', function(e) {
                 var feature = e.target;
                 var id = feature.getId();
@@ -65,6 +68,8 @@ goog.provide('gf3_edit_directive');
         function clearModified() {
           updatedFeatures = [];
           updatedFeaturesId = [];
+          deletedFeatures = [];
+          deletedFeaturesId = [];
         }
 
         scope.cancel = function() {
@@ -82,7 +87,7 @@ goog.provide('gf3_edit_directive');
             featurePrefix: scope.layer.featurePrefix
           };
           var node = formatWFS.writeTransaction(
-              null, updatedFeatures, null, serializeOptions);
+              null, updatedFeatures, deletedFeatures, serializeOptions);
           scope.message = $translate.instant('edit_saving');
 
           $http({
@@ -99,6 +104,23 @@ goog.provide('gf3_edit_directive');
           }, function() {
             scope.message = $translate.instant('edit_save_error');
           });
+        };
+
+        scope.deleteFeature = function() {
+          select.getFeatures().clear();
+
+          var id = scope.selectedFeature.getId();
+          if (updatedFeaturesId.indexOf(id) > -1) {
+            var index = updatedFeaturesId.indexOf(id);
+            updatedFeatures.splice(index, 1);
+            updatedFeaturesId.splice(index, 1);
+          }
+
+          scope.layer.getSource().removeFeature(scope.selectedFeature);
+
+          deletedFeatures.push(scope.selectedFeature);
+          deletedFeaturesId.push(id);
+          scope.selectedFeature = null;
         };
       }
     };
