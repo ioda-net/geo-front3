@@ -65,6 +65,7 @@ goog.provide('gf3_edit_directive');
             scope.map.removeInteraction(select);
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
+            scope.addingFeature = false;
           }
         });
 
