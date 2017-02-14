@@ -157,8 +157,12 @@ goog.provide('gf3_edit_directive');
 
           scope.layer.getSource().removeFeature(scope.selectedFeature);
 
-          deletedFeatures.push(scope.selectedFeature);
-          scope.selectedFeature = null;
+          // Newly added features don't have an id and must not be in the
+          // request for the WFS server.
+          if (scope.selectedFeature.getId()) {
+            deletedFeatures.push(scope.selectedFeature);
+            scope.selectedFeature = null;
+          }
         };
 
         scope.toggleAddFeature = function() {
