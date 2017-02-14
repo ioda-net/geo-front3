@@ -916,6 +916,41 @@ goog.require('ga_urlutils_service');
             if (!layer.updateDelay) {
               setLayerSource();
             }
+          } else if (layer.type === 'wfs') {
+            var epsg = layer.epsg || gaGlobalOptions.defaultEpsg;
+            var formatWFS;
+            switch (layer.version) {
+              case '1.1.0':
+                 formatWFS = new ol.format.WFS();
+                 break;
+               case '1.0.0':
+                 formatWFS = new ol.format.WFS({
+                   gmlFormat: new ol.format.GML2()
+                 });
+                 break;
+            }
+            olSource = new ol.source.Vector({
+              loader: function(extent) {
+                $.ajax(layer.wfsUrl, {
+                  type: 'GET',
+                  data: {
+                    service: 'WFS',
+                    version: '1.1.0',
+                    request: 'GetFeature',
+                    typename: layer.serverLayerName,
+                    srsname: epsg,
+                    bbox: extent.join(',') + ',' + epsg
+                  }
+                }).done(function(response) {
+                  olSource.addFeatures(formatWFS.readFeatures(response));
+                });
+              },
+              strategy: ol.loadingstrategy.bbox,
+              epsg: epsg
+            });
+            olLayer = new ol.layer.Vector({
+              source: olSource
+            });
           }
           if (angular.isDefined(olLayer)) {
             gaDefinePropertiesForLayer(olLayer);
