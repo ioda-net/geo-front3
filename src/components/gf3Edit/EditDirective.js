@@ -3,7 +3,8 @@ goog.provide('gf3_edit_directive');
 (function() {
   var module = angular.module('gf3_edit_directive', []);
 
-  module.directive('gf3Edit', function($http, $translate) {
+  module.directive('gf3Edit', function($document, $http, $translate,
+      gaDebounce, gaBrowserSniffer) {
     return {
       restrict: 'A',
       templateUrl: 'components/gf3Edit/partials/edit.html',
@@ -17,8 +18,12 @@ goog.provide('gf3_edit_directive');
       link: function(scope) {
         var formatWFS = new ol.format.WFS();
         var xs = new XMLSerializer();
+        var layerFilter = function(layer) {
+          return layer === scope.layer;
+        };
 
         var select;
+        var deregSelectPointerEvts = [];
         var interaction;
         var snap;
         var add;
@@ -27,15 +32,26 @@ goog.provide('gf3_edit_directive');
         var updatedFeatures;
         var deletedFeatures;
 
+        var cssPointer = 'ga-pointer';
+        var cssGrab = 'ga-grab';
+        var cssGrabbing = 'ga-grabbing';
+        var mapDiv = $(scope.map.getTarget());
+
         scope.$watch('isActive', function(active) {
           if (active) {
             select = new ol.interaction.Select({
-              layers: function(layer) {
-                return layer === scope.layer;
-              }
+              layers: layerFilter
             });
+            if (!gaBrowserSniffer.mobile) {
+              deregSelectPointerEvts = scope.map.on([
+                'pointerdown',
+                'pointerup',
+                'pointermove'
+              ], function(evt) {
+                updateCursorAndTooltipsDebounced(evt);
+              });
+            }
             select.getFeatures().on('add', function(e) {
-              scope.selectedFeature = e.element;
               e.element.on('change', function(e) {
                 var feature = e.target;
                 var id = feature.getId();
@@ -46,9 +62,17 @@ goog.provide('gf3_edit_directive');
                 }
               });
             });
+            select.setActive(false);
+            select.setActive(true);
 
             interaction = new ol.interaction.Modify({
               features: select.getFeatures()
+            });
+            interaction.on('modifystart', function() {
+              mapDiv.addClass(cssGrabbing);
+            });
+            interaction.on('modifyend', function() {
+              mapDiv.removeClass(cssGrabbing);
             });
 
             snap = new ol.interaction.Snap({
@@ -61,6 +85,10 @@ goog.provide('gf3_edit_directive');
 
             clearModified();
           } else {
+            deregSelectPointerEvts.forEach(function(item) {
+              ol.Observable.unByKey(item);
+            });
+            select.getFeatures().clear();
             scope.map.removeInteraction(select);
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
@@ -179,6 +207,48 @@ goog.provide('gf3_edit_directive');
         scope.toggleAddFeature = function() {
           scope.addingFeature = !scope.addingFeature;
         };
+
+
+        // Change cursor style on mouse move, only on desktop
+        var updateCursorAndTooltips = function(evt) {
+          if (mapDiv.hasClass(cssGrabbing)) {
+            mapDiv.removeClass(cssGrab);
+            return;
+          }
+          var hoverSelectableFeature = false;
+          var hoverSelectedFeature = false;
+
+          // Try to find a selectable feature
+          scope.map.forEachFeatureAtPixel(
+              evt.pixel,
+              function(feature, layer) {
+                if (evt.type === 'pointerdown') {
+                  scope.selectedFeature = feature;
+                }
+
+                if (scope.selectedFeature === feature) {
+                  hoverSelectedFeature = true;
+                } else {
+                  hoverSelectableFeature = true;
+                }
+              }, {
+            layerFilter: layerFilter
+          }
+          );
+
+          if (hoverSelectableFeature) {
+            mapDiv.addClass(cssPointer);
+          } else {
+            mapDiv.removeClass(cssPointer);
+          }
+          if (hoverSelectedFeature) {
+            mapDiv.addClass(cssGrab);
+          } else {
+            mapDiv.removeClass(cssGrab);
+          }
+        };
+        var updateCursorAndTooltipsDebounced = gaDebounce.debounce(
+            updateCursorAndTooltips, 10, false, false);
       }
     };
   });
