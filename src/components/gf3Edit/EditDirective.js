@@ -107,6 +107,7 @@ goog.provide('gf3_edit_directive');
           addedFeatures = [];
           updatedFeatures = [];
           deletedFeatures = [];
+          scope.selectedFeature = null;
         }
 
         scope.cancel = function() {
