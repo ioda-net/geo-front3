@@ -11,6 +11,7 @@ goog.provide('gf3_edit_directive');
         map: '=gf3EditMap',
         options: '=gf3EditOptions',
         layer: '=gf3EditLayer',
+        infos: '=gf3EditInfos',
         isActive: '=gf3EditActive'
       },
       link: function(scope) {
@@ -40,6 +41,7 @@ goog.provide('gf3_edit_directive');
                 var id = feature.getId();
                 // Newly added features don't have an id yet.
                 if (updatedFeatures.indexOf(feature) === -1 && id) {
+                  scope.infos.dirty = true;
                   updatedFeatures.push(feature);
                 }
               });
@@ -63,6 +65,10 @@ goog.provide('gf3_edit_directive');
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
             scope.addingFeature = false;
+
+            if (scope.infos.dirty) {
+              scope.layer.getSource().clear();
+            }
           }
         });
 
@@ -95,6 +101,7 @@ goog.provide('gf3_edit_directive');
             }
 
             add.on('drawend', function(e) {
+              scope.infos.dirty = true;
               addedFeatures.push(e.feature);
             });
             scope.map.addInteraction(add);
@@ -108,11 +115,13 @@ goog.provide('gf3_edit_directive');
           updatedFeatures = [];
           deletedFeatures = [];
           scope.selectedFeature = null;
+          scope.infos.dirty = false;
         }
 
         scope.cancel = function() {
           select.getFeatures().clear();
           scope.layer.getSource().clear();
+          clearModified();
         };
 
         scope.save = function() {
@@ -163,6 +172,7 @@ goog.provide('gf3_edit_directive');
           if (scope.selectedFeature.getId()) {
             deletedFeatures.push(scope.selectedFeature);
             scope.selectedFeature = null;
+            scope.infos.dirty = true;
           }
         };
 

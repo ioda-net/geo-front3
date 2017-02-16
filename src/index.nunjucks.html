@@ -197,7 +197,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         <span translate>edit_mode_title</span>
         <strong>{{ editedLayerLabel }}</strong>
       </div>
-      <button class="btn btn-primary pull-left" ng-click="globals.isEditActive = false">
+      <button class="btn btn-primary pull-left" ng-click="quitEditMode()">
         <i class="fa fa-arrow-left"></i>
         <span translate>edit_back</span>
       </button>
@@ -399,6 +399,7 @@ itemscope itemtype="http://schema.org/WebApplication"
                    gf3-edit-map="map"
                    gf3-edit-layer="vectorLayerToEdit"
                    gf3-edit-options="options"
+                   gf3-edit-infos="globals.gf3EditInfos"
                    gf3-edit-active="globals.isEditActive">
               </div>
             </div>

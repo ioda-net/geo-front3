@@ -429,7 +429,18 @@ goog.require('ga_topic_service');
       $scope.vectorLayerToEdit = layer;
       $scope.editedLayerLabel = layer.label;
       $scope.globals.isEditActive = true;
+      $scope.globals.gf3EditInfos = {};
     });
+
+    $scope.quitEditMode = function() {
+      if ($scope.globals.gf3EditInfos.dirty) {
+        if (confirm($translate.instant('edit_unsaved_changse'))) {
+          $scope.globals.isEditActive = false;
+        }
+      } else {
+        $scope.globals.isEditActive = false;
+      }
+    };
 
   });
 })();

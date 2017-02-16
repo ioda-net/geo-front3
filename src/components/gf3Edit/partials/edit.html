@@ -23,7 +23,7 @@
   </div>
 
   <div class="gf3-buttons-bar">
-    <button class="btn btn-danger" ng-click="cancel()" translate>Cancel</button>
-    <button class="btn btn-default" ng-click="save()" translate>Save</button>
+    <button class="btn btn-danger" ng-click="cancel()" ng-disabled="!infos.dirty" translate>Cancel</button>
+    <button class="btn btn-default" ng-click="save()" ng-disabled="!infos.dirty" translate>Save</button>
   </div>
 </div>
