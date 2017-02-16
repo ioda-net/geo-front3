@@ -27,6 +27,11 @@ goog.provide('gf3_edit_directive');
         var interaction;
         var snap;
         var add;
+        var keyPressedCb = function(event) {
+          if (event.keyCode === 46 && scope.selectedFeature) {  // Delete key
+            scope.deleteFeature();
+          }
+        };
 
         var addedFeatures;
         var updatedFeatures;
@@ -82,6 +87,7 @@ goog.provide('gf3_edit_directive');
             scope.map.addInteraction(select);
             scope.map.addInteraction(interaction);
             scope.map.addInteraction(snap);
+            $document.on('keyup', keyPressedCb);
 
             clearModified();
           } else {
@@ -92,6 +98,7 @@ goog.provide('gf3_edit_directive');
             scope.map.removeInteraction(select);
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
+            $document.off('keyup', keyPressedCb);
             scope.addingFeature = false;
 
             if (scope.infos.dirty) {
