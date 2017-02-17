@@ -1,0 +1,290 @@
+From 857c6994043110c99392dc3258d1b45665c0dd22 Mon Sep 17 00:00:00 2001
+From: Julien Enselme <julien.enselme@ioda.net>
+Date: Fri, 17 Feb 2017 15:07:56 +0100
+Subject: [PATCH] Add support for WFS 1.0.0 to ol.format.WFS#writeTransaction
+
+- Add a version property to olx.format.WFSWriteTransactionOptions to set
+the WFS protocol version to use
+- Use the specified version to use the correct schema and version in the
+GML request
+- Use the version to select the proper GML serializer
+---
+ externs/olx.js                                     |  9 ++++
+ src/ol/format/wfs.js                               | 55 +++++++++++++++++-----
+ test/spec/ol/format/wfs.test.js                    | 44 +++++++++++++++++
+ .../ol/format/wfs/TransactionMultiVersion100.xml   | 37 +++++++++++++++
+ 4 files changed, 132 insertions(+), 13 deletions(-)
+ create mode 100644 test/spec/ol/format/wfs/TransactionMultiVersion100.xml
+
+diff --git a/externs/olx.js b/externs/olx.js
+index 7887eec..8bcb73e 100644
+--- a/externs/olx.js
++++ b/externs/olx.js
+@@ -2348,6 +2348,15 @@ olx.format.WFSWriteTransactionOptions.prototype.gmlOptions;
+ 
+ 
+ /**
++ * WFS version to use for the transaction. Can be either `1.0.0` or `1.1.0`.
++ * Default is `1.1.0`.
++ * @type {string|undefined}
++ * @api
++ */
++olx.format.WFSWriteTransactionOptions.prototype.version;
++
++
++/**
+  * @typedef {{splitCollection: (boolean|undefined)}}
+  */
+ olx.format.WKTOptions;
+diff --git a/src/ol/format/wfs.js b/src/ol/format/wfs.js
+index 814d3ee..933b30d 100644
+--- a/src/ol/format/wfs.js
++++ b/src/ol/format/wfs.js
+@@ -2,6 +2,7 @@ goog.provide('ol.format.WFS');
+ 
+ goog.require('ol');
+ goog.require('ol.asserts');
++goog.require('ol.format.GML2');
+ goog.require('ol.format.GML3');
+ goog.require('ol.format.GMLBase');
+ goog.require('ol.format.filter');
+@@ -53,7 +54,8 @@ ol.format.WFS = function(opt_options) {
+    * @type {string}
+    */
+   this.schemaLocation_ = options.schemaLocation ?
+-      options.schemaLocation : ol.format.WFS.SCHEMA_LOCATION;
++      options.schemaLocation :
++          ol.format.WFS.SCHEMA_LOCATIONS[ol.format.WFS.DEFAULT_VERSION];
+ 
+   ol.format.XMLFeature.call(this);
+ };
+@@ -90,10 +92,21 @@ ol.format.WFS.WFSNS = 'http://www.opengis.net/wfs';
+ 
+ /**
+  * @const
++ * @type {Object.<string, string>}
++ */
++ol.format.WFS.SCHEMA_LOCATIONS = {
++  '1.1.0': 'http://www.opengis.net/wfs ' +
++      'http://schemas.opengis.net/wfs/1.1.0/wfs.xsd',
++  '1.0.0': 'http://www.opengis.net/wfs ' +
++      'http://schemas.opengis.net/wfs/1.0.0/wfs.xsd'
++};
++
++
++/**
++ * @const
+  * @type {string}
+  */
+-ol.format.WFS.SCHEMA_LOCATION = 'http://www.opengis.net/wfs ' +
+-    'http://schemas.opengis.net/wfs/1.1.0/wfs.xsd';
++ol.format.WFS.DEFAULT_VERSION = '1.1.0';
+ 
+ 
+ /**
+@@ -360,9 +373,14 @@ ol.format.WFS.writeFeature_ = function(node, feature, objectStack) {
+   var context = objectStack[objectStack.length - 1];
+   var featureType = context['featureType'];
+   var featureNS = context['featureNS'];
++  var gmlVersion = context['gmlVersion'];
+   var child = ol.xml.createElementNS(featureNS, featureType);
+   node.appendChild(child);
+-  ol.format.GML3.prototype.writeFeatureElement(child, feature, objectStack);
++  if (gmlVersion === 2) {
++    ol.format.GML2.prototype.writeFeatureElement(child, feature, objectStack);
++  } else {
++    ol.format.GML3.prototype.writeFeatureElement(child, feature, objectStack);
++  }
+ };
+ 
+ 
+@@ -433,7 +451,8 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
+       }
+     }
+     ol.xml.pushSerializeAndPop(/** @type {ol.XmlNodeStackItem} */ (
+-        {node: node, 'srsName': context['srsName']}),
++      {'gmlVersion': context['gmlVersion'], node: node,
++        'srsName': context['srsName']}),
+         ol.format.WFS.TRANSACTION_SERIALIZERS_,
+         ol.xml.makeSimpleNodeFactory('Property'), values,
+         objectStack);
+@@ -450,14 +469,21 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
+  */
+ ol.format.WFS.writeProperty_ = function(node, pair, objectStack) {
+   var name = ol.xml.createElementNS(ol.format.WFS.WFSNS, 'Name');
++  var context = objectStack[objectStack.length - 1];
++  var gmlVersion = context['gmlVersion'];
+   node.appendChild(name);
+   ol.format.XSD.writeStringTextNode(name, pair.name);
+   if (pair.value !== undefined && pair.value !== null) {
+     var value = ol.xml.createElementNS(ol.format.WFS.WFSNS, 'Value');
+     node.appendChild(value);
+     if (pair.value instanceof ol.geom.Geometry) {
+-      ol.format.GML3.prototype.writeGeometryElement(value,
+-          pair.value, objectStack);
++      if (gmlVersion === 2) {
++        ol.format.GML2.prototype.writeGeometryElement(value,
++            pair.value, objectStack);
++      } else {
++        ol.format.GML3.prototype.writeGeometryElement(value,
++            pair.value, objectStack);
++      }
+     } else {
+       ol.format.XSD.writeStringTextNode(value, pair.value);
+     }
+@@ -851,8 +877,10 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+     options) {
+   var objectStack = [];
+   var node = ol.xml.createElementNS(ol.format.WFS.WFSNS, 'Transaction');
++  var version = options.version ? options.version : '1.1.0';
++  var gmlVersion = version === '1.0.0' ? 2 : 3;
+   node.setAttribute('service', 'WFS');
+-  node.setAttribute('version', '1.1.0');
++  node.setAttribute('version', version);
+   var baseObj;
+   /** @type {ol.XmlNodeStackItem} */
+   var obj;
+@@ -862,12 +890,13 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+       node.setAttribute('handle', options.handle);
+     }
+   }
++  var schemaLocation = ol.format.WFS.SCHEMA_LOCATIONS[version];
+   ol.xml.setAttributeNS(node, 'http://www.w3.org/2001/XMLSchema-instance',
+-      'xsi:schemaLocation', this.schemaLocation_);
++      'xsi:schemaLocation', schemaLocation);
+   if (inserts) {
+     obj = {node: node, 'featureNS': options.featureNS,
+       'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
+-      'srsName': options.srsName};
++      'gmlVersion': gmlVersion, 'srsName': options.srsName};
+     ol.obj.assign(obj, baseObj);
+     ol.xml.pushSerializeAndPop(obj,
+         ol.format.WFS.TRANSACTION_SERIALIZERS_,
+@@ -877,7 +906,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+   if (updates) {
+     obj = {node: node, 'featureNS': options.featureNS,
+       'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
+-      'srsName': options.srsName};
++      'gmlVersion': gmlVersion, 'srsName': options.srsName};
+     ol.obj.assign(obj, baseObj);
+     ol.xml.pushSerializeAndPop(obj,
+         ol.format.WFS.TRANSACTION_SERIALIZERS_,
+@@ -887,7 +916,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+   if (deletes) {
+     ol.xml.pushSerializeAndPop({node: node, 'featureNS': options.featureNS,
+       'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
+-      'srsName': options.srsName},
++      'gmlVersion': gmlVersion, 'srsName': options.srsName},
+     ol.format.WFS.TRANSACTION_SERIALIZERS_,
+     ol.xml.makeSimpleNodeFactory('Delete'), deletes,
+     objectStack);
+@@ -895,7 +924,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+   if (options.nativeElements) {
+     ol.xml.pushSerializeAndPop({node: node, 'featureNS': options.featureNS,
+       'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
+-      'srsName': options.srsName},
++      'gmlVersion': gmlVersion, 'srsName': options.srsName},
+     ol.format.WFS.TRANSACTION_SERIALIZERS_,
+     ol.xml.makeSimpleNodeFactory('Native'), options.nativeElements,
+     objectStack);
+diff --git a/test/spec/ol/format/wfs.test.js b/test/spec/ol/format/wfs.test.js
+index c0cd6ed..bb65e99 100644
+--- a/test/spec/ol/format/wfs.test.js
++++ b/test/spec/ol/format/wfs.test.js
+@@ -795,6 +795,50 @@ describe('ol.format.WFS', function() {
+     });
+   });
+ 
++  describe('when writing out a Transaction request', function() {
++    var text;
++    var filename = 'spec/ol/format/wfs/TransactionMultiVersion100.xml';
++    before(function(done) {
++      afterLoadText(filename, function(xml) {
++        text = xml;
++        done();
++      });
++    });
++
++    it('handles the WFS version', function() {
++      var format = new ol.format.WFS();
++      var insertFeature = new ol.Feature({
++        the_geom: new ol.geom.LineString([[1.1, 2], [3, 4.2]]),
++        foo: 'bar',
++        nul: null
++      });
++      insertFeature.setGeometryName('the_geom');
++      var inserts = [insertFeature];
++      var updateFeature = new ol.Feature({
++        the_geom: new ol.geom.LineString([[1.1, 2], [3, 4.2]]),
++        foo: 'bar',
++        // null value gets Property element with no Value
++        nul: null,
++        // undefined value means don't create a Property element
++        unwritten: undefined
++      });
++      updateFeature.setId('fid.42');
++      var updates = [updateFeature];
++
++      var deleteFeature = new ol.Feature();
++      deleteFeature.setId('fid.37');
++      var deletes = [deleteFeature];
++      var serialized = format.writeTransaction(inserts, updates, deletes, {
++        featureNS: 'http://www.openplans.org/topp',
++        featureType: 'states',
++        featurePrefix: 'topp',
++        version: '1.0.0'
++      });
++
++      expect(serialized).to.xmleql(ol.xml.parse(text));
++    });
++  });
++
+ 
+   describe('when writing out a GetFeature request', function() {
+     var text;
+diff --git a/test/spec/ol/format/wfs/TransactionMultiVersion100.xml b/test/spec/ol/format/wfs/TransactionMultiVersion100.xml
+new file mode 100644
+index 0000000..2f67d61
+--- /dev/null
++++ b/test/spec/ol/format/wfs/TransactionMultiVersion100.xml
+@@ -0,0 +1,37 @@
++<Transaction xmlns="http://www.opengis.net/wfs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" service="WFS" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/wfs.xsd">
++    <Insert>
++        <states xmlns="http://www.openplans.org/topp">
++            <the_geom>
++                <LineString xmlns="http://www.opengis.net/gml">
++                    <coordinates decimal="." cs="," ts=" ">1.1,2 3,4.2</coordinates>
++                </LineString>
++            </the_geom>
++            <foo>bar</foo>
++        </states>
++    </Insert>
++    <Update xmlns:wfs="http://www.opengis.net/wfs" typeName="topp:states" xmlns:topp="http://www.openplans.org/topp">
++        <Property>
++            <Name>the_geom</Name>
++            <Value>
++                <LineString xmlns="http://www.opengis.net/gml">
++                    <coordinates decimal="." cs="," ts=" ">1.1,2 3,4.2</coordinates>
++                </LineString>
++            </Value>
++        </Property>
++        <Property>
++            <Name>foo</Name>
++            <Value>bar</Value>
++        </Property>
++        <Property>
++            <Name>nul</Name>
++        </Property>
++        <Filter xmlns="http://www.opengis.net/ogc">
++            <FeatureId fid="fid.42"/>
++        </Filter>
++    </Update>
++    <Delete xmlns:wfs="http://www.opengis.net/wfs" typeName="topp:states" xmlns:topp="http://www.openplans.org/topp">
++        <Filter xmlns="http://www.opengis.net/ogc">
++            <FeatureId fid="fid.37"/>
++        </Filter>
++    </Delete>
++</Transaction>
+-- 
+2.9.3
+

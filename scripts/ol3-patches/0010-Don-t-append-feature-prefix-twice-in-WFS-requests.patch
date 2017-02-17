@@ -1,0 +1,95 @@
+From 711c0da01083d9f3bbf0be0a029f15d600fe5a95 Mon Sep 17 00:00:00 2001
+From: Julien Enselme <julien.enselme@ioda.net>
+Date: Fri, 17 Feb 2017 17:55:12 +0100
+Subject: [PATCH] Don't append feature prefix twice in WFS requests
+
+Some WFS servers like tinyOWS require the feature prefix to be in the
+feature type for the feature to be found (eg `prefix:layer`).
+
+The problem was, the prefix was always added to the feature type which
+gave us a type name like `prefix:prefix:feature` or
+`feature:prefix:feature`. The requests were then rejected by the WFS
+server.
+
+We now check if the feature type starts with the prefix. If it does, we
+don't append it again. If it doesn't we do.
+---
+ src/ol/format/wfs.js | 39 +++++++++++++++++++++++++++++++--------
+ 1 file changed, 31 insertions(+), 8 deletions(-)
+
+diff --git a/src/ol/format/wfs.js b/src/ol/format/wfs.js
+index 933b30d..8d1c102 100644
+--- a/src/ol/format/wfs.js
++++ b/src/ol/format/wfs.js
+@@ -410,10 +410,9 @@ ol.format.WFS.writeDelete_ = function(node, feature, objectStack) {
+   ol.asserts.assert(feature.getId() !== undefined, 26); // Features must have an id set
+   var featureType = context['featureType'];
+   var featurePrefix = context['featurePrefix'];
+-  featurePrefix = featurePrefix ? featurePrefix :
+-      ol.format.WFS.FEATURE_PREFIX;
+   var featureNS = context['featureNS'];
+-  node.setAttribute('typeName', featurePrefix + ':' + featureType);
++  var typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
++  node.setAttribute('typeName', typeName);
+   ol.xml.setAttributeNS(node, ol.format.WFS.XMLNS, 'xmlns:' + featurePrefix,
+       featureNS);
+   var fid = feature.getId();
+@@ -424,6 +423,25 @@ ol.format.WFS.writeDelete_ = function(node, feature, objectStack) {
+ 
+ 
+ /**
++ * @param {string|undefined} featurePrefix The prefix of the feature.
++ * @param {string} featureType The type of the feature.
++ * @returns {string} The value of the typeName property.
++ * @private
++ */
++ol.format.WFS.getTypeName_ = function(featurePrefix, featureType) {
++  featurePrefix = featurePrefix ? featurePrefix :
++      ol.format.WFS.FEATURE_PREFIX;
++  var prefix = featurePrefix + ':';
++  // The featureType already contains the prefix.
++  if (featureType.indexOf(prefix) === 0) {
++    return featureType;
++  } else {
++    return prefix + featureType;
++  }
++};
++
++
++/**
+  * @param {Node} node Node.
+  * @param {ol.Feature} feature Feature.
+  * @param {Array.<*>} objectStack Node stack.
+@@ -434,10 +452,9 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
+   ol.asserts.assert(feature.getId() !== undefined, 27); // Features must have an id set
+   var featureType = context['featureType'];
+   var featurePrefix = context['featurePrefix'];
+-  featurePrefix = featurePrefix ? featurePrefix :
+-      ol.format.WFS.FEATURE_PREFIX;
+   var featureNS = context['featureNS'];
+-  node.setAttribute('typeName', featurePrefix + ':' + featureType);
++  var typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
++  node.setAttribute('typeName', typeName);
+   ol.xml.setAttributeNS(node, ol.format.WFS.XMLNS, 'xmlns:' + featurePrefix,
+       featureNS);
+   var fid = feature.getId();
+@@ -538,8 +555,14 @@ ol.format.WFS.writeQuery_ = function(node, featureType, objectStack) {
+   var featureNS = context['featureNS'];
+   var propertyNames = context['propertyNames'];
+   var srsName = context['srsName'];
+-  var prefix = featurePrefix ? featurePrefix + ':' : '';
+-  node.setAttribute('typeName', prefix + featureType);
++  var typeName;
++  // If feature prefix is not defined, we must not use the default prefix.
++  if (featurePrefix) {
++    typeName = ol.format.WFS.getTypeName_(featurePrefix, featureType);
++  } else {
++    typeName = featureType;
++  }
++  node.setAttribute('typeName', typeName);
+   if (srsName) {
+     node.setAttribute('srsName', srsName);
+   }
+-- 
+2.9.3
+
