@@ -1,7 +1,15 @@
 goog.provide('gf3_edit_directive');
 
+goog.require('ga_browsersniffer_service');
+goog.require('ga_debounce_service');
+
 (function() {
-  var module = angular.module('gf3_edit_directive', []);
+  var module = angular.module('gf3_edit_directive', [
+    'pascalprecht.translate',
+    'ga_browsersniffer_service',
+    'ga_debounce_service'
+
+  ]);
 
   module.directive('gf3Edit', function($document, $http, $translate,
       gaDebounce, gaBrowserSniffer) {
