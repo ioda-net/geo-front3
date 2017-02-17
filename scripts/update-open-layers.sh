@@ -39,6 +39,8 @@ git submodule update --recursive --init --force
 ## Build ol
 cd ol
 git reset HEAD --hard
+# Remove untracked files
+git clean -df
 git fetch --all
 git checkout "${ol_version}"
 
