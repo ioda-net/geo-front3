@@ -935,7 +935,7 @@ goog.require('ga_urlutils_service');
                   type: 'GET',
                   data: {
                     service: 'WFS',
-                    version: '1.1.0',
+                    version: layer.version,
                     request: 'GetFeature',
                     typename: layer.serverLayerName,
                     srsname: epsg,
