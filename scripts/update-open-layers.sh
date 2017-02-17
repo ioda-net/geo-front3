@@ -53,6 +53,7 @@ cat "${geo_front_root}/scripts/ga-ol-view.exports" >> src/ol/view.js
 
 if [[ -d ${patch_dir} && -n "$(ls -A ${patch_dir})" ]]; then
   for patchfile in ${patch_dir}/*.patch; do
+      echo "Applying patch ${patchfile}"
       patch -p1 < "${patchfile}"
   done
 fi
