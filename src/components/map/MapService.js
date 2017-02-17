@@ -957,6 +957,7 @@ goog.require('ga_urlutils_service');
             olLayer.srsName = epsg;
             olLayer.featurePrefix = layer.featurePrefix;
             olLayer.geometry = layer.typeGeometry.toUpperCase();
+            olLayer.version = layer.version;
           }
           if (angular.isDefined(olLayer)) {
             gaDefinePropertiesForLayer(olLayer);

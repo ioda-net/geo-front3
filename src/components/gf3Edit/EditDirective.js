@@ -166,7 +166,8 @@ goog.provide('gf3_edit_directive');
             featureNS: scope.layer.featureNS,
             featureType: scope.layer.featureType,
             srsName: scope.layer.srsName,
-            featurePrefix: scope.layer.featurePrefix
+            featurePrefix: scope.layer.featurePrefix,
+            version: scope.layer.version
           };
           var node = formatWFS.writeTransaction(
               addedFeatures, updatedFeatures,
