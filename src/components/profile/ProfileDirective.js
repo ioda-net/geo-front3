@@ -10,7 +10,8 @@ goog.require('ga_profile_service');
   ]);
 
   module.directive('gaProfile', function($rootScope, $compile, $window,
-      $translate, gaDebounce, gaProfile, gaMapUtils, gaStyleFactory) {
+      $translate, gaDebounce, gaProfile, gaMapUtils, gaStyleFactory,
+       measureFilter, gaTimeFormatFilter) {
     return {
       restrict: 'A',
       templateUrl: 'components/profile/partials/profile.html',
@@ -24,8 +25,63 @@ goog.require('ga_profile_service');
         var profile, deregisterKey;
         var options = scope.options;
         var tooltipEl = element.find('.ga-profile-tooltip');
+        var containerEl = element.find('.ga-profile-graph');
         scope.coordinates = [0, 0];
         scope.unitX = '';
+        scope.diff = function() {
+           if (profile) {
+             return measureFilter(profile.elevDiff(), 'distance', 'm', 2, true);
+           }
+        };
+
+        scope.twoDiff = function() {
+           if (profile) {
+             return measureFilter(profile.twoElevDiff()[0],
+               'distance', 'm', 2, true);
+           }
+        };
+
+         scope.twoDiff1 = function() {
+             if (profile) {
+               return measureFilter(profile.twoElevDiff()[1],
+                 'distance', 'm', 2, true);
+             }
+          };
+
+
+        scope.elPoi = function() {
+           if (profile) {
+             return measureFilter(profile.elPoints()[0],
+               'distance', 'm', 2, true);
+           }
+        };
+
+        scope.elPoi1 = function() {
+           if (profile) {
+             return measureFilter(profile.elPoints()[1],
+               'distance', 'm', 2, true);
+           }
+        };
+
+        scope.dist = function() {
+           if (profile) {
+             return measureFilter(profile.distance(),
+               'distance', ['km', 'm'], 2, true);
+           }
+        };
+
+        scope.slopeDist = function() {
+           if (profile) {
+             return measureFilter(profile.slopeDistance(),
+               'distance', ['km', 'm'], 2, true);
+           }
+        };
+
+        scope.hikTime = function() {
+           if (profile) {
+             return gaTimeFormatFilter(profile.hikingTime());
+           }
+        };
 
         var onCreate = function(newProfile) {
           profile = newProfile;
@@ -38,7 +94,7 @@ goog.require('ga_profile_service');
           if (previousProfileEl.length > 0) {
             previousProfileEl.replaceWith(profileEl);
           } else {
-            element.append(profileEl);
+            containerEl.prepend(profileEl);
           }
           var areaChartPath = $window.d3.select('.ga-profile-area');
           attachPathListeners(areaChartPath);
@@ -49,6 +105,7 @@ goog.require('ga_profile_service');
             scope.unitX = prof.unitX;
           });
         };
+
         var updateDebounced = gaDebounce.debounce(update, 1000, false,
             false);
 
@@ -61,8 +118,8 @@ goog.require('ga_profile_service');
         $($window).on('resize', function() {
           if (profile) {
             updateSizeDebounced([
-              element.width(),
-              element.height()
+              containerEl.width(),
+              containerEl.height()
             ]);
           }
         });
@@ -73,8 +130,8 @@ goog.require('ga_profile_service');
              // we use applyAsync to wait the profile element to be
              // displayed
              scope.$applyAsync(function() {
-               options.width = element.width();
-               options.height = element.height();
+               options.width = containerEl.width();
+               options.height = containerEl.height();
                gaProfile.create(feature, options).then(onCreate);
              });
            } else {

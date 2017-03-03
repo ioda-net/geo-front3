@@ -314,18 +314,37 @@ goog.require('gf3_webdav_service');
 
           // Set the layer to modify if exist, otherwise we use an empty
           // layer
-          layer = createDefaultLayer(map, useTemporaryLayer);
+          layer = layer || createDefaultLayer(map, useTemporaryLayer);
           if (!useTemporaryLayer) {
 
-            // If there is a layer loaded from public.admin.ch, we use it for
-            // modification.
-            map.getLayers().forEach(function(item) {
-              var isWebdavLayer = gf3Webdav.isWebdavStoredKmlLayer(item,
-                  scope.webdav.url, scope.webdav.file);
-              if (gaMapUtils.isStoredKmlLayer(item) || isWebdavLayer) {
-                layer = item;
-              }
-            });
+            // On load, we choose to allow modification:
+            //   - on the KML loaded via an adminId
+            //   or
+            //   - on the last KML loaded from public.XXX.XXX.ch
+            //   or
+            //   - on the empty default layer
+            // In all case if an adminId property is set to the current draw
+            // layer, we don't change it anymore.
+            if (!layer.adminId) {
+              // If there is a layer loaded from public.admin.ch, we use it for
+              // modification.
+              map.getLayers().forEach(function(item) {
+                var isWebdavLayer = gf3Webdav.isWebdavStoredKmlLayer(item,
+                      scope.webdav.url, scope.webdav.file);
+                if (gaMapUtils.isStoredKmlLayer(item) || isWebdavLayer) {
+
+                  // We remove the empty draw layer added on opening of draw
+                  // directive before the good kml (loaded from KmlService)
+                  // was loaded.
+                  if (!gaMapUtils.isStoredKmlLayer(layer) &&
+                      map.getLayers().getArray().indexOf(layer) != -1) {
+                    map.removeLayer(layer);
+                  }
+
+                  layer = item;
+                }
+              });
+            }
 
             // Attach events to the source to update the KML file stored
             // and to remove overlays when necessary
@@ -357,6 +376,9 @@ goog.require('gf3_webdav_service');
           }
         };
 
+        // This variable keeps track of the existence or not of the layer before
+        // activation of the draw tool (kml loaded from permalink)
+        var wasNotOnMap;
         // Activate the component: active a tool if one was active when draw
         // has been deactivated.
         var activate = function() {
@@ -371,6 +393,13 @@ goog.require('gf3_webdav_service');
           while (unWatch.length) {
             unWatch.pop()();
           }
+
+          wasNotOnMap = map.getLayers().getArray().indexOf(layer) == -1;
+          // Re-add the layer if it's not already on map.
+          if (wasNotOnMap) {
+            map.addLayer(layer);
+          }
+
           // if a layer is added from other component (Import KML, Permalink,
           // DnD ...) and the currentlayer has no features, we define a
           // new layer.
@@ -378,9 +407,7 @@ goog.require('gf3_webdav_service');
             var added = evt.element;
             var isWebdavLayer = gf3Webdav.isWebdavStoredKmlLayer(added,
                 scope.webdav.url, scope.webdav.file);
-            if ((gaMapUtils.isStoredKmlLayer(evt.element) || isWebdavLayer) &&
-                layer.getSource().getFeatures().length === 0 &&
-                !useTemporaryLayer) {
+            if (gaMapUtils.isStoredKmlLayer(evt.element) || isWebdavLayer) {
               defineLayerToModify();
             }
           });
@@ -424,11 +451,11 @@ goog.require('gf3_webdav_service');
             ol.Observable.unByKey(unSourceEvents.pop());
           }
 
-          // Remove the layer if no features added
-          if (layer && (useTemporaryLayer ||
-              layer.getSource().getFeatures().length == 0)) {
+          // Remove the layer if no features added and if the layer was not on
+          // map before activation of the draw tool.
+          if (wasNotOnMap && (layer && (useTemporaryLayer ||
+              layer.getSource().getFeatures().length == 0))) {
             map.removeLayer(layer);
-            layer = null;
           }
           map.removeInteraction(select);
           map.removeInteraction(modify);
@@ -791,18 +818,6 @@ goog.require('gf3_webdav_service');
             // Do nothing if the layer does not exist
             return;
           }
-          if (layer.getSource().getFeatures().length == 0) {
-            //if no features to save, delete the file
-            if (layer.adminId) {
-              scope.statusMsgId = '';
-              gaFileStorage.del(layer.adminId).then(function() {
-                layer.adminId = undefined;
-                layer.url = undefined;
-              });
-            }
-            map.removeLayer(layer);
-            return;
-          }
           scope.statusMsgId = 'draw_file_saving';
           switch (scope.drawingSave.value) {
             case 'server':
@@ -829,7 +844,7 @@ goog.require('gf3_webdav_service');
               map.getView().getProjection());
           var id = layer.adminId ||
               gaFileStorage.getFileIdFromFileUrl(layer.url);
-          gaFileStorage.save(id, kmlString,
+          gaFileStorage.save(id, kmlString || '<kml></kml>',
               'application/vnd.google-earth.kml+xml').then(function(data) {
             scope.statusMsgId = 'draw_file_saved';
 

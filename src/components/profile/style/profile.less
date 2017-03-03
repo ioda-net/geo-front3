@@ -2,8 +2,8 @@
   position: relative;
   display: inline-block;
   width: 100%;
-  height: 145px;
-
+  height: 167px;
+ 
   button {
     position: absolute;
     right: 0;
@@ -25,29 +25,21 @@
     font-size: 11px;
   }
 
+  .ga-profile-graph {
+    overflow: hidden;
+    width: 100%;
+    height: 145px;
+  }
+
   .ga-profile-inner {
     overflow: hidden;
     width: 100%;
+    height: 145px;
   }
 
   .ga-profile-svg {
     display: block;
     margin: 0;
-  }
-
-  .ga-profile-icon {
-    font-family: FontAwesome;
-    font-size: 0.9em;
-  }
-
-  .ga-profile-icon-updown {
-    font-family: FontAwesome;
-    font-size: 1.5em;
-  }
-
-  .ga-profile-dist {
-    font-family: FontAwesome;
-    font-size: 1em;
   }
 
   .ga-profile-grid-x,
@@ -104,4 +96,147 @@
       left: 65px;
     }
   }
-}
+   
+  .ga-profile-icons {
+    width: auto;
+    display: inline-block;
+    overflow-x: auto;
+    overflow-y: hidden;
+    left: 60px;
+    position: absolute;
+   
+    @media only screen and (max-width: 780px){
+      left: 0px; 
+      width: 100%;
+      height: 30px;
+    }
+  }
+
+  .ga-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 700px;
+  }
+
+  .ga-wrapper div {
+    float: left;
+    color: black;
+  }
+      
+  .ga-profile-icon-text {
+    position: relative;
+    font-size: 0.9em;
+    width: 50px;
+  }
+
+  .fa::before {
+    position: relative;
+  }
+
+  .ga-profile-elevation-difference { 
+ 
+    .ga-profile-icon-text { 
+      padding-left: 1px;
+    }
+     
+    .fa-resize-vertical::before {
+      font-size: 0.9em;  
+    }
+  }
+  
+  .ga-profile-elevation-up {
+   
+    .ga-profile-icon-text {
+      padding-left: 4px;
+    }
+    
+    .fa-ga-elevation-up::before {
+      font-size: 1.5em; 
+      padding-left: 19px;   
+      bottom: 2px;    
+    }
+  }  
+
+  .ga-profile-elevation-down { 
+
+    .ga-profile-icon-text {
+      padding-left: 4px;
+    }
+    
+    .fa-ga-elevation-down::before {
+      font-size: 1.5em;
+      padding-left: 12px;
+      bottom: 2px;
+    }   
+  } 
+
+  .ga-profile-poi-up {
+ 
+    .ga-profile-icon-text {
+      padding-left: 18px;
+    }
+
+    .fa-chevron-up::before {
+      font-size: 0.9em;
+      padding-left: 1px;
+      top: 12px;
+    }
+  }
+
+  .ga-profile-poi-down {
+
+    .ga-profile-icon-text {
+      padding-left: 7px;
+    }
+
+    .fa-chevron-down::before {
+      font-size: 0.9em;
+      padding-left: 30px;
+    }
+  }
+
+  .ga-profile-distance {
+
+    .ga-profile-icon-text {
+      padding-left: 5px;
+    }
+
+    .fa-eye::before {
+      font-size: 1em;
+      padding-left: 20px;
+      top: 2px;
+    }
+
+    .fa-resize-horizontal::before {
+      font-size: 1em;
+      left: 3px;
+      top: 2px;
+    }
+  }
+
+  .ga-profile-slopeDist {
+
+    .ga-profile-icon-text {
+      padding-left: 3px;
+    }
+   
+    .fa-resize-horizontal::before {
+      font-size: 1em;
+      padding-left: 16px;
+      top: 2px;
+    }
+  }
+
+  .ga-profile-hikTime { 
+ 
+    .ga-profile-icon-text {
+      padding-left: 3px;
+      width: 100px;
+    }
+  
+    .fa-clock-o::before {
+      font-size: 0.9em;
+      padding-left: 19px;
+    }
+  }
+} 
