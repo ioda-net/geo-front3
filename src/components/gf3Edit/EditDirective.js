@@ -85,6 +85,13 @@ goog.require('ga_styles_service');
               mapDiv.addClass(cssGrabbing);
             });
             interaction.on('modifyend', function() {
+              var feature = scope.selectedFeature;
+              var id = feature.getId();
+              // Newly added features don't have an id yet.
+              if (updatedFeatures.indexOf(feature) === -1 && id) {
+                scope.infos.dirty = true;
+                updatedFeatures.push(feature);
+              }
               mapDiv.removeClass(cssGrabbing);
             });
 
