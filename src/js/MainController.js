@@ -434,7 +434,7 @@ goog.require('ga_topic_service');
 
     $scope.quitEditMode = function() {
       if ($scope.globals.gf3EditInfos.dirty) {
-        if (confirm($translate.instant('edit_unsaved_changse'))) {
+        if (confirm($translate.instant('edit_unsaved_changes'))) {
           $scope.globals.isEditActive = false;
         }
       } else {
