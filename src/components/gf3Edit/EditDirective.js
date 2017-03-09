@@ -283,10 +283,12 @@ goog.require('ga_styles_service');
             updateCursorAndTooltips, 10, false, false);
 
         function selectFeatureOnClick(evt) {
-           // Try to find a selectable feature
+          var featureAtPixel = false;
+          // Try to find a selectable feature
           scope.map.forEachFeatureAtPixel(
               evt.pixel,
               function(feature, layer) {
+                featureAtPixel = true;
                 selectFeature(feature);
 
                 // Stop feature detection on 1st feature found.
@@ -294,6 +296,10 @@ goog.require('ga_styles_service');
               }, {
             layerFilter: layerFilter
           });
+
+          if (!featureAtPixel) {
+            unselectFeature();
+          }
         }
         var selectFeatureOnClickDebounced =
             gaDebounce.debounce(selectFeatureOnClick, 10, false, false);
