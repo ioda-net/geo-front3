@@ -56,6 +56,8 @@ goog.require('ga_styles_service');
 
         scope.$watch('isActive', function(active) {
           if (active) {
+            scope.message = '';
+
             if (!gaBrowserSniffer.mobile) {
               deregSelectPointerEvts = scope.map.on([
                 'pointerdown',
