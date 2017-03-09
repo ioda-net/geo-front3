@@ -121,6 +121,12 @@ goog.require('ga_styles_service');
           }
         });
 
+        scope.$watch('infos.dirty', function(dirty) {
+          if (dirty) {
+            scope.message = 'edit_unsaved_changes';
+          }
+        });
+
         scope.addingFeature = false;
         scope.$watch('addingFeature', function(adding) {
           if (adding) {
