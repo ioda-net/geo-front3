@@ -12,7 +12,7 @@ goog.require('ga_styles_service');
 
   ]);
 
-  module.directive('gf3Edit', function($document, $http, $translate,
+  module.directive('gf3Edit', function($document, $http, $timeout, $translate,
       gaDebounce, gaBrowserSniffer, gaStyleFactory) {
     return {
       restrict: 'A',
@@ -144,7 +144,11 @@ goog.require('ga_styles_service');
             add.on('drawend', function(e) {
               scope.infos.dirty = true;
               addedFeatures.push(e.feature);
-              selectFeature(e.feature);
+              // Wait a little time before selecting feature: if we don't, the
+              // select style may not be applied.
+              $timeout(function() {
+                selectFeature(e.feature);
+              }, 50);
             });
             scope.map.addInteraction(add);
           } else {
