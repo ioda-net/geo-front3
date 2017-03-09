@@ -21,6 +21,7 @@ goog.require('ga_styles_service');
         map: '=gf3EditMap',
         options: '=gf3EditOptions',
         layer: '=gf3EditLayer',
+        // Used to exchange information with the controller (eg dirty).
         infos: '=gf3EditInfos',
         isActive: '=gf3EditActive'
       },
