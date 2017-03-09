@@ -2,6 +2,7 @@ goog.provide('gf3_edit_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_debounce_service');
+goog.require('ga_styles_service');
 
 (function() {
   var module = angular.module('gf3_edit_directive', [
@@ -12,7 +13,7 @@ goog.require('ga_debounce_service');
   ]);
 
   module.directive('gf3Edit', function($document, $http, $translate,
-      gaDebounce, gaBrowserSniffer) {
+      gaDebounce, gaBrowserSniffer, gaStyleFactory) {
     return {
       restrict: 'A',
       templateUrl: 'components/gf3Edit/partials/edit.html',
@@ -30,8 +31,8 @@ goog.require('ga_debounce_service');
           return layer === scope.layer;
         };
 
-        var select;
         var deregSelectPointerEvts = [];
+        var selectedFeatures = new ol.Collection();
         var interaction;
         var snap;
         var add;
@@ -45,6 +46,8 @@ goog.require('ga_debounce_service');
         var updatedFeatures;
         var deletedFeatures;
 
+        var selectStyleFunction = gaStyleFactory.getStyleFunction('select');
+
         var cssPointer = 'ga-pointer';
         var cssGrab = 'ga-grab';
         var cssGrabbing = 'ga-grabbing';
@@ -52,10 +55,13 @@ goog.require('ga_debounce_service');
 
         scope.$watch('isActive', function(active) {
           if (active) {
-            select = new ol.interaction.Select({
-              layers: layerFilter
-            });
             if (!gaBrowserSniffer.mobile) {
+              // We rely on the pointerup event to select a feature. The
+              // ol.interaction.Select doesn't not work properly: sometime a
+              // feature was detected by updateCursorAndTooltipsDebounced
+              // (cursor updated to notify the feature was selected) but it was
+              // not selected by the interaction. map.forEachFeatureAtPixel is
+              // more reliable.
               deregSelectPointerEvts = scope.map.on([
                 'pointerdown',
                 'pointerup',
@@ -64,22 +70,10 @@ goog.require('ga_debounce_service');
                 updateCursorAndTooltipsDebounced(evt);
               });
             }
-            select.getFeatures().on('add', function(e) {
-              e.element.on('change', function(e) {
-                var feature = e.target;
-                var id = feature.getId();
-                // Newly added features don't have an id yet.
-                if (updatedFeatures.indexOf(feature) === -1 && id) {
-                  scope.infos.dirty = true;
-                  updatedFeatures.push(feature);
-                }
-              });
-            });
-            select.setActive(false);
-            select.setActive(true);
 
             interaction = new ol.interaction.Modify({
-              features: select.getFeatures()
+              features: selectedFeatures,
+              style: selectStyleFunction
             });
             interaction.on('modifystart', function() {
               mapDiv.addClass(cssGrabbing);
@@ -92,7 +86,6 @@ goog.require('ga_debounce_service');
               source: scope.layer.getSource()
             });
 
-            scope.map.addInteraction(select);
             scope.map.addInteraction(interaction);
             scope.map.addInteraction(snap);
             $document.on('keyup', keyPressedCb);
@@ -102,8 +95,7 @@ goog.require('ga_debounce_service');
             deregSelectPointerEvts.forEach(function(item) {
               ol.Observable.unByKey(item);
             });
-            select.getFeatures().clear();
-            scope.map.removeInteraction(select);
+            unselectFeature();
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
             $document.off('keyup', keyPressedCb);
@@ -146,6 +138,7 @@ goog.require('ga_debounce_service');
             add.on('drawend', function(e) {
               scope.infos.dirty = true;
               addedFeatures.push(e.feature);
+              selectFeature(e.feature);
             });
             scope.map.addInteraction(add);
           } else {
@@ -154,21 +147,44 @@ goog.require('ga_debounce_service');
         });
 
         function clearModified() {
+          unselectFeature();
           addedFeatures = [];
           updatedFeatures = [];
           deletedFeatures = [];
-          scope.selectedFeature = null;
           scope.infos.dirty = false;
         }
 
+        function selectFeature(feature) {
+          // If we are trying to reselect the selected feature, there is
+          // nothing to do.
+          if (feature === scope.selectedFeature) {
+            return;
+          }
+
+          unselectFeature();
+          scope.selectedFeature = feature;
+          scope.defaultStyle = feature.getStyle();
+          selectedFeatures.push(feature);
+          var styles = selectStyleFunction(feature);
+          feature.setStyle(styles);
+        }
+
+        function unselectFeature() {
+          if (scope.selectedFeature) {
+            scope.selectedFeature.setStyle(scope.defaultStyle);
+          }
+          scope.selectedFeature = null;
+          selectedFeatures.clear();
+        }
+
         scope.cancel = function() {
-          select.getFeatures().clear();
+          unselectFeature();
           scope.layer.getSource().clear();
           clearModified();
         };
 
         scope.save = function() {
-          select.getFeatures().clear();
+          unselectFeature();
 
           var serializeOptions = {
             featureNS: scope.layer.featureNS,
@@ -199,8 +215,6 @@ goog.require('ga_debounce_service');
         };
 
         scope.deleteFeature = function() {
-          select.getFeatures().clear();
-
           if (updatedFeatures.indexOf(scope.selectedFeature) > -1) {
             var index = updatedFeatures.indexOf(scope.selectedFeature);
             updatedFeatures.splice(index, 1);
@@ -215,9 +229,10 @@ goog.require('ga_debounce_service');
           // request for the WFS server.
           if (scope.selectedFeature.getId()) {
             deletedFeatures.push(scope.selectedFeature);
-            scope.selectedFeature = null;
             scope.infos.dirty = true;
           }
+
+          unselectFeature();
         };
 
         scope.toggleAddFeature = function() {
@@ -226,6 +241,7 @@ goog.require('ga_debounce_service');
 
 
         // Change cursor style on mouse move, only on desktop
+        // Also used to correctyl select a feature.
         var updateCursorAndTooltips = function(evt) {
           if (mapDiv.hasClass(cssGrabbing)) {
             mapDiv.removeClass(cssGrab);
@@ -238,8 +254,8 @@ goog.require('ga_debounce_service');
           scope.map.forEachFeatureAtPixel(
               evt.pixel,
               function(feature, layer) {
-                if (evt.type === 'pointerdown') {
-                  scope.selectedFeature = feature;
+                if (evt.type === 'pointerup') {
+                  selectFeature(feature);
                 }
 
                 if (scope.selectedFeature === feature) {
