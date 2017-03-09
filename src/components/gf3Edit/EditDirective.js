@@ -56,12 +56,6 @@ goog.require('ga_styles_service');
         scope.$watch('isActive', function(active) {
           if (active) {
             if (!gaBrowserSniffer.mobile) {
-              // We rely on the pointerup event to select a feature. The
-              // ol.interaction.Select doesn't not work properly: sometime a
-              // feature was detected by updateCursorAndTooltipsDebounced
-              // (cursor updated to notify the feature was selected) but it was
-              // not selected by the interaction. map.forEachFeatureAtPixel is
-              // more reliable.
               deregSelectPointerEvts = scope.map.on([
                 'pointerdown',
                 'pointerup',
@@ -70,6 +64,18 @@ goog.require('ga_styles_service');
                 updateCursorAndTooltipsDebounced(evt);
               });
             }
+            // We rely on the pointerup event to select a feature. The
+            // ol.interaction.Select doesn't not work properly: sometime a
+            // feature was detected by updateCursorAndTooltipsDebounced
+            // (cursor updated to notify the feature was selected) but it was
+            // not selected by the interaction. map.forEachFeatureAtPixel is
+            // more reliable.
+            deregSelectPointerEvts =
+                deregSelectPointerEvts.concat(scope.map.on([
+              'pointerup'
+            ], function(evt) {
+              selectFeatureOnClickDebounced(evt);
+            }));
 
             interaction = new ol.interaction.Modify({
               features: selectedFeatures,
@@ -241,7 +247,6 @@ goog.require('ga_styles_service');
 
 
         // Change cursor style on mouse move, only on desktop
-        // Also used to correctyl select a feature.
         var updateCursorAndTooltips = function(evt) {
           if (mapDiv.hasClass(cssGrabbing)) {
             mapDiv.removeClass(cssGrab);
@@ -254,10 +259,6 @@ goog.require('ga_styles_service');
           scope.map.forEachFeatureAtPixel(
               evt.pixel,
               function(feature, layer) {
-                if (evt.type === 'pointerup') {
-                  selectFeature(feature);
-                }
-
                 if (scope.selectedFeature === feature) {
                   hoverSelectedFeature = true;
                 } else {
@@ -265,8 +266,7 @@ goog.require('ga_styles_service');
                 }
               }, {
             layerFilter: layerFilter
-          }
-          );
+          });
 
           if (hoverSelectableFeature) {
             mapDiv.addClass(cssPointer);
@@ -281,6 +281,22 @@ goog.require('ga_styles_service');
         };
         var updateCursorAndTooltipsDebounced = gaDebounce.debounce(
             updateCursorAndTooltips, 10, false, false);
+
+        function selectFeatureOnClick(evt) {
+           // Try to find a selectable feature
+          scope.map.forEachFeatureAtPixel(
+              evt.pixel,
+              function(feature, layer) {
+                selectFeature(feature);
+
+                // Stop feature detection on 1st feature found.
+                return true;
+              }, {
+            layerFilter: layerFilter
+          });
+        }
+        var selectFeatureOnClickDebounced =
+            gaDebounce.debounce(selectFeatureOnClick, 10, false, false);
       }
     };
   });
