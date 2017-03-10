@@ -166,21 +166,21 @@ goog.require('ga_styles_service');
             var source = scope.layer.getSource();
 
             switch (scope.layer.geometry) {
-              case 'POINT':
+              case 'point':
                 add = new ol.interaction.Draw({
                   type: 'Point',
                   source: source
                 });
                 break;
-              case 'POLYGON':
+              case 'polygon':
                 add = new ol.interaction.Draw({
                   type: 'Polygon',
                   source: source
                 });
                 break;
-              case 'LINE':
-              case 'LINESTRING':
-              case 'LINE_STRING':
+              case 'line':
+              case 'linestring':
+              case 'line_string':
                 add = new ol.interaction.Draw({
                   type: 'LineString',
                   source: source

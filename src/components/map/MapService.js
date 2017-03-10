@@ -956,7 +956,7 @@ goog.require('ga_urlutils_service');
             olLayer.featureType = layer.serverLayerName;
             olLayer.srsName = epsg;
             olLayer.featurePrefix = layer.featurePrefix;
-            olLayer.geometry = layer.typeGeometry.toUpperCase();
+            olLayer.geometry = layer.typeGeometry.toLowerCase();
             olLayer.version = layer.version;
           }
           if (angular.isDefined(olLayer)) {
