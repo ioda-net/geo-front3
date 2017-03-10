@@ -14,6 +14,13 @@ goog.require('ga_styles_service');
 
   module.directive('gf3Edit', function($document, $http, $timeout, $translate,
       gaDebounce, gaBrowserSniffer, gaStyleFactory) {
+    var MIN_NB_POINTS = {
+      'point': 1,
+      'line': 2,
+      'linestring': 2,
+      'polygon': 3
+    };
+
     return {
       restrict: 'A',
       templateUrl: 'components/gf3Edit/partials/edit.html',
@@ -34,6 +41,8 @@ goog.require('ga_styles_service');
 
         var deregSelectPointerEvts = [];
         var selectedFeatures = new ol.Collection();
+        var drawnFeature = null;
+        var addingFeature = false;
         var interaction;
         var snap;
         var add;
@@ -63,12 +72,16 @@ goog.require('ga_styles_service');
           helpTooltip.setPosition(undefined);
         }
         // Display an help tooltip when selecting
-        function updateSelectHelpTooltip(type, geometry) {
+        function updateSelectHelpTooltip(type, geometry, hasMinNbPoints) {
           var helpMsgId;
 
           switch (type) {
             case 'add':
-              helpMsgId = 'edit_add_feature_' + geometry;
+              if (addingFeature) {
+                helpMsgId = 'edit_add_feature_next_' + geometry;
+              } else {
+                helpMsgId = 'edit_add_feature_' + geometry;
+              }
               break;
             case 'modify':
               helpMsgId = 'edit_modify_feature_' + geometry;
@@ -87,7 +100,11 @@ goog.require('ga_styles_service');
               break;
           }
 
-          helpTooltip.getElement().innerHTML = $translate.instant(helpMsgId);
+          var message = $translate.instant(helpMsgId);
+          if (addingFeature && hasMinNbPoints) {
+            message += '<br>' + $translate.instant('edit_delete_last_point');
+          }
+          helpTooltip.getElement().innerHTML = message;
         };
         createHelpTooltip();
 
@@ -204,7 +221,6 @@ goog.require('ga_styles_service');
                 break;
               case 'line':
               case 'linestring':
-              case 'line_string':
                 add = new ol.interaction.Draw({
                   type: 'LineString',
                   source: source
@@ -214,9 +230,13 @@ goog.require('ga_styles_service');
 
             add.on('drawstart', function(e) {
               unselectFeature();
+              drawnFeature = e.feature;
+              addingFeature = true;
             });
             add.on('drawend', function(e) {
               scope.infos.dirty = true;
+              addingFeature = false;
+              drawnFeature = null;
               addedFeatures.push(e.feature);
               // Wait a little time before selecting feature: if we don't, the
               // select style may not be applied.
@@ -394,7 +414,9 @@ goog.require('ga_styles_service');
             }
             updateSelectHelpTooltip(helpType, scope.layer.geometry);
           } else if (scope.addingFeature) {
-            updateSelectHelpTooltip('add', scope.layer.geometry);
+            var hasMinNbPoints = hasFeatureEnoughPoints(drawnFeature);
+            updateSelectHelpTooltip(
+                'add', scope.layer.geometry, hasMinNbPoints);
           } else {
             // Update tooltip to 'nothing to select'.
             updateSelectHelpTooltip();
@@ -462,6 +484,21 @@ goog.require('ga_styles_service');
             default:
               return coords;
           }
+        }
+
+        function hasFeatureEnoughPoints(feature) {
+          if (!feature) {
+            return;
+          }
+
+          var minNbPoints = MIN_NB_POINTS[scope.layer.geometry];
+          var points = getPointsList(feature.getGeometry().getCoordinates());
+
+          // We need to use a strict comparision: when we are adding a feature,
+          // the position of the cursor (point not added yet) is counted among
+          // the points. It means that when drawing a line, if the user has
+          // only added one points, the feature has two.
+          return points.length > minNbPoints;
         }
       }
     };
