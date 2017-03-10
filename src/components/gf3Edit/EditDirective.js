@@ -67,6 +67,18 @@ goog.require('ga_styles_service');
           var helpMsgId;
 
           switch (type) {
+            case 'add':
+              helpMsgId = 'edit_add_feature_' + geometry;
+              break;
+            case 'modify':
+              helpMsgId = 'edit_modify_feature_' + geometry;
+              break;
+            case 'modify_new_vertex':
+              helpMsgId = 'edit_modify_new_vertex_' + geometry;
+              break;
+            case 'modify_existing_vertex':
+              helpMsgId = 'modify_existing_vertex_' + geometry;
+              break;
             case 'select':
               helpMsgId = 'edit_select_feature_' + geometry;
               break;
@@ -325,14 +337,20 @@ goog.require('ga_styles_service');
         };
 
 
+        ////////////////////////////////////
+        // Utils functions
+        ////////////////////////////////////
         // Change cursor style on mouse move, only on desktop
         var updateCursorAndTooltips = function(evt) {
           if (mapDiv.hasClass(cssGrabbing)) {
             mapDiv.removeClass(cssGrab);
             return;
           }
+          var cursorCoords = evt.coordinate;
           var hoverSelectableFeature = false;
           var hoverSelectedFeature = false;
+          var hoverVertexSelectedFeature = false;
+          var hoverEdgeSelectedFeature = false;
 
           // Try to find a selectable feature
           scope.map.forEachFeatureAtPixel(
@@ -343,6 +361,9 @@ goog.require('ga_styles_service');
                 } else {
                   hoverSelectableFeature = true;
                 }
+
+                hoverEdgeSelectedFeature = onEdge(feature, cursorCoords);
+                hoverVertexSelectedFeature = onVertex(feature, cursorCoords);
               }, {
             layerFilter: layerFilter
           });
@@ -360,10 +381,22 @@ goog.require('ga_styles_service');
           }
 
           // Update help tooltip
-          if (hoverSelectableFeature || hoverSelectedFeature) {
+          if (hoverSelectableFeature) {
             updateSelectHelpTooltip('select', scope.layer.geometry);
+          } else if (hoverSelectedFeature) {
+            var helpType;
+            if (hoverVertexSelectedFeature) {
+              helpType = 'modify_existing_vertex';
+            } else if (hoverEdgeSelectedFeature) {
+              helpType = 'modify_new_vertex';
+            } else {
+              helpType = 'modify';
+            }
+            updateSelectHelpTooltip(helpType, scope.layer.geometry);
+          } else if (scope.addingFeature) {
+            updateSelectHelpTooltip('add', scope.layer.geometry);
           } else {
-            // Update tooltip to nothing to select.
+            // Update tooltip to 'nothing to select'.
             updateSelectHelpTooltip();
           }
         };
@@ -394,6 +427,42 @@ goog.require('ga_styles_service');
         }
         var selectFeatureOnClickDebounced =
             gaDebounce.debounce(selectFeatureOnClick, 10, false, false);
+
+        function onEdge(feature, coords) {
+          var featureGeom = feature.getGeometry();
+          var closestPoint = featureGeom.getClosestPoint(coords);
+
+          return closestPoint[0] === coords[0] &&
+              closestPoint[1] === coords[1];
+        }
+
+        function onVertex(feature, coords) {
+          var onPoint = false;
+
+          var featureCoords = feature.getGeometry().getCoordinates();
+          var featurePoints =
+              getPointsList(featureCoords, scope.layer.geometry);
+          featurePoints.forEach(function(point) {
+            if (point[0] === coords[0] && point[1] === coords[1]) {
+              onPoint = true;
+            }
+          });
+
+          return onPoint;
+        }
+
+        function getPointsList(coords, geometryType) {
+          switch (geometryType) {
+            case 'line':
+              return coords;
+            case 'polygon':
+              return coords[0];
+            case 'point':
+              return [coords];
+            default:
+              return coords;
+          }
+        }
       }
     };
   });
