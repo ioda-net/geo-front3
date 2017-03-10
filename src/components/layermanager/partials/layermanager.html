@@ -26,8 +26,14 @@
       <button class="ga-icon ga-btn fa fa-user"
               ng-click="showWarning(layer)"></button>
       <button class="ga-icon fa fa-edit"
-              ng-if="layer.editable"
-              ng-click="edit(layer)"></button>
+              ng-if="layer.editable && layer.visible"
+              ng-click="edit(layer)"
+              translate-attr="{ title: 'edit_switch_edit_mode' }"></button>
+      <button class="ga-icon fa fa-edit"
+              ng-if="layer.editable && !layer.visible"
+              ng-click="edit(layer)"
+              translate-attr="{ title: 'edit_cannot_switch_edit_mode' }"
+              disabled></button>
       <button class="ga-icon fa fa-gear"></button>
     </div><!--ga-layer-infos-->
     <div class="ga-layer-tools">
