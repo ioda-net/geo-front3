@@ -58,7 +58,10 @@ goog.require('ga_styles_service');
             positioning: 'top-left',
             stopEvent: true
           });
-        };
+        }
+        function hideHelpTooltip() {
+          helpTooltip.setPosition(undefined);
+        }
         // Display an help tooltip when selecting
         function updateSelectHelpTooltip(type, geometry) {
           var helpMsgId;
@@ -139,6 +142,8 @@ goog.require('ga_styles_service');
             scope.map.addInteraction(interaction);
             scope.map.addInteraction(snap);
             scope.map.addOverlay(helpTooltip);
+
+            mapDiv.on('mouseout', hideHelpTooltip);
             $document.on('keyup', keyPressedCb);
 
             clearModified();
@@ -150,6 +155,8 @@ goog.require('ga_styles_service');
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
             scope.map.removeOverlay(helpTooltip);
+
+            mapDiv.off('mouseout', hideHelpTooltip);
             $document.off('keyup', keyPressedCb);
             scope.addingFeature = false;
 
