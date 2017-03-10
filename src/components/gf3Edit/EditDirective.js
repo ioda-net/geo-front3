@@ -243,6 +243,10 @@ goog.require('ga_styles_service');
         }
 
         scope.cancel = function() {
+          if (!scope.infos.dirty) {
+            return;
+          }
+
           unselectFeature();
           scope.layer.getSource().clear();
           clearModified();
@@ -250,6 +254,10 @@ goog.require('ga_styles_service');
         };
 
         scope.save = function() {
+          if (!scope.infos.dirty) {
+            return;
+          }
+
           unselectFeature();
 
           var serializeOptions = {

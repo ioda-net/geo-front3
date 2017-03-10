@@ -2,7 +2,7 @@
   <p ng-if="message">{{ message }}</p>
 
   <div class="gf3-buttons-bar">
-    <button class="btn btn-danger"
+    <button class="btn btn-default"
             ng-click="deleteFeature()"
             ng-disabled="!selectedFeature"
             translate-attr="{
@@ -10,20 +10,29 @@
             }">
       <i class="fa fa-remove"></i>
     </button>
-    <button class="btn btn-success"
+    <button class="btn"
             ng-class="{
-              'adding-feature': addingFeature,
+              'btn-danger': addingFeature,
+              'btn-default': !addingFeature,
             }"
             ng-click="toggleAddFeature()"
             translate-attr="{
               'title': 'add',
             }">
-      <i class="fa fa-plus"></i>
+      <i class="fa fa-plus gf3-fa-plus"></i>
     </button>
   </div>
 
-  <div class="gf3-buttons-bar">
-    <button class="btn btn-danger" ng-click="cancel()" ng-disabled="!infos.dirty" translate>Cancel</button>
-    <button class="btn btn-default" ng-click="save()" ng-disabled="!infos.dirty" translate>Save</button>
+  <div class="ga-more">
+    <hr>
+    <ul class="list-inline row">
+      <li class="col-sm-6 col-xs-6 vr">
+        <a class="btn" ng-click="cancel()" ng-disabled="!infos.dirty" translate>Cancel</a>
+      </li>
+      <li class="col-sm-6 col-xs-6">
+        <a class="btn" ng-click="save()" ng-disabled="!infos.dirty" translate>Save</a>
+      </li>
+    </ul>
+    <hr>
   </div>
 </div>
