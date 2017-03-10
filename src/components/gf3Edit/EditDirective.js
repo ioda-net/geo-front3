@@ -232,11 +232,13 @@ goog.require('ga_styles_service');
               unselectFeature();
               drawnFeature = e.feature;
               addingFeature = true;
+              $document.keyup(add, removeLastPoint);
             });
             add.on('drawend', function(e) {
               scope.infos.dirty = true;
               addingFeature = false;
               drawnFeature = null;
+              $document.off('keyup', removeLastPoint);
               addedFeatures.push(e.feature);
               // Wait a little time before selecting feature: if we don't, the
               // select style may not be applied.
@@ -246,6 +248,8 @@ goog.require('ga_styles_service');
             });
             scope.map.addInteraction(add);
           } else {
+            // If the user cancel the drawing, we must remove this callback.
+            $document.off('keyup', removeLastPoint);
             scope.map.removeInteraction(add);
           }
         });
@@ -499,6 +503,14 @@ goog.require('ga_styles_service');
           // the points. It means that when drawing a line, if the user has
           // only added one points, the feature has two.
           return points.length > minNbPoints;
+        }
+
+        // Taken from the draw directive.
+        function removeLastPoint(event) {
+          if (event.data && event.which === 46 &&
+          !/^(input|textarea)$/i.test(event.target.nodeName)) {
+            event.data.removeLastPoint();
+          }
         }
       }
     };
