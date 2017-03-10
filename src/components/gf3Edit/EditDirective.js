@@ -296,6 +296,10 @@ goog.require('ga_styles_service');
         };
 
         scope.deleteFeature = function() {
+          if (!confirm('edit_confirm_delete')) {
+            return;
+          }
+
           if (updatedFeatures.indexOf(scope.selectedFeature) > -1) {
             var index = updatedFeatures.indexOf(scope.selectedFeature);
             updatedFeatures.splice(index, 1);
