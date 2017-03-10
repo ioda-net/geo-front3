@@ -354,7 +354,10 @@ goog.require('ga_styles_service');
               evt.pixel,
               function(feature, layer) {
                 featureAtPixel = true;
-                selectFeature(feature);
+                // Don't select features when we are adding one.
+                if (!scope.addingFeature) {
+                  selectFeature(feature);
+                }
 
                 // Stop feature detection on 1st feature found.
                 return true;
