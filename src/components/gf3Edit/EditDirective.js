@@ -388,7 +388,7 @@ goog.require('ga_styles_service');
             layerFilter: layerFilter
           });
 
-          if (hoverSelectableFeature) {
+          if (hoverSelectableFeature && !scope.addingFeature) {
             mapDiv.addClass(cssPointer);
             updateSelectHelpTooltip();
           } else {
@@ -401,7 +401,11 @@ goog.require('ga_styles_service');
           }
 
           // Update help tooltip
-          if (hoverSelectableFeature) {
+          if (scope.addingFeature) {
+            var hasMinNbPoints = hasFeatureEnoughPoints(drawnFeature);
+            updateSelectHelpTooltip(
+                'add', scope.layer.geometry, hasMinNbPoints);
+          } else if (hoverSelectableFeature) {
             updateSelectHelpTooltip('select', scope.layer.geometry);
           } else if (hoverSelectedFeature) {
             var helpType;
@@ -413,10 +417,6 @@ goog.require('ga_styles_service');
               helpType = 'modify';
             }
             updateSelectHelpTooltip(helpType, scope.layer.geometry);
-          } else if (scope.addingFeature) {
-            var hasMinNbPoints = hasFeatureEnoughPoints(drawnFeature);
-            updateSelectHelpTooltip(
-                'add', scope.layer.geometry, hasMinNbPoints);
           } else {
             // Update tooltip to 'nothing to select'.
             updateSelectHelpTooltip();
