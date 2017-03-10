@@ -40,6 +40,11 @@ goog.require('ga_styles_service');
         var keyPressedCb = function(event) {
           if (event.keyCode === 46 && scope.selectedFeature) {  // Delete key
             scope.deleteFeature();
+          } else if (event.keyCode === 27 && scope.addingFeature) { // ESC key.
+            // Disable the draw interaction to cancel the drawing. Re-enable it
+            // immediatly so the user can continue to draw.
+            add.setActive(false);
+            add.setActive(true);
           }
         };
 
