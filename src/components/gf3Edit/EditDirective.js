@@ -246,6 +246,7 @@ goog.require('ga_styles_service');
           unselectFeature();
           scope.layer.getSource().clear();
           clearModified();
+          scope.message = '';
         };
 
         scope.save = function() {
