@@ -193,6 +193,9 @@ goog.require('ga_styles_service');
                 break;
             }
 
+            add.on('drawstart', function(e) {
+              unselectFeature();
+            });
             add.on('drawend', function(e) {
               scope.infos.dirty = true;
               addedFeatures.push(e.feature);
