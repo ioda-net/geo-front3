@@ -43,6 +43,34 @@ goog.require('ga_styles_service');
           }
         };
 
+        var helpTooltip;
+        function createHelpTooltip() {
+          var tooltipElement = $document[0].createElement('div');
+          tooltipElement.className = 'ga-draw-help';
+          helpTooltip = new ol.Overlay({
+            element: tooltipElement,
+            offset: [15, 15],
+            positioning: 'top-left',
+            stopEvent: true
+          });
+        };
+        // Display an help tooltip when selecting
+        function updateSelectHelpTooltip(type, geometry) {
+          var helpMsgId;
+
+          switch (type) {
+            case 'select':
+              helpMsgId = 'edit_select_feature_' + geometry;
+              break;
+            default:
+              helpMsgId = 'edit_select_no_feature';
+              break;
+          }
+
+          helpTooltip.getElement().innerHTML = $translate.instant(helpMsgId);
+        };
+        createHelpTooltip();
+
         var addedFeatures;
         var updatedFeatures;
         var deletedFeatures;
@@ -64,6 +92,7 @@ goog.require('ga_styles_service');
                 'pointerup',
                 'pointermove'
               ], function(evt) {
+                helpTooltip.setPosition(evt.coordinate);
                 updateCursorAndTooltipsDebounced(evt);
               });
             }
@@ -104,6 +133,7 @@ goog.require('ga_styles_service');
 
             scope.map.addInteraction(interaction);
             scope.map.addInteraction(snap);
+            scope.map.addOverlay(helpTooltip);
             $document.on('keyup', keyPressedCb);
 
             clearModified();
@@ -114,6 +144,7 @@ goog.require('ga_styles_service');
             unselectFeature();
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
+            scope.map.removeOverlay(helpTooltip);
             $document.off('keyup', keyPressedCb);
             scope.addingFeature = false;
 
@@ -290,6 +321,7 @@ goog.require('ga_styles_service');
 
           if (hoverSelectableFeature) {
             mapDiv.addClass(cssPointer);
+            updateSelectHelpTooltip();
           } else {
             mapDiv.removeClass(cssPointer);
           }
@@ -297,6 +329,14 @@ goog.require('ga_styles_service');
             mapDiv.addClass(cssGrab);
           } else {
             mapDiv.removeClass(cssGrab);
+          }
+
+          // Update help tooltip
+          if (hoverSelectableFeature || hoverSelectedFeature) {
+            updateSelectHelpTooltip('select', scope.layer.geometry);
+          } else {
+            // Update tooltip to nothing to select.
+            updateSelectHelpTooltip();
           }
         };
         var updateCursorAndTooltipsDebounced = gaDebounce.debounce(
