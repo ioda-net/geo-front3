@@ -56,6 +56,19 @@ goog.require('ga_styles_service');
             add.setActive(true);
           }
         };
+        /**
+         * We register this callback to remove features listed in the
+         * deletedFeatures array when the features of the source are refreshed
+         * from the server.
+         */
+        var featuresRefreshCb = function(event) {
+          var deletedFeaturesId = deletedFeatures.map(function(feature) {
+            return feature.getId();
+          });
+          if (deletedFeaturesId.indexOf(event.feature.getId()) > -1) {
+            scope.layer.getSource().removeFeature(event.feature);
+          }
+        };
 
         var helpTooltip;
         function createHelpTooltip() {
@@ -172,6 +185,8 @@ goog.require('ga_styles_service');
             scope.map.addInteraction(snap);
             scope.map.addOverlay(helpTooltip);
 
+            scope.layer.getSource().on('addfeature', featuresRefreshCb);
+
             mapDiv.on('mouseout', hideHelpTooltip);
             $document.on('keyup', keyPressedCb);
 
@@ -187,6 +202,7 @@ goog.require('ga_styles_service');
 
             mapDiv.off('mouseout', hideHelpTooltip);
             $document.off('keyup', keyPressedCb);
+            scope.layer.getSource().un('addfeature', featuresRefreshCb);
             scope.addingFeature = false;
 
             if (scope.infos.dirty) {
