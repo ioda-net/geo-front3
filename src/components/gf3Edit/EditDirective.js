@@ -205,6 +205,7 @@ goog.require('ga_styles_service');
         scope.$watch('addingFeature', function(adding) {
           if (adding) {
             var source = scope.layer.getSource();
+            unselectFeature();
 
             switch (scope.layer.geometry) {
               case 'point':
