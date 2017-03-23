@@ -1,8 +1,8 @@
 goog.provide('gf3_edit_directive');
 
-goog.require('ga_browsersniffer_service');
-goog.require('ga_debounce_service');
-goog.require('ga_styles_service');
+// Don't add goog.require to ga_* modules to prevent circular dependency
+// errors. The directive worsk fine without them since they are already loaded
+// by other components.
 
 (function() {
   var module = angular.module('gf3_edit_directive', [
