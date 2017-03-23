@@ -540,6 +540,8 @@ goog.provide('gf3_edit_directive');
               geometry.getLastCoordinate();
           var pixel = scope.map.getPixelFromCoordinate(coord);
           $rootScope.$broadcast('gf3EditFeaturesPopupShow', feature, pixel);
+          // Required for the popup to display immediatly where expected.
+          scope.$applyAsync();
         }
 
         function hideFeaturesPopup() {
