@@ -626,6 +626,19 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div>
   {% endif %}
 
+    <!-- Popup: Edit features -->
+    <div ng-controller="Gf3EditFeaturesPopupController">
+      <div ga-popup="displayed"
+           ga-popup-map="::map"
+           ga-popup-options="options"
+           id="gf3-edit-features-popup"
+           class="ga-popup-mobile-bottom bottom">
+        <div gf3-edit-feature-attrs="feature">
+        </div>
+      </div>
+    </div>
+    <!-- end Edit features -->
+
   {% if device == 'mobile' %}
     <div ng-if="globals.homescreen" class="popover homescreen"
          ng-class="{

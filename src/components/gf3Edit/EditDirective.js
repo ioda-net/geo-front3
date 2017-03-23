@@ -13,7 +13,7 @@ goog.provide('gf3_edit_directive');
   ]);
 
   module.directive('gf3Edit', function($document, $http, $timeout, $translate,
-      gaDebounce, gaBrowserSniffer, gaStyleFactory) {
+      $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory) {
     var MIN_NB_POINTS = {
       'point': 1,
       'line': 2,
@@ -279,7 +279,7 @@ goog.provide('gf3_edit_directive');
           scope.infos.dirty = false;
         }
 
-        function selectFeature(feature) {
+        function selectFeature(feature, clickedCoords) {
           // If we are trying to reselect the selected feature, there is
           // nothing to do.
           if (feature === scope.selectedFeature) {
@@ -292,6 +292,8 @@ goog.provide('gf3_edit_directive');
           selectedFeatures.push(feature);
           var styles = selectStyleFunction(feature);
           feature.setStyle(styles);
+
+          showFeaturesPopup(feature, clickedCoords);
         }
 
         function unselectFeature() {
@@ -300,6 +302,7 @@ goog.provide('gf3_edit_directive');
           }
           scope.selectedFeature = null;
           selectedFeatures.clear();
+          hideFeaturesPopup();
         }
 
         scope.cancel = function() {
@@ -455,7 +458,7 @@ goog.provide('gf3_edit_directive');
                 featureAtPixel = true;
                 // Don't select features when we are adding one.
                 if (!scope.addingFeature) {
-                  selectFeature(feature);
+                  selectFeature(feature, evt.coordinate);
                 }
 
                 // Stop feature detection on 1st feature found.
@@ -528,6 +531,19 @@ goog.provide('gf3_edit_directive');
           !/^(input|textarea)$/i.test(event.target.nodeName)) {
             event.data.removeLastPoint();
           }
+        }
+
+        function showFeaturesPopup(feature, clickedCoords) {
+          var geometry = feature.getGeometry();
+          var coord = clickedCoords ?
+              geometry.getClosestPoint(clickedCoords) :
+              geometry.getLastCoordinate();
+          var pixel = scope.map.getPixelFromCoordinate(coord);
+          $rootScope.$broadcast('gf3EditFeaturesPopupShow', feature, pixel);
+        }
+
+        function hideFeaturesPopup() {
+          $rootScope.$broadcast('gf3EditFeaturesPopupHide');
         }
       }
     };
