@@ -1,5 +1,7 @@
 <div>
   <p ng-if="message">{{ message }}</p>
+  <p class="alert-danger"
+     ng-repeat="error in saveErrors">{{ error }}</p>
 
   <div class="gf3-buttons-bar">
     <button class="btn btn-default"

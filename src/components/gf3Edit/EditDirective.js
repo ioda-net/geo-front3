@@ -135,6 +135,7 @@ goog.provide('gf3_edit_directive');
         scope.$watch('isActive', function(active) {
           if (active) {
             scope.message = '';
+            scope.saveErrors = [];
 
             if (!gaBrowserSniffer.mobile) {
               deregSelectPointerEvts = scope.map.on([
@@ -314,6 +315,7 @@ goog.provide('gf3_edit_directive');
           scope.layer.getSource().clear();
           clearModified();
           scope.message = '';
+          scope.saveErrors = [];
         };
 
         scope.save = function() {
@@ -335,6 +337,7 @@ goog.provide('gf3_edit_directive');
               deletedFeatures, serializeOptions);
           scope.message = $translate.instant('edit_saving');
 
+          scope.saveErrors = [];
           $http({
             method: 'POST',
             url: scope.layer.getSource().getUrl(),
@@ -342,14 +345,67 @@ goog.provide('gf3_edit_directive');
             headers: {
               'Content-Type': 'text/xml'
             }
-          }).then(function() {
-            scope.message = $translate.instant('edit_save_success');
-            scope.layer.getSource().clear();
-            clearModified();
+          }).then(function(resp) {
+            if (saveResponseContainsError(resp.data)) {
+              scope.message = $translate.instant('edit_save_error');
+              scope.saveErrors = getErrorMessageFromSaveResponse(resp.data);
+            } else {
+              scope.message = $translate.instant('edit_save_success');
+              scope.layer.getSource().clear();
+              clearModified();
+            }
           }, function() {
             scope.message = $translate.instant('edit_save_error');
           });
         };
+
+        function saveResponseContainsError(data) {
+          // Depending of the server and the WFS version, the XML response will
+          // be different. Here, we handle GeoServer (1.0.0 and 1.1.0) and
+          // tinyOWS (1.0.0).
+          if (data.indexOf('ExceptionReport') > -1 ||
+              data.indexOf('ServiceExceptionReport') > -1 ||
+              (data.indexOf('WFS_TransactionResponse') &&
+                  data.indexOf('FAILED') > -1)) {
+            return true;
+          }
+
+          return false;
+        }
+
+        function getErrorMessageFromSaveResponse(data) {
+          var parser = new DOMParser();
+          var document = parser.parseFromString(data, 'text/xml');
+          var errorMessages = [];
+          // Depending of the server and the WFS version, the XML response will
+          // be different. Here, we handle GeoServer (1.0.0 and 1.1.0) and
+          // tinyOWS (1.0.0).
+          var messages = document.getElementsByTagName('Message');
+          var serviceExceptions =
+              document.getElementsByTagName('ServiceException');
+          var exceptionTexts = document.getElementsByTagName('ExceptionText');
+
+          if (messages.length > 0) {
+            for (var i = 0; i < messages.length; i++) {
+              errorMessages.push(messages[i].innerHTML);
+            }
+          } else if (serviceExceptions.length > 0) {
+            for (var i = 0; i < serviceExceptions.length; i++) {
+              var msgNode = serviceExceptions[i];
+              errorMessages.push(msgNode.getAttribute('code') + ' ' +
+                  msgNode.getAttribute('locator') + ' ' +
+                  msgNode.innerHTML);
+            }
+          } else if (exceptionTexts.length > 0) {
+            for (var i = 0; i < exceptionTexts.length; i++) {
+              errorMessages.push(exceptionTexts[i].innerHTML);
+            }
+          } else {
+            errorMessages.push($translate.instant('edit_unknown_save_error'));
+          }
+
+          return errorMessages;
+        }
 
         scope.deleteFeature = function() {
           if (!confirm('edit_confirm_delete')) {
