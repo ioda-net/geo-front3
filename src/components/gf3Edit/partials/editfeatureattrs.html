@@ -1,3 +1,8 @@
+<div ng-if="attributes.length === 0"
+     translate>
+  edit_feature_attributes_no_attr
+</div>
+
 <div class="form-group" ng-repeat="attr in attributes">
   <label for="layer-attr-{{ attr.name }}">{{ attr.name}}</label>
   <div ng-switch="attr.type">
