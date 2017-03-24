@@ -1,2 +1,28 @@
-<div>
+<div class="form-group" ng-repeat="attr in attributes">
+  <label for="layer-attr-{{ attr.name }}">{{ attr.name}}</label>
+  <div ng-switch="attr.type">
+    <input ng-switch-when="int"
+           id="layer-attr-{{ attr.name }}"
+           class="form-control"
+           ng-change="updateValue(attr.name)"
+           ng-model="values[attr.name]"
+           ng-model-options="{ debounce: 200 }"
+           type="number"
+           step="1" />
+    <input ng-switch-when="decimal"
+           id="layer-attr-{{ attr.name }}"
+           class="form-control"
+           ng-change="updateValue(attr.name)"
+           ng-model="values[attr.name]"
+           ng-model-options="{ debounce: 200 }"
+           type="number"
+           step="any" />
+    <input ng-switch-default
+           id="layer-attr-{{ attr.name }}"
+           class="form-control"
+           ng-change="updateValue(attr.name)"
+           ng-model="values[attr.name]"
+           ng-model-options="{ debounce: 200 }"
+           type="text" />
+  </div>
 </div>

@@ -539,7 +539,8 @@ goog.provide('gf3_edit_directive');
               geometry.getClosestPoint(clickedCoords) :
               geometry.getLastCoordinate();
           var pixel = scope.map.getPixelFromCoordinate(coord);
-          $rootScope.$broadcast('gf3EditFeaturesPopupShow', feature, pixel);
+          $rootScope.$broadcast('gf3EditFeaturesPopupShow',
+              feature, scope.layer.attributes, pixel);
           // Required for the popup to display immediatly where expected.
           scope.$applyAsync();
         }
@@ -547,6 +548,12 @@ goog.provide('gf3_edit_directive');
         function hideFeaturesPopup() {
           $rootScope.$broadcast('gf3EditFeaturesPopupHide');
         }
+
+
+        // Register events
+        scope.$on('gf3_editfeatureattrs', function() {
+          scope.infos.dirty = true;
+        });
       }
     };
   });

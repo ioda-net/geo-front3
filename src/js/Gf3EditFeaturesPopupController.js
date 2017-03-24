@@ -11,13 +11,15 @@ goog.provide('gf3_editfeaturespopup_controller');
     var title = 'edit_popup_title_feature';
     $scope.options = {};
 
-    $scope.$on('gf3EditFeaturesPopupShow', function(evt, feature, pixel) {
+    $scope.$on('gf3EditFeaturesPopupShow',
+        function(evt, feature, attributes, pixel) {
       $scope.displayed = true;
       // If the selected feature has changed, we force the popup to unreduce
       if ($scope.feature !== feature) {
         $scope.options.isReduced = false;
       }
       $scope.feature = feature;
+      $scope.attributes = attributes;
       $scope.options.title = $translate.instant(title) + ' ' + feature.getId();
       if (pixel) {
         $scope.options.x = pixel[0];
