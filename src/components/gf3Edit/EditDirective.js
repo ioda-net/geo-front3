@@ -214,7 +214,7 @@ goog.provide('gf3_edit_directive');
 
         scope.$watch('infos.dirty', function(dirty) {
           if (dirty) {
-            scope.message = 'edit_unsaved_changes';
+            scope.message = $translate.instant('edit_unsaved_changes');
           }
         });
 
@@ -408,7 +408,7 @@ goog.provide('gf3_edit_directive');
         }
 
         scope.deleteFeature = function() {
-          if (!confirm('edit_confirm_delete')) {
+          if (!confirm($translate.instant('edit_confirm_delete'))) {
             return;
           }
 
