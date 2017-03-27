@@ -167,8 +167,9 @@ goog.provide('gf3_edit_directive');
             });
             interaction.on('modifystart', function() {
               mapDiv.addClass(cssGrabbing);
+              hideFeaturesPopup();
             });
-            interaction.on('modifyend', function() {
+            interaction.on('modifyend', function(event) {
               var feature = scope.selectedFeature;
               var id = feature.getId();
               // Newly added features don't have an id yet.
@@ -177,6 +178,7 @@ goog.provide('gf3_edit_directive');
                 updatedFeatures.push(feature);
               }
               mapDiv.removeClass(cssGrabbing);
+              showFeaturesPopup(feature, event.coordinate);
             });
 
             snap = new ol.interaction.Snap({
