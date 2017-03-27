@@ -47,7 +47,8 @@ goog.provide('gf3_edit_directive');
         var snap;
         var add;
         var keyPressedCb = function(event) {
-          if (event.keyCode === 46 && scope.selectedFeature) {  // Delete key
+          if (event.keyCode === 46 && scope.selectedFeature &&
+              !isInInputField(event)) {  // Delete key
             scope.deleteFeature();
           } else if (event.keyCode === 27 && scope.addingFeature) { // ESC key.
             // Disable the draw interaction to cancel the drawing. Re-enable it
@@ -584,9 +585,13 @@ goog.provide('gf3_edit_directive');
         // Taken from the draw directive.
         function removeLastPoint(event) {
           if (event.data && event.which === 46 &&
-          !/^(input|textarea)$/i.test(event.target.nodeName)) {
+          !isInInputField(event)) {
             event.data.removeLastPoint();
           }
+        }
+
+        function isInInputField(event) {
+          return /^(input|textarea)$/i.test(event.target.nodeName);
         }
 
         function showFeaturesPopup(feature, clickedCoords) {
