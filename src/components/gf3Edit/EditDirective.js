@@ -103,7 +103,7 @@ goog.provide('gf3_edit_directive');
               helpMsgId = 'edit_modify_new_vertex_' + geometry;
               break;
             case 'modify_existing_vertex':
-              helpMsgId = 'modify_existing_vertex_' + geometry;
+              helpMsgId = 'edit_modify_existing_vertex_' + geometry;
               break;
             case 'select':
               helpMsgId = 'edit_select_feature_' + geometry;
