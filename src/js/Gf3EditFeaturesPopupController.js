@@ -29,6 +29,9 @@ goog.provide('gf3_editfeaturespopup_controller');
 
     $scope.$on('gf3EditFeaturesPopupHide', function() {
       $scope.displayed = false;
+      // We need this so the popup is correctly closed when the user deletes
+      // the selected feature.
+      $scope.$applyAsync();
     });
   });
 })();
