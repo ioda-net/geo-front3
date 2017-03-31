@@ -18,7 +18,11 @@ goog.provide('gf3_login_service');
     };
 
     function login(url, kind, username, password, method) {
-      var config = gf3Auth.getAuthenticationConfig(kind, username, password);
+      var config = gf3Auth.getAuthenticationConfig({
+        kind: kind,
+        username: username,
+        password: password
+      });
       config.method = method || 'GET';
       config.url = url;
 

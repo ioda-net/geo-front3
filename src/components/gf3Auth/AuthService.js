@@ -44,27 +44,31 @@ goog.provide('gf3_auth_service');
       return (url in logins);
     }
 
-    function getAuthenticationConfig(kind, username, password) {
-      switch (kind) {
+    function getAuthenticationConfigFromUrl(url) {
+      var login = logins[url];
+      return getAuthenticationConfig(login);
+    }
+
+    function getAuthenticationConfig(login) {
+      switch (login.kind) {
         case 'basic':
           return {
             withCredentials: true,
             headers: {
-              Authorization: 'Basic ' + btoa(username + ':' + password)
+              Authorization: 'Basic ' +
+                  btoa(login.username + ':' + login.password)
             }
           };
           break;
         default:
-          throw new Error('Unknown authentication kind: ' + kind);
+          throw new Error('Unknown authentication kind: ' + login.kind);
           break;
       }
     }
 
     function request(config) {
       if (config.url in logins) {
-        var login = logins[config.url];
-        var authConfig =
-           getAuthenticationConfig(login.kind, login.username, login.password);
+        var authConfig = getAuthenticationConfigFromUrl(config.url);
 
         angular.extend(config, authConfig);
       }
