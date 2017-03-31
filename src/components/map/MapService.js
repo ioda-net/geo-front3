@@ -959,6 +959,7 @@ goog.require('ga_urlutils_service');
             olLayer.geometry = layer.typeGeometry.toLowerCase();
             olLayer.version = layer.version;
             olLayer.attributes = layer.attributes;
+            olLayer.authRequired = layer.authRequired;
           }
           if (angular.isDefined(olLayer)) {
             gaDefinePropertiesForLayer(olLayer);

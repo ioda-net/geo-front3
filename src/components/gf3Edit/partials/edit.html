@@ -1,4 +1,11 @@
-<div>
+<div ng-if="authRequired && !isAuthenticated">
+  <div gf3-login
+       gf3-login-callback="loggedIn()"
+       gf3-login-type="'basic'"
+       gf3-auth-url="authUrl"></div>
+</div>
+
+<div ng-if="!authRequired || isAuthenticated">
   <p ng-if="message">{{ message }}</p>
   <p class="alert-danger"
      ng-repeat="error in saveErrors">{{ error }}</p>

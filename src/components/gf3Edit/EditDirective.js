@@ -13,7 +13,7 @@ goog.provide('gf3_edit_directive');
   ]);
 
   module.directive('gf3Edit', function($document, $http, $timeout, $translate,
-      $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory) {
+      $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory, gf3Auth) {
     var MIN_NB_POINTS = {
       'point': 1,
       'line': 2,
@@ -189,6 +189,10 @@ goog.provide('gf3_edit_directive');
             scope.map.addInteraction(snap);
             scope.map.addOverlay(helpTooltip);
 
+            scope.authRequired = scope.layer.authRequired;
+            scope.authUrl = scope.layer.getSource().getUrl();
+            scope.isAuthenticated = gf3Auth.hasLogin(scope.authUrl);
+
             scope.layer.getSource().on('addfeature', featuresRefreshCb);
 
             mapDiv.on('mouseout', hideHelpTooltip);
@@ -308,6 +312,10 @@ goog.provide('gf3_edit_directive');
           selectedFeatures.clear();
           hideFeaturesPopup();
         }
+
+        scope.loggedIn = function() {
+          scope.isAuthenticated = true;
+        };
 
         scope.cancel = function() {
           if (!scope.infos.dirty) {
