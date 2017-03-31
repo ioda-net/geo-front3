@@ -1,5 +1,14 @@
 goog.provide('gf3_login_service');
 
+/**
+ * This service is designed to be used in the LoginDirective. Its goal is to
+ * check if the supplied ids are correct. If so, it will store them into
+ * gf3Auth.
+ *
+ * This function cannot be in the gf3Auth module since it would cause a
+ * circular dependency with $http: gf3Auth is required by $http since it is an
+ * HTTP interceptor and it would require $http to work.
+ */
 (function() {
   var module = angular.module('gf3_login_service', []);
 

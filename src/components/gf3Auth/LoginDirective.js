@@ -1,5 +1,11 @@
 goog.provide('gf3_login_directive');
 
+/**
+ * This provides an HTML template and JS logic to handle login.
+ *
+ * If the login fails, we display a relevant message. Once the user was able
+ * to login, the gf3-login-callback will be called.
+ */
 (function() {
   var module = angular.module('gf3_login_directive', [
     'gf3_login_service',

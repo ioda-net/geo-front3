@@ -1,5 +1,26 @@
 goog.provide('gf3_auth_service');
 
+/**
+ * HTTP interceptor in charge of adding authentication information to relevant
+ * HTTP requests.
+ *
+ * For each URL, it will store:
+ * <ul>
+ *   <li>The username</li>
+ *   <li>The password</li>
+ *   <li>The kind of authentication. Currently we only support HTTP Basic
+ *     Authentication. We may support other kind of authentication (eg JWT) in
+ *     the future. Thanks to this property, we will be able to add the correct
+ *     header with the correct value.</li>
+ * </ul>
+ *
+ * It also provides methods to:
+ * <ul>
+ *   <li>Know if ids are avaible for a given URL.</li>
+ *   <li>Register ids for a URL.</li>
+ *   <li>Get the $http authentication configuration for a URL.</li>
+ * </ul>
+ */
 (function() {
   var module = angular.module('gf3_auth_service', []);
 
