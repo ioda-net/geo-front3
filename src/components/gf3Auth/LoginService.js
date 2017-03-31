@@ -17,11 +17,9 @@ goog.provide('gf3_login_service');
       login: login
     };
 
-    function login(url, kind, username, password) {
+    function login(url, kind, username, password, method) {
       var config = gf3Auth.getAuthenticationConfig(kind, username, password);
-      // We need to use a post request to check that the logins are correct:
-      // anonymous users are allowed to do GET requests.
-      config.method = 'POST';
+      config.method = method || 'GET';
       config.url = url;
 
       return $http(config).then(function(resp) {

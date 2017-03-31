@@ -1,7 +1,10 @@
 <div ng-if="authRequired && !isAuthenticated">
+  <!-- We need to use a POST request to check that the logins are correct:
+       anonymous users are allowed to do GET requests. -->
   <div gf3-login
        gf3-login-callback="loggedIn()"
        gf3-login-type="'basic'"
+       gf3-login-http-method="'POST'"
        gf3-auth-url="authUrl"></div>
 </div>
 

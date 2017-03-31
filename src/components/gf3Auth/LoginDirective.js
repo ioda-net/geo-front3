@@ -19,13 +19,20 @@ goog.provide('gf3_login_directive');
       scope: {
         loginCb: '&gf3LoginCallback',
         type: '=gf3LoginType',
+        method: '=gf3LoginHttpMethod',
         url: '=gf3AuthUrl'
       },
       link: function(scope) {
         scope.login = function() {
           scope.message = '';
 
-          gf3Login.login(scope.url, scope.type, scope.username, scope.password)
+          gf3Login.login(
+              scope.url,
+              scope.type,
+              scope.username,
+              scope.password,
+              scope.method
+          )
               .then(function() {
                 scope.loginCb();
               }, function(resp) {
