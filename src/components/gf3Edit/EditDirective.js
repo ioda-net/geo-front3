@@ -365,8 +365,12 @@ goog.provide('gf3_edit_directive');
               scope.layer.getSource().clear();
               clearModified();
             }
-          }, function() {
-            scope.message = $translate.instant('edit_save_error');
+          }, function(resp) {
+            if (resp.status === 401 || resp.status === 403) {
+              scope.authRequired = true;
+            } else {
+              scope.message = $translate.instant('edit_save_error');
+            }
           });
         };
 
