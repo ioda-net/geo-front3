@@ -126,7 +126,7 @@ describe('ga_kml_service', function() {
       stroke: stroke
     }),
     text: new ol.style.Text({
-      font: 'normal 16px Helvetica',
+      font: 'normal 16px DejaVu Sans',
       fill: fill,
       stroke: new ol.style.Stroke({
         color: [255, 255, 255, 1],
@@ -857,7 +857,7 @@ describe('ga_kml_service', function() {
             var feats = olLayer.getSource().getFeatures();
             var style = feats[0].getStyleFunction().call(feats[0])[0];
             var text = style.getText();
-            expect(text.getFont()).to.be('normal 16px Helvetica');
+            expect(text.getFont()).to.be('normal 16px DejaVu Sans');
             expect(text.getText()).to.be('Point');
             expect(text.getFill().getColor()).to.eql([255, 0, 0, 0.7]);
             expect(text.getStroke().getColor()).to.eql([255, 255, 255, 1]);
@@ -882,14 +882,14 @@ describe('ga_kml_service', function() {
             var feats = olLayer.getSource().getFeatures();
             var style = feats[0].getStyleFunction().call(feats[0])[0];
             var text = style.getText();
-            expect(text.getFont()).to.be('normal 16px Helvetica');
+            expect(text.getFont()).to.be('normal 16px DejaVu Sans');
             expect(text.getText()).to.be('Point');
             expect(text.getFill().getColor()).to.eql([18, 17, 16, 0.4980392156862745]);
             expect(text.getStroke().getColor()).to.eql([255, 255, 255, 1]);
             expect(text.getScale()).to.be(undefined);
             style = feats[1].getStyleFunction().call(feats[0])[0];
             text = style.getText();
-            expect(text.getFont()).to.be('normal 16px Helvetica');
+            expect(text.getFont()).to.be('normal 16px DejaVu Sans');
             expect(text.getText()).to.be('Point');
             expect(text.getFill().getColor()).to.eql([18, 17, 16, 0.4980392156862745]);
             expect(text.getStroke().getColor()).to.eql([255, 255, 255, 1]);

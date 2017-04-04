@@ -34,7 +34,7 @@ describe('ga_styles_service', function() {
         expect(gaStyle.ZTEXT).to.be(40);
         expect(gaStyle.ZSELECT).to.be(50);
         expect(gaStyle.ZSKETCH).to.be(60);
-        expect(gaStyle.FONT).to.be('normal 16px Helvetica');
+        expect(gaStyle.FONT).to.be('normal 16px DejaVu Sans');
       });
     });
 

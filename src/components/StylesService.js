@@ -10,7 +10,10 @@ goog.require('gf3');
   ]);
 
   module.provider('gaStyleFactory', function(gf3GlobalOptions) {
-    var DEFAULT_FONT = 'normal 16px Helvetica',
+    // Injecting gaGlabalOptions here breaks dependency injection. We us
+    // gf3GlobalOptions instead.
+    var DEFAULT_FONT_NAME = gf3GlobalOptions.printFont || 'DejaVu Sans';
+    var DEFAULT_FONT = 'normal 16px ' + DEFAULT_FONT_NAME,
         ZPOLYGON = 10,
         ZLINE = 20,
         ZICON = 30,

@@ -196,6 +196,7 @@ ngeo.Print = function(url, $http, gaGlobalOptions) {
   this.printImagesUrl_ = gaGlobalOptions.printImagesUrl;
   this.printBaseTextSize_ = gaGlobalOptions.printBaseTextSize || 10;
   this.printBaseTextHaloSize_ = gaGlobalOptions.printBaseTextHaloSize || 1;
+  this.printFont_ = gaGlobalOptions.printFont || 'DejaVu Sans';
 };
 
 
@@ -884,7 +885,7 @@ ngeo.Print.prototype.encodeOverlays_ = function(arr, overlays, scale) {
                 fontColor: '#ffffff',
                 fontSize: 7,
                 fontWeight: 'bold',
-                fontFamily: 'Helvetica'
+                fontFamily: this.printFont_
               }, {
                 type: 'Point',
                 externalGraphic: printImagesUrl + '/print-bubble.png',

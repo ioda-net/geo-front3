@@ -787,6 +787,9 @@ itemscope itemtype="http://schema.org/WebApplication"
           {% if print.base_text_halo_size %}
           printBaseTextHaloSize: ${print.base_text_halo_size },
           {% endif %}
+          {% if print.font %}
+          printFont: ${print.font},
+          {% endif %}
           hostIsProd: hostIsProd
         });
 
@@ -868,6 +871,9 @@ itemscope itemtype="http://schema.org/WebApplication"
           allowWebdav: ${front.gf3.allow_webdav | lower},
           allowOffline: ${front.gf3.allow_offline | lower},
           allowInfobox: ${front.gf3.allow_infobox | lower},
+          {% if print.font %}
+          printFont: ${print.font},
+          {% endif %}
           {%- if front.gf3.display_origins is defined %}
           displayOrigins: ${front.gf3.display_origins | lower},
           {%- else %}
