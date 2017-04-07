@@ -341,6 +341,7 @@ goog.provide('gf3_edit_directive');
             featureType: scope.layer.featureType,
             srsName: scope.layer.srsName,
             featurePrefix: scope.layer.featurePrefix,
+            is3D: scope.layer.is3D,
             version: scope.layer.version
           };
           var node = formatWFS.writeTransaction(
