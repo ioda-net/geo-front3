@@ -961,6 +961,7 @@ goog.require('ga_urlutils_service');
             olLayer.attributes = layer.attributes;
             olLayer.authRequired = layer.authRequired;
             olLayer.is3D = layer.is3D;
+            olLayer.geometryName = layer.geometryName;
           }
           if (angular.isDefined(olLayer)) {
             gaDefinePropertiesForLayer(olLayer);

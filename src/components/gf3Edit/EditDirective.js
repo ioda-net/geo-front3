@@ -260,15 +260,30 @@ goog.provide('gf3_edit_directive');
               $document.keyup(add, removeLastPoint);
             });
             add.on('drawend', function(e) {
+              var feature = e.feature;
               scope.infos.dirty = true;
               addingFeature = false;
               drawnFeature = null;
               $document.off('keyup', removeLastPoint);
-              addedFeatures.push(e.feature);
+              addedFeatures.push(feature);
+              // We need to set the geometry name so the geometry is saved in
+              // the proper column. Before doing that, we need to get the
+              // geometry, so we can do a setGeometry so the geometry is stored
+              // in the proper properties. We then remove the older one to
+              // prevent transaction errors (update/insertion in a inexisting
+              // column).
+              var currentGeometryName = feature.getGeometryName();
+              var newGeometryName = scope.layer.geometryName;
+              if (currentGeometryName !== newGeometryName) {
+                var geometry = e.feature.getGeometry();
+                feature.setGeometryName(newGeometryName);
+                feature.setGeometry(geometry);
+                feature.unset(currentGeometryName);
+              }
               // Wait a little time before selecting feature: if we don't, the
               // select style may not be applied.
               $timeout(function() {
-                selectFeature(e.feature);
+                selectFeature(feature);
               }, 50);
             });
             scope.map.addInteraction(add);
