@@ -18,7 +18,8 @@
            ng-required="!attr.nillable"
            type="number"
            step="1" />
-    <input ng-switch-when="decimal"
+    <input ng-switch-when="decimal|double"
+           ng-switch-when-separator="|"
            id="layer-attr-{{ attr.name }}"
            class="form-control"
            ng-change="updateValue(attr.name)"
