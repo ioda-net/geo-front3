@@ -14,13 +14,7 @@ goog.provide('gf3_edit_directive');
 
   module.directive('gf3Edit', function($document, $http, $timeout, $translate,
       $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory, gf3Auth,
-      gf3EditSave) {
-    var MIN_NB_POINTS = {
-      'point': 1,
-      'line': 2,
-      'linestring': 2,
-      'polygon': 3
-    };
+      gf3EditSave, gf3EditUtils) {
 
     return {
       restrict: 'A',
@@ -47,7 +41,7 @@ goog.provide('gf3_edit_directive');
         var add;
         var keyPressedCb = function(event) {
           if (event.keyCode === 46 && scope.selectedFeature &&
-              !isInInputField(event)) {  // Delete key
+              !gf3EditUtils.isInInputField(event)) {  // Delete key
             scope.deleteFeature();
           } else if (event.keyCode === 27 && scope.addingFeature) { // ESC key.
             // Disable the draw interaction to cancel the drawing. Re-enable it
@@ -256,14 +250,14 @@ goog.provide('gf3_edit_directive');
               unselectFeature();
               drawnFeature = e.feature;
               addingFeature = true;
-              $document.keyup(add, removeLastPoint);
+              $document.keyup(add, gf3EditUtils.removeLastPoint);
             });
             add.on('drawend', function(e) {
               var feature = e.feature;
               scope.infos.dirty = true;
               addingFeature = false;
               drawnFeature = null;
-              $document.off('keyup', removeLastPoint);
+              $document.off('keyup', gf3EditUtils.removeLastPoint);
               addedFeatures.push(feature);
               // We need to set the geometry name so the geometry is saved in
               // the proper column. Before doing that, we need to get the
@@ -288,7 +282,7 @@ goog.provide('gf3_edit_directive');
             scope.map.addInteraction(add);
           } else {
             // If the user cancel the drawing, we must remove this callback.
-            $document.off('keyup', removeLastPoint);
+            $document.off('keyup', gf3EditUtils.removeLastPoint);
             scope.map.removeInteraction(add);
           }
         });
@@ -437,8 +431,10 @@ goog.provide('gf3_edit_directive');
                   hoverSelectableFeature = true;
                 }
 
-                hoverEdgeSelectedFeature = onEdge(feature, cursorCoords);
-                hoverVertexSelectedFeature = onVertex(feature, cursorCoords);
+                hoverEdgeSelectedFeature =
+                    gf3EditUtils.onEdge(feature, cursorCoords);
+                hoverVertexSelectedFeature =
+                    gf3EditUtils.onVertex(scope.layer, feature, cursorCoords);
               }, {
             layerFilter: layerFilter
           });
@@ -457,7 +453,8 @@ goog.provide('gf3_edit_directive');
 
           // Update help tooltip
           if (scope.addingFeature) {
-            var hasMinNbPoints = hasFeatureEnoughPoints(drawnFeature);
+            var hasMinNbPoints =
+                gf3EditUtils.hasFeatureEnoughPoints(scope.layer, drawnFeature);
             updateSelectHelpTooltip(
                 'add', scope.layer.geometry, hasMinNbPoints);
           } else if (hoverSelectableFeature) {
@@ -505,69 +502,6 @@ goog.provide('gf3_edit_directive');
         var selectFeatureOnClickDebounced =
             gaDebounce.debounce(selectFeatureOnClick, 10, false, false);
 
-        function onEdge(feature, coords) {
-          var featureGeom = feature.getGeometry();
-          var closestPoint = featureGeom.getClosestPoint(coords);
-
-          return closestPoint[0] === coords[0] &&
-              closestPoint[1] === coords[1];
-        }
-
-        function onVertex(feature, coords) {
-          var onPoint = false;
-
-          var featureCoords = feature.getGeometry().getCoordinates();
-          var featurePoints =
-              getPointsList(featureCoords, scope.layer.geometry);
-          featurePoints.forEach(function(point) {
-            if (point[0] === coords[0] && point[1] === coords[1]) {
-              onPoint = true;
-            }
-          });
-
-          return onPoint;
-        }
-
-        function getPointsList(coords, geometryType) {
-          switch (geometryType) {
-            case 'line':
-              return coords;
-            case 'polygon':
-              return coords[0];
-            case 'point':
-              return [coords];
-            default:
-              return coords;
-          }
-        }
-
-        function hasFeatureEnoughPoints(feature) {
-          if (!feature) {
-            return;
-          }
-
-          var minNbPoints = MIN_NB_POINTS[scope.layer.geometry];
-          var points = getPointsList(feature.getGeometry().getCoordinates());
-
-          // We need to use a strict comparision: when we are adding a feature,
-          // the position of the cursor (point not added yet) is counted among
-          // the points. It means that when drawing a line, if the user has
-          // only added one points, the feature has two.
-          return points.length > minNbPoints;
-        }
-
-        // Taken from the draw directive.
-        function removeLastPoint(event) {
-          if (event.data && event.which === 46 &&
-          !isInInputField(event)) {
-            event.data.removeLastPoint();
-          }
-        }
-
-        function isInInputField(event) {
-          return /^(input|textarea)$/i.test(event.target.nodeName);
-        }
-
         function showFeaturesPopup(feature, clickedCoords) {
           var geometry = feature.getGeometry();
           var coord = clickedCoords ?
@@ -583,7 +517,6 @@ goog.provide('gf3_edit_directive');
         function hideFeaturesPopup() {
           $rootScope.$broadcast('gf3EditFeaturesPopupHide');
         }
-
 
         // Register events
         scope.$on('gf3_editfeatureattrs', function() {
