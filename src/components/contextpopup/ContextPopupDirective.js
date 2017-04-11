@@ -1,13 +1,16 @@
 goog.provide('ga_contextpopup_directive');
 
+goog.require('ga_event_service');
 goog.require('ga_networkstatus_service');
 goog.require('ga_permalink');
 goog.require('ga_reframe_service');
 goog.require('ga_what3words_service');
 goog.require('gf3_plugins');
+
 (function() {
 
   var module = angular.module('ga_contextpopup_directive', [
+    'ga_event_service',
     'ga_networkstatus_service',
     'ga_permalink',
     'ga_reframe_service',
@@ -18,7 +21,7 @@ goog.require('gf3_plugins');
   module.directive('gaContextPopup',
       function($rootScope, $http, $translate, $q, $timeout, $window,
           gaBrowserSniffer, gaNetworkStatus, gaPermalink, gaGlobalOptions,
-          gaWhat3Words, gaReframe, gf3Plugins) {
+          gaWhat3Words, gaReframe, gaEvent, gf3Plugins) {
         return {
           restrict: 'A',
           replace: true,
@@ -37,14 +40,13 @@ goog.require('gf3_plugins');
             scope.secondaryEpsgContextPopupTitle =
                 gaGlobalOptions.secondaryEpsgContextPopupTitle;
 
-            // The popup content is updated (a) on contextmenu events,
-            // and (b) when the permalink is updated.
-
+            var startPixel, holdPromise, isPopoverShown = false;
+            var reframeCanceler = $q.defer();
+            var heightCanceler = $q.defer();
             var map = scope.map;
             var view = map.getView();
 
             var coordDefaultEpsg, coord4326, coordSecondaryEpsg;
-            var popoverShown = false;
 
             var overlay = new ol.Overlay({
               element: element[0],
@@ -74,7 +76,20 @@ goog.require('gf3_plugins');
               gaWhat3Words.getWords(coord4326[1],
                                     coord4326[0]).then(function(res) {
                 scope.w3w = res;
+              }, function(response) {
+                if (response.status != -1) { // Error
+                  scope.w3w = '-';
+                }
               });
+            };
+
+            var cancelRequests = function() {
+              // Cancel last requests
+              heightCanceler.resolve();
+              reframeCanceler.resolve();
+              heightCanceler = $q.defer();
+              reframeCanceler = $q.defer();
+              gaWhat3Words.cancel();
             };
 
             var handler = function(event) {
@@ -137,19 +152,25 @@ goog.require('gf3_plugins');
               // We use a conservative approach and call $apply ourselves
               // here, but we instead could also let $evalSync trigger a
               // digest cycle for us.
-              scope.$apply(function() {
+              scope.$applyAsync(function() {
 
                 $http.get(heightUrl, {
                   params: {
                     easting: coordDefaultEpsg[0],
                     northing: coordDefaultEpsg[1],
                     elevationModel: gaGlobalOptions.defaultElevationModel
-                  }
+                  },
+                  timeout: heightCanceler.promise
                 }).then(function(response) {
                   scope.altitude = parseFloat(response.data.height);
+                }, function(response) {
+                  if (response.status != -1) { // Error
+                    scope.altitude = '-';
+                  }
                 });
 
-                gaReframe.getDefaultToSecondary(coordDefaultEpsg)
+                gaReframe.getDefaultToSecondary(coordDefaultEpsg,
+                            reframeCanceler.promise)
                     .then(function(coords) {
                   scope.coordSecondaryEpsg =
                       formatCoordinates(coords, 1);
@@ -179,22 +200,35 @@ goog.require('gf3_plugins');
               }
 
               overlay.setPosition(coordDefaultEpsg);
-              showPopover();
+              element.show();
+              // We use a boolean instead of  jquery .is(':visible') selector
+              // because that doesn't work with phantomJS.
+              isPopoverShown = true;
             };
 
 
-            if (!gaBrowserSniffer.mobile && gaBrowserSniffer.events.menu) {
-              $(map.getViewport()).on(gaBrowserSniffer.events.menu, handler);
-              /* istanbul ignore next */
-              element.on(gaBrowserSniffer.events.menu, 'a', function(e) {
+            if ('oncontextmenu' in $window) {
+              $(map.getViewport()).on('contextmenu', function(event) {
+                if (!isPopoverShown) {
+                  $timeout.cancel(holdPromise);
+                  startPixel = undefined;
+                  handler(event);
+                }
+              });
+              element.on('contextmenu', 'a', function(e) {
                 e.stopPropagation();
               });
+            }
 
-            } else {
+            // IE manage contextmenu event also with touch so no need to add
+            // pointers events too.
+            if (!gaBrowserSniffer.msie) {
               // On touch devices and browsers others than ie10, display the
               // context popup after a long press (300ms)
-              var startPixel, holdPromise;
               map.on('pointerdown', function(event) {
+                if (gaEvent.isMouse(event)) {
+                  return;
+                }
                 $timeout.cancel(holdPromise);
                 startPixel = event.pixel;
                 holdPromise = $timeout(function() {
@@ -202,10 +236,16 @@ goog.require('gf3_plugins');
                 }, 300, false);
               });
               map.on('pointerup', function(event) {
+                if (gaEvent.isMouse(event)) {
+                  return;
+                }
                 $timeout.cancel(holdPromise);
                 startPixel = undefined;
               });
               map.on('pointermove', function(event) {
+                if (gaEvent.isMouse(event)) {
+                  return;
+                }
                 if (startPixel) {
                   var pixel = event.pixel;
                   var deltaX = Math.abs(startPixel[0] - pixel[0]);
@@ -220,7 +260,7 @@ goog.require('gf3_plugins');
 
             /* istanbul ignore next */
             $rootScope.$on('$translateChangeEnd', function() {
-              if (popoverShown) {
+              if (isPopoverShown) {
                 updateW3W();
               }
             });
@@ -228,7 +268,7 @@ goog.require('gf3_plugins');
             // Listen to permalink change events from the scope.
             /* istanbul ignore next */
             scope.$on('gaPermalinkChange', function(event) {
-              if (angular.isDefined(coordDefaultEpsg) && popoverShown) {
+              if (angular.isDefined(coordDefaultEpsg) && isPopoverShown) {
                 updatePopupLinks();
               }
             });
@@ -238,23 +278,13 @@ goog.require('gf3_plugins');
               if (evt) {
                 evt.stopPropagation();
               }
-              hidePopover();
+              cancelRequests();
+              element.hide();
+              isPopoverShown = false;
             };
 
             function hidePopoverOnNextChange() {
-              view.once('change:center', function() {
-                hidePopover();
-              });
-            }
-
-            function showPopover() {
-              element.css('display', 'block');
-              popoverShown = true;
-            }
-
-            function hidePopover() {
-              element.css('display', 'none');
-              popoverShown = false;
+              view.once('change:center', scope.hidePopover);
             }
 
             function updatePopupLinks() {
@@ -262,16 +292,13 @@ goog.require('gf3_plugins');
                 X: Math.round(coordDefaultEpsg[1], 1),
                 Y: Math.round(coordDefaultEpsg[0], 1)
               };
-
-              var contextPermalink = gaPermalink.getHref(p);
-              scope.contextPermalink = contextPermalink;
-
+              scope.contextPermalink = gaPermalink.getHref(p);
               scope.crosshairPermalink = gaPermalink.getHref(
                   angular.extend({crosshair: 'marker'}, p));
 
               if (!gaBrowserSniffer.mobile) {
                 scope.qrcodeUrl = qrcodeUrl + '?url=' +
-                    escape(contextPermalink);
+                    escape(scope.contextPermalink);
               }
             }
           }

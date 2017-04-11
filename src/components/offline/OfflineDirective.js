@@ -254,13 +254,13 @@ goog.require('gf3');
         });
 
         scope.$on('gaOfflineProgress', function(evt, progress) {
-          scope.$apply(function() {
+          scope.$applyAsync(function() {
             scope.percent = progress;
           });
         });
 
         scope.$on('gaOfflineSuccess', function(evt) {
-          scope.$apply(function() {
+          scope.$applyAsync(function() {
             scope.toggleDataExtent();
             gaOffline.hideSelector();
           });
@@ -272,7 +272,7 @@ goog.require('gf3');
         });
 
         scope.$on('gaOfflineAbort', function(evt) {
-          scope.$apply();
+          scope.$applyAsync();
         });
 
       }

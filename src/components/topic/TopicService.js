@@ -11,8 +11,8 @@ goog.require('ga_permalink');
    * Topics manager
    */
   module.provider('gaTopic', function() {
-    this.$get = function($rootScope, $http, gaPermalink, gaGlobalOptions,
-                         gaUrlUtils) {
+    this.$get = function($rootScope, $http, $translate, gaPermalink,
+                         gaGlobalOptions, gaUrlUtils) {
       var topic; // The current topic
       var topics = []; // The list of topics available
 
@@ -24,8 +24,7 @@ goog.require('ga_permalink');
             value.tooltip = 'topic_' + value.id + '_tooltip';
             value.thumbnail = thumbnailUrlTemplate.
                 replace('{Topic}', value.id);
-            value.langs = angular.isString(value.langs) ?
-                value.langs.split(',') : value.langs;
+            value.langs = gaGlobalOptions.languages;
             if (!value.activatedLayers) {
               value.activatedLayers = [];
             }
