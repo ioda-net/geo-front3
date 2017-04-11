@@ -1,6 +1,9 @@
 goog.provide('gf3_editfeatureattrs_directive');
 
 
+/**
+ * Display a form to edit the attributes of a popup.
+ */
 (function() {
   var module = angular.module('gf3_editfeatureattrs_directive', []);
 

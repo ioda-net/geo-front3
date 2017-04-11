@@ -11,6 +11,20 @@ goog.provide('gf3_edit_save_service');
       save: save
     };
 
+    /**
+     * Save the features in the WFS-T server.
+     *
+     * It returns a promise that will be resolved if the save succeeds and
+     * rejected otherwise. The reason for this rejection are passed as a
+     * parameter of the reject function.
+     *
+     * @param {type} url
+     * @param {type} addedFeatures
+     * @param {type} updatedFeatures
+     * @param {type} deletedFeatures
+     * @param {type} serializeOptions
+     * @return {Promise}
+     */
     function save(url, addedFeatures, updatedFeatures, deletedFeatures,
           serializeOptions) {
       var node = formatWFS.writeTransaction(addedFeatures, updatedFeatures,
@@ -47,6 +61,13 @@ goog.provide('gf3_edit_save_service');
       return saveDefered.promise;
     }
 
+    /**
+     * Returns true if the XML response from the WFS-T server contains an error
+     * message.
+     *
+     * @param {type} data
+     * @return {Boolean}
+     */
     function saveResponseContainsError(data) {
       // Depending of the server and the WFS version, the XML response will
       // be different. Here, we handle GeoServer (1.0.0 and 1.1.0) and
@@ -61,6 +82,13 @@ goog.provide('gf3_edit_save_service');
       return false;
     }
 
+    /**
+     * Gets and returns the error messages from the XML response of the WFS-/T
+     * server.
+     *
+     * @param {type} data
+     * @return {Array}
+     */
     function getErrorMessageFromSaveResponse(data) {
       var parser = new DOMParser();
       var document = parser.parseFromString(data, 'text/xml');

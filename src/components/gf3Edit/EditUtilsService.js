@@ -1,5 +1,8 @@
 goog.provide('gf3_edit_utils_service');
 
+/**
+ * Utility functions used in the EditModule.
+ */
 (function() {
   var module = angular.module('gf3_edit_utils_service', []);
 
@@ -19,6 +22,14 @@ goog.provide('gf3_edit_utils_service');
       removeLastPoint: removeLastPoint
     };
 
+    /**
+     * Returns true if the specified coords are on an edge of the specified
+     * feature.
+     *
+     * @param {type} feature
+     * @param {type} coords
+     * @return {Boolean}
+     */
     function onEdge(feature, coords) {
       var featureGeom = feature.getGeometry();
       var closestPoint = featureGeom.getClosestPoint(coords);
@@ -27,6 +38,14 @@ goog.provide('gf3_edit_utils_service');
           closestPoint[1] === coords[1];
     }
 
+    /**
+     * Returns true if the specified coords are on a vertex of the specified
+     * feature.
+     *
+     * @param {type} feature
+     * @param {type} coords
+     * @return {Boolean}
+     */
     function onVertex(layer, feature, coords) {
       var onPoint = false;
 
@@ -42,6 +61,12 @@ goog.provide('gf3_edit_utils_service');
       return onPoint;
     }
 
+    /**
+     * Return a simple Array of coordinnates for any kind of geometries.
+     * @param {type} coords
+     * @param {type} geometryType
+     * @return {Array}
+     */
     function getPointsList(coords, geometryType) {
       switch (geometryType) {
         case 'line':
@@ -55,6 +80,16 @@ goog.provide('gf3_edit_utils_service');
       }
     }
 
+    /**
+     * Returns true if the geometry of the specified feature has enough points
+     * to be a valid geometry in the specified layer.
+     *
+     * For instance, this will return true if a line has 2 points or more.
+     *
+     * @param {type} layer
+     * @param {type} feature
+     * @return {undefined|Boolean}
+     */
     function hasFeatureEnoughPoints(layer, feature) {
       if (!feature) {
         return;
@@ -70,7 +105,11 @@ goog.provide('gf3_edit_utils_service');
       return points.length > minNbPoints;
     }
 
-    // Taken from the draw directive.
+    /**
+     * Remove the last drown point.
+     *
+     * Taken from the draw directive.
+     */
     function removeLastPoint(event) {
       if (event.data && event.which === 46 &&
           !isInInputField(event)) {
@@ -78,6 +117,11 @@ goog.provide('gf3_edit_utils_service');
       }
     }
 
+    /**
+     * Returns true if the user is in a input field.
+     * @param {Event} event
+     * @return {Boolean}
+     */
     function isInInputField(event) {
       return /^(input|textarea)$/i.test(event.target.nodeName);
     }

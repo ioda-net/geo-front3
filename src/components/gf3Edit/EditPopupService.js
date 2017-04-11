@@ -1,5 +1,8 @@
 goog.provide('gf3_edit_popup_service');
 
+/**
+ * Open/hide the popups and tooltip related to the edition.
+ */
 (function() {
   var module = angular.module('gf3_edit_popup_service', [
     'pascalprecht.translate'

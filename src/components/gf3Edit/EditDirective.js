@@ -4,6 +4,9 @@ goog.provide('gf3_edit_directive');
 // errors. The directive worsk fine without them since they are already loaded
 // by other components.
 
+/**
+ * Handles user interaction with the map during the edition of a layer.
+ */
 (function() {
   var module = angular.module('gf3_edit_directive', [
     'pascalprecht.translate',
