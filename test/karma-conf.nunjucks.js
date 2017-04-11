@@ -102,6 +102,7 @@ module.exports = function(config) {
 	    //'components/**/*.html': 'html2js'
         'js/*.js': ['coverage'],
         'test/specs/importows/*.js': ['babel'],
+        'test/specs/gf3Edit/*.js': ['babel'],
         'components/**/*.js': ['coverage']
 	},
 

@@ -13,7 +13,8 @@ goog.provide('gf3_edit_directive');
   ]);
 
   module.directive('gf3Edit', function($document, $http, $timeout, $translate,
-      $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory, gf3Auth) {
+      $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory, gf3Auth,
+      gf3EditSave) {
     var MIN_NB_POINTS = {
       'point': 1,
       'line': 2,
@@ -33,8 +34,6 @@ goog.provide('gf3_edit_directive');
         isActive: '=gf3EditActive'
       },
       link: function(scope) {
-        var formatWFS = new ol.format.WFS();
-        var xs = new XMLSerializer();
         var layerFilter = function(layer) {
           return layer === scope.layer;
         };
@@ -359,84 +358,29 @@ goog.provide('gf3_edit_directive');
             is3D: scope.layer.is3D,
             version: scope.layer.version
           };
-          var node = formatWFS.writeTransaction(
-              addedFeatures, updatedFeatures,
-              deletedFeatures, serializeOptions);
           scope.message = $translate.instant('edit_saving');
-
           scope.saveErrors = [];
-          $http({
-            method: 'POST',
-            url: scope.layer.getSource().getUrl(),
-            data: xs.serializeToString(node),
-            headers: {
-              'Content-Type': 'text/xml'
-            }
-          }).then(function(resp) {
-            if (saveResponseContainsError(resp.data)) {
-              scope.message = $translate.instant('edit_save_error');
-              scope.saveErrors = getErrorMessageFromSaveResponse(resp.data);
-            } else {
-              scope.message = $translate.instant('edit_save_success');
-              scope.layer.getSource().clear();
-              clearModified();
-            }
-          }, function(resp) {
-            if (resp.status === 401 || resp.status === 403) {
-              scope.authRequired = true;
-            } else {
-              scope.message = $translate.instant('edit_save_error');
-            }
-          });
+          gf3EditSave.save(
+              scope.layer.getSource().getUrl(),
+              addedFeatures,
+              updatedFeatures,
+              deletedFeatures,
+              serializeOptions
+           ).then(function(message) {
+             scope.message = $translate.instant(message);
+             scope.layer.getSource().clear();
+             clearModified();
+           }, function(rejectionInfos) {
+             scope.message = $translate.instant(rejectionInfos.message);
+
+             if (rejectionInfos.authRequired) {
+               scope.authRequired = true;
+             }
+             if (rejectionInfos.saveErrors) {
+               scope.saveErrors = rejectionInfos.saveErrors;
+             }
+           });
         };
-
-        function saveResponseContainsError(data) {
-          // Depending of the server and the WFS version, the XML response will
-          // be different. Here, we handle GeoServer (1.0.0 and 1.1.0) and
-          // tinyOWS (1.0.0).
-          if (data.indexOf('ExceptionReport') > -1 ||
-              data.indexOf('ServiceExceptionReport') > -1 ||
-              (data.indexOf('WFS_TransactionResponse') &&
-                  data.indexOf('FAILED') > -1)) {
-            return true;
-          }
-
-          return false;
-        }
-
-        function getErrorMessageFromSaveResponse(data) {
-          var parser = new DOMParser();
-          var document = parser.parseFromString(data, 'text/xml');
-          var errorMessages = [];
-          // Depending of the server and the WFS version, the XML response will
-          // be different. Here, we handle GeoServer (1.0.0 and 1.1.0) and
-          // tinyOWS (1.0.0).
-          var messages = document.getElementsByTagName('Message');
-          var serviceExceptions =
-              document.getElementsByTagName('ServiceException');
-          var exceptionTexts = document.getElementsByTagName('ExceptionText');
-
-          if (messages.length > 0) {
-            for (var i = 0; i < messages.length; i++) {
-              errorMessages.push(messages[i].innerHTML);
-            }
-          } else if (serviceExceptions.length > 0) {
-            for (var i = 0; i < serviceExceptions.length; i++) {
-              var msgNode = serviceExceptions[i];
-              errorMessages.push(msgNode.getAttribute('code') + ' ' +
-                  msgNode.getAttribute('locator') + ' ' +
-                  msgNode.innerHTML);
-            }
-          } else if (exceptionTexts.length > 0) {
-            for (var i = 0; i < exceptionTexts.length; i++) {
-              errorMessages.push(exceptionTexts[i].innerHTML);
-            }
-          } else {
-            errorMessages.push($translate.instant('edit_unknown_save_error'));
-          }
-
-          return errorMessages;
-        }
 
         scope.deleteFeature = function() {
           if (!confirm($translate.instant('edit_confirm_delete'))) {
