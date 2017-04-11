@@ -9,12 +9,11 @@ goog.provide('gf3_edit_directive');
     'pascalprecht.translate',
     'ga_browsersniffer_service',
     'ga_debounce_service'
-
   ]);
 
-  module.directive('gf3Edit', function($document, $http, $timeout, $translate,
-      $rootScope, gaDebounce, gaBrowserSniffer, gaStyleFactory, gf3Auth,
-      gf3EditSave, gf3EditUtils) {
+  module.directive('gf3Edit', function($document, $timeout, $translate,
+      gaDebounce, gaBrowserSniffer, gaStyleFactory, gf3Auth,
+      gf3EditSave, gf3EditPopup, gf3EditUtils) {
 
     return {
       restrict: 'A',
@@ -64,57 +63,6 @@ goog.provide('gf3_edit_directive');
           }
         };
 
-        var helpTooltip;
-        function createHelpTooltip() {
-          var tooltipElement = $document[0].createElement('div');
-          tooltipElement.className = 'ga-draw-help';
-          helpTooltip = new ol.Overlay({
-            element: tooltipElement,
-            offset: [15, 15],
-            positioning: 'top-left',
-            stopEvent: true
-          });
-        }
-        function hideHelpTooltip() {
-          helpTooltip.setPosition(undefined);
-        }
-        // Display an help tooltip when selecting
-        function updateSelectHelpTooltip(type, geometry, hasMinNbPoints) {
-          var helpMsgId;
-
-          switch (type) {
-            case 'add':
-              if (addingFeature) {
-                helpMsgId = 'edit_add_feature_next_' + geometry;
-              } else {
-                helpMsgId = 'edit_add_feature_' + geometry;
-              }
-              break;
-            case 'modify':
-              helpMsgId = 'edit_modify_feature_' + geometry;
-              break;
-            case 'modify_new_vertex':
-              helpMsgId = 'edit_modify_new_vertex_' + geometry;
-              break;
-            case 'modify_existing_vertex':
-              helpMsgId = 'edit_modify_existing_vertex_' + geometry;
-              break;
-            case 'select':
-              helpMsgId = 'edit_select_feature_' + geometry;
-              break;
-            default:
-              helpMsgId = 'edit_select_no_feature';
-              break;
-          }
-
-          var message = $translate.instant(helpMsgId);
-          if (addingFeature && hasMinNbPoints) {
-            message += '<br>' + $translate.instant('edit_delete_last_point');
-          }
-          helpTooltip.getElement().innerHTML = message;
-        };
-        createHelpTooltip();
-
         var addedFeatures;
         var updatedFeatures;
         var deletedFeatures;
@@ -137,7 +85,7 @@ goog.provide('gf3_edit_directive');
                 'pointerup',
                 'pointermove'
               ], function(evt) {
-                helpTooltip.setPosition(evt.coordinate);
+                gf3EditPopup.moveHelpTooltip(evt.coordinate);
                 updateCursorAndTooltipsDebounced(evt);
               });
             }
@@ -160,7 +108,7 @@ goog.provide('gf3_edit_directive');
             });
             interaction.on('modifystart', function() {
               mapDiv.addClass(cssGrabbing);
-              hideFeaturesPopup();
+              gf3EditPopup.hideFeaturesPopup();
             });
             interaction.on('modifyend', function(event) {
               var feature = scope.selectedFeature;
@@ -171,7 +119,8 @@ goog.provide('gf3_edit_directive');
                 updatedFeatures.push(feature);
               }
               mapDiv.removeClass(cssGrabbing);
-              showFeaturesPopup(feature, event.coordinate);
+              gf3EditPopup.showFeaturesPopup(
+                  feature, scope.layer.attributes, event.coordinate);
             });
 
             snap = new ol.interaction.Snap({
@@ -180,7 +129,7 @@ goog.provide('gf3_edit_directive');
 
             scope.map.addInteraction(interaction);
             scope.map.addInteraction(snap);
-            scope.map.addOverlay(helpTooltip);
+            gf3EditPopup.init(scope.map);
 
             scope.authRequired = scope.layer.authRequired;
             scope.authUrl = scope.layer.getSource().getUrl();
@@ -188,7 +137,7 @@ goog.provide('gf3_edit_directive');
 
             scope.layer.getSource().on('addfeature', featuresRefreshCb);
 
-            mapDiv.on('mouseout', hideHelpTooltip);
+            mapDiv.on('mouseout', gf3EditPopup.hideHelpTooltip);
             $document.on('keyup', keyPressedCb);
 
             clearModified();
@@ -199,9 +148,9 @@ goog.provide('gf3_edit_directive');
             unselectFeature();
             scope.map.removeInteraction(interaction);
             scope.map.removeInteraction(snap);
-            scope.map.removeOverlay(helpTooltip);
+            gf3EditPopup.teardown();
 
-            mapDiv.off('mouseout', hideHelpTooltip);
+            mapDiv.off('mouseout', gf3EditPopup.hideHelpTooltip);
             $document.off('keyup', keyPressedCb);
             scope.layer.getSource().un('addfeature', featuresRefreshCb);
             scope.addingFeature = false;
@@ -309,7 +258,8 @@ goog.provide('gf3_edit_directive');
           var styles = selectStyleFunction(feature);
           feature.setStyle(styles);
 
-          showFeaturesPopup(feature, clickedCoords);
+          gf3EditPopup.showFeaturesPopup(
+              feature, scope.layer.attributes, clickedCoords);
         }
 
         function unselectFeature() {
@@ -318,7 +268,7 @@ goog.provide('gf3_edit_directive');
           }
           scope.selectedFeature = null;
           selectedFeatures.clear();
-          hideFeaturesPopup();
+          gf3EditPopup.hideFeaturesPopup();
         }
 
         scope.loggedIn = function() {
@@ -441,7 +391,7 @@ goog.provide('gf3_edit_directive');
 
           if (hoverSelectableFeature && !scope.addingFeature) {
             mapDiv.addClass(cssPointer);
-            updateSelectHelpTooltip();
+            gf3EditPopup.updateSelectHelpTooltip();
           } else {
             mapDiv.removeClass(cssPointer);
           }
@@ -455,10 +405,11 @@ goog.provide('gf3_edit_directive');
           if (scope.addingFeature) {
             var hasMinNbPoints =
                 gf3EditUtils.hasFeatureEnoughPoints(scope.layer, drawnFeature);
-            updateSelectHelpTooltip(
-                'add', scope.layer.geometry, hasMinNbPoints);
+            gf3EditPopup.updateSelectHelpTooltip(
+                'add', scope.layer.geometry, hasMinNbPoints, addingFeature);
           } else if (hoverSelectableFeature) {
-            updateSelectHelpTooltip('select', scope.layer.geometry);
+            gf3EditPopup.updateSelectHelpTooltip(
+                'select', scope.layer.geometry, true, addingFeature);
           } else if (hoverSelectedFeature) {
             var helpType;
             if (hoverVertexSelectedFeature) {
@@ -468,10 +419,11 @@ goog.provide('gf3_edit_directive');
             } else {
               helpType = 'modify';
             }
-            updateSelectHelpTooltip(helpType, scope.layer.geometry);
+            gf3EditPopup.updateSelectHelpTooltip(
+                helpType, scope.layer.geometry, true, addingFeature);
           } else {
             // Update tooltip to 'nothing to select'.
-            updateSelectHelpTooltip();
+            gf3EditPopup.updateSelectHelpTooltip();
           }
         };
         var updateCursorAndTooltipsDebounced = gaDebounce.debounce(
@@ -501,22 +453,6 @@ goog.provide('gf3_edit_directive');
         }
         var selectFeatureOnClickDebounced =
             gaDebounce.debounce(selectFeatureOnClick, 10, false, false);
-
-        function showFeaturesPopup(feature, clickedCoords) {
-          var geometry = feature.getGeometry();
-          var coord = clickedCoords ?
-              geometry.getClosestPoint(clickedCoords) :
-              geometry.getLastCoordinate();
-          var pixel = scope.map.getPixelFromCoordinate(coord);
-          $rootScope.$broadcast('gf3EditFeaturesPopupShow',
-              feature, scope.layer.attributes, pixel);
-          // Required for the popup to display immediatly where expected.
-          scope.$applyAsync();
-        }
-
-        function hideFeaturesPopup() {
-          $rootScope.$broadcast('gf3EditFeaturesPopupHide');
-        }
 
         // Register events
         scope.$on('gf3_editfeatureattrs', function() {
