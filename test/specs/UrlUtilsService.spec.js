@@ -127,6 +127,7 @@ describe('ga_urlutils_service', function() {
           expect(url).to.be('foo');
           expect(errorSpy.callCount).to.be(1);
           done();
+          errorSpy.restore();
         });
         $httpBackend.flush();
       });
