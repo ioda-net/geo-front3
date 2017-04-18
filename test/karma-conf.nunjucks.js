@@ -4,11 +4,17 @@ var path = require('path');
 
 function mergeFilesWithArgv(staticFiles) {
     var common = [
-       '../test/lib/angular-mocks.js',
-       '../test/lib/expect.js',
-       '../test/lib/sinon.js',
-       '../test/specs/Loader.spec.js',
-       '../test/specs/**/*.js'
+       'test/lib/angular-mocks.js',
+       'test/lib/expect.js',
+       'test/lib/sinon.js',
+       'test/specs/Loader.spec.js',
+       'test/specs/**/*.js',
+       {
+         pattern: 'test/data/*.xml',
+         watched: true,
+         served:  true,
+         included: false
+       }
     ];
     var source = staticFiles || [];
     var argv = process.argv;
@@ -33,7 +39,7 @@ function mergeFilesWithArgv(staticFiles) {
     });
 
     if (isProd) {
-      source.push('lib/build.js');
+      source.push('prod/src/lib/build.js');
       source = source.map(function(src) {
         return path.join(infra_dir, portal, src);
       });
@@ -47,38 +53,37 @@ module.exports = function(config) {
     config.set({
 	// base path, that will be used to resolve files and exclude
 	{% if prod %}
-	   basePath: '../prod',
+	   basePath: '..',
 	{% else %}
-	   basePath: '../src',
+	   basePath: '..',
 	{% endif %}
 
 	// list of files / patterns to load in the browser
 	files: mergeFilesWithArgv([
 	    {% if prod %}
-           'lib/d3.min.js',
+           'prod/src/lib/d3.min.js',
         {% else %}
-           'style/app.css',
-	       'lib/jquery.js',
-           'lib/jQuery.XDomainRequest.js',
-           'lib/slip.js',
-	       'lib/angular.js',
-	       'lib/angular-translate.js',
-	       'lib/angular-translate-loader-static-files.js',
-           'lib/d3.js',
-	       'lib/bootstrap.js',
-	       'lib/typeahead-0.9.3.js',
-	       'lib/proj4js-compressed.js',
-	       'lib/EPSG21781.js',
-	       'lib/EPSG2056.js',
-	       'lib/EPSG32631.js',
-	       'lib/EPSG32632.js',
-           'lib/fastclick.js',
-           'lib/localforage.js',
-           'lib/filesaver.js',
-           'lib/moment-with-customlocales.js',
-           'lib/ultimate-datatable.js',
-           'lib/ol3.js',
-           ${js_files}
+	       'src/lib/jquery.js',
+           'src/lib/jquery.xdomainrequest.min.js',
+           'src/lib/slip.js',
+	       'src/lib/angular.js',
+	       'src/lib/angular-translate.js',
+	       'src/lib/angular-translate-loader-static-files.js',
+           'src/lib/d3.js',
+	       'src/lib/bootstrap.js',
+	       'src/lib/typeahead.jquery.js',
+	       'src/lib/proj4js-compressed.js',
+	       'src/lib/EPSG21781.js',
+	       'src/lib/EPSG2056.js',
+	       'src/lib/EPSG32631.js',
+	       'src/lib/EPSG32632.js',
+           'src/lib/fastclick.js',
+           'src/lib/localforage.js',
+           'src/lib/filesaver.js',
+           'src/lib/moment-with-customlocales.js',
+           'src/lib/ultimate-datatable.js',
+           'src/lib/ol3.js',
+           'test/app-whitespace.js',
 	    {% endif %}
 	]),
 
@@ -95,7 +100,7 @@ module.exports = function(config) {
 	    // tests using ngMock's "module" function.
 	    //'components/**/*.html': 'html2js'
         'js/*.js': ['coverage'],
-        '../test/specs/importows/*.js': ['babel'],
+        'test/specs/importows/*.js': ['babel'],
         'components/**/*.js': ['coverage']
 	},
 
