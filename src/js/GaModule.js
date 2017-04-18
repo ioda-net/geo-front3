@@ -105,8 +105,6 @@ goog.require('gf3_webdav');
     'ga_slider_directive',
     'ga_geolocation',
     'ga_rotate',
-    'gf3_importwms_controller',
-    'gf3_importwmts_controller',
     'ga_identify_service',
     'ga_import_controller',
     'ga_main_controller',

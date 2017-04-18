@@ -384,28 +384,12 @@ itemscope itemtype="http://schema.org/WebApplication"
           <div id="tools" class="collapse">
             <div class="panel-body panel-body-wide panel-cursor">
               <ul>
-                <li><!-- Import WMS -->
-                  <a href="" ng-click="globals.importWmsPopupShown = !globals.importWmsPopupShown"
-                     data-original-title="{{'wmsimport_tooltip' | translate}}"
+                <li><!-- Import -->
+                  <a href="" ng-click="globals.importPopupShown = !globals.importPopupShown"
+                     data-original-title="{{'import_tooltip' | translate}}"
                      class="ga-custom-tooltip" data-placement="bottom"
                      accesskey="w">
-                    <span ng-class="{'selected': globals.importWmsPopupShown}" translate>import_wms</span>
-                  </a>
-                </li>
-                <li><!-- Import WMTS -->
-                  <a href="" ng-click="globals.importWmtsPopupShown = !globals.importWmtsPopupShown"
-                     data-original-title="{{'wmtsimport_tooltip' | translate}}"
-                     class="ga-custom-tooltip" data-placement="bottom"
-                     accesskey="m">
-                    <span ng-class="{'selected': globals.importWmtsPopupShown}" translate>import_wmts</span>
-                  </a>
-                </li>
-                <li><!-- Import KML -->
-                  <a href=""  ng-click="globals.importKmlPopupShown = !globals.importKmlPopupShown"
-                     data-original-title="{{'kmlimport_tooltip' | translate}}"
-                     class="ga-custom-tooltip" data-placement="bottom"
-                     accesskey="k">
-                    <span ng-class="{'selected': globals.importKmlPopupShown}" translate>import_kml</span>
+                    <span ng-class="{'selected': globals.importPopupShown}" translate>import</span>
                   </a>
                 </li>
                 <li ng-show="!globals.is3dActive"><!-- Compare -->
