@@ -9,16 +9,16 @@
  * It is used to print with mapfish v3
  */
 
-goog.provide('ngeo.PrintUtils');
+goog.provide('gf3Ngeo.PrintUtils');
 
-goog.require('ngeo');
+goog.require('gf3Ngeo');
 
 
 
 /**
  * @constructor
  */
-ngeo.PrintUtils = function() {
+gf3Ngeo.PrintUtils = function() {
 };
 
 
@@ -26,14 +26,14 @@ ngeo.PrintUtils = function() {
  * @const
  * @private
  */
-ngeo.PrintUtils.INCHES_PER_METER_ = 39.37;
+gf3Ngeo.PrintUtils.INCHES_PER_METER_ = 39.37;
 
 
 /**
  * @const
  * @private
  */
-ngeo.PrintUtils.DOTS_PER_INCH_ = 72;
+gf3Ngeo.PrintUtils.DOTS_PER_INCH_ = 72;
 
 
 /**
@@ -46,7 +46,7 @@ ngeo.PrintUtils.DOTS_PER_INCH_ = 72;
  * @return {function(ol.render.Event)} Function to use as a map postcompose
  * listener.
  */
-ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
+gf3Ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
     function(getSize, getScale) {
   var self = this;
 
@@ -69,8 +69,8 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
         var size = getSize();
         var scale = getScale(frameState);
 
-        var ppi = ngeo.PrintUtils.DOTS_PER_INCH_;
-        var ipm = ngeo.PrintUtils.INCHES_PER_METER_;
+        var ppi = gf3Ngeo.PrintUtils.DOTS_PER_INCH_;
+        var ipm = gf3Ngeo.PrintUtils.INCHES_PER_METER_;
 
         var extentHalfWidth =
             (((size[0] / ppi) / ipm) * scale / resolution) / 2;
@@ -116,16 +116,16 @@ ngeo.PrintUtils.prototype.createPrintMaskPostcompose =
  * @param {Array.<number>} printMapScales Supported map scales on the paper.
  * @return {number} The best scale.
  */
-ngeo.PrintUtils.prototype.getOptimalScale = function(
+gf3Ngeo.PrintUtils.prototype.getOptimalScale = function(
     mapSize, mapResolution, printMapSize, printMapScales) {
 
   var mapWidth = mapSize[0] * mapResolution;
   var mapHeight = mapSize[1] * mapResolution;
 
-  var scaleWidth = mapWidth * ngeo.PrintUtils.INCHES_PER_METER_ *
-      ngeo.PrintUtils.DOTS_PER_INCH_ / printMapSize[0];
-  var scaleHeight = mapHeight * ngeo.PrintUtils.INCHES_PER_METER_ *
-      ngeo.PrintUtils.DOTS_PER_INCH_ / printMapSize[1];
+  var scaleWidth = mapWidth * gf3Ngeo.PrintUtils.INCHES_PER_METER_ *
+      gf3Ngeo.PrintUtils.DOTS_PER_INCH_ / printMapSize[0];
+  var scaleHeight = mapHeight * gf3Ngeo.PrintUtils.INCHES_PER_METER_ *
+      gf3Ngeo.PrintUtils.DOTS_PER_INCH_ / printMapSize[1];
 
   var scale = Math.min(scaleWidth, scaleHeight);
   var optimal = printMapScales[0];
@@ -145,7 +145,7 @@ ngeo.PrintUtils.prototype.getOptimalScale = function(
  * @param {ol.Coordinate} mapCenter Center of the map to print.
  * @return {ol.Coordinate} The coordinates of the bottom left corner.
  */
-ngeo.PrintUtils.prototype.getBottomLeftCorner = function(mapCenter) {
+gf3Ngeo.PrintUtils.prototype.getBottomLeftCorner = function(mapCenter) {
   return [mapCenter[0] - this.extentHalfHorizontalDistance_,
     mapCenter[1] - this.extentHalfVerticalDistance_];
 };
@@ -156,7 +156,7 @@ ngeo.PrintUtils.prototype.getBottomLeftCorner = function(mapCenter) {
  * @param {ol.Coordinate} mapCenter Center of the map to print.ç
  * @return {ol.Coordinate} The coordinates of the bottom rigth corner.
  */
-ngeo.PrintUtils.prototype.getBottomRightCorner = function(mapCenter) {
+gf3Ngeo.PrintUtils.prototype.getBottomRightCorner = function(mapCenter) {
   return [mapCenter[0] + this.extentHalfHorizontalDistance_,
     mapCenter[1] - this.extentHalfVerticalDistance_];
 };
@@ -167,7 +167,7 @@ ngeo.PrintUtils.prototype.getBottomRightCorner = function(mapCenter) {
  * @param {ol.Coordinate} mapCenter Center of the map to print.
  * @return {ol.Coordinate} The coordinates of the up left corner.
  */
-ngeo.PrintUtils.prototype.getUpLeftCorner = function(mapCenter) {
+gf3Ngeo.PrintUtils.prototype.getUpLeftCorner = function(mapCenter) {
   return [mapCenter[0] - this.extentHalfHorizontalDistance_,
     mapCenter[1] + this.extentHalfVerticalDistance_];
 };
@@ -178,11 +178,11 @@ ngeo.PrintUtils.prototype.getUpLeftCorner = function(mapCenter) {
  * @param {ol.Coordinate} mapCenter Center of the map to print.
  * @return {ol.Coordinate} The coordinates of the up right corner.
  */
-ngeo.PrintUtils.prototype.getUpRightCorner = function(mapCenter) {
+gf3Ngeo.PrintUtils.prototype.getUpRightCorner = function(mapCenter) {
   return [mapCenter[0] + this.extentHalfHorizontalDistance_,
     mapCenter[1] + this.extentHalfVerticalDistance_];
 };
 
 
-ngeoModule
-        .service('ngeoPrintUtils', ngeo.PrintUtils);
+gf3NgeoModule
+        .service('ngeoPrintUtils', gf3Ngeo.PrintUtils);

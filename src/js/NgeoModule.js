@@ -5,7 +5,7 @@
  * It is used to print with mapfish v3
  */
 
-goog.provide('ngeo');
+goog.provide('gf3Ngeo');
 
 /** @type {!angular.Module} */
-var ngeoModule = angular.module('ngeo', []);
+var gf3NgeoModule = angular.module('gf3Ngeo', []);
