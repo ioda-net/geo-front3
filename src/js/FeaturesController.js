@@ -11,6 +11,7 @@ goog.provide('gf3_features_controller');
           identifyUrlTemplate: gaGlobalOptions.apiUrl + '/rest/services/MapServer/identify',
           params: {
             geometryType: 'esriGeometryPoint',
+            epsg: gaGlobalOptions.defaultEpsg,
             geometryFormat: 'geojson'
           },
           popupOptions: {
