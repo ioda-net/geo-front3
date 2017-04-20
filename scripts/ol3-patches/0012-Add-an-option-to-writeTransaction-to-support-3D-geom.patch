@@ -1,31 +1,40 @@
-From e3db4f0f11c4f185d4713dc9fb5fe33bafb5522d Mon Sep 17 00:00:00 2001
+From 870bc51ad9e069d05351618bcb5e76bc80687445 Mon Sep 17 00:00:00 2001
 From: Julien Enselme <julien.enselme@ioda.net>
 Date: Thu, 6 Apr 2017 18:10:34 +0200
-Subject: [PATCH] Add an option to writeTransaction to support 3D geometries
+Subject: [PATCH 1/3] Add an option to writeTransaction to support 3D
+ geometries
 
 Close #6630
 ---
- externs/olx.js                                     |  9 +++
+ externs/olx.js                                     | 10 +++
  src/ol/format/gml2.js                              | 28 +++++---
  src/ol/format/gml3.js                              | 32 ++++++---
  src/ol/format/wfs.js                               |  6 +-
  test/spec/ol/format/wfs.test.js                    | 80 ++++++++++++++++++++++
  .../format/wfs/TransactionMultiVersion100_3D.xml   | 32 +++++++++
  test/spec/ol/format/wfs/TransactionMulti_3D.xml    | 40 +++++++++++
- 7 files changed, 208 insertions(+), 19 deletions(-)
+ 7 files changed, 209 insertions(+), 19 deletions(-)
  create mode 100644 test/spec/ol/format/wfs/TransactionMultiVersion100_3D.xml
  create mode 100644 test/spec/ol/format/wfs/TransactionMulti_3D.xml
 
 diff --git a/externs/olx.js b/externs/olx.js
-index 9c4bccc..46ba6c2 100644
+index 71b5ed8..0510ba7 100644
 --- a/externs/olx.js
 +++ b/externs/olx.js
-@@ -2333,6 +2333,15 @@ olx.format.WFSWriteTransactionOptions.prototype.handle;
+@@ -2299,6 +2299,7 @@ olx.format.WFSWriteGetFeatureOptions.prototype.resultType;
+  *     featureType: string,
+  *     srsName: (string|undefined),
+  *     handle: (string|undefined),
++ *     is3D: (boolean|undefined),
+  *     nativeElements: Array.<Object>,
+  *     gmlOptions: (olx.format.GMLOptions|undefined),
+  *     version: (string|undefined)}}
+@@ -2348,6 +2349,15 @@ olx.format.WFSWriteTransactionOptions.prototype.handle;
  
  
  /**
 + * Must be set to true if the transaction is for a 3D layer. This will allow
-+ * the Z coordinate to be include in the transaction.
++ * the Z coordinate to be included in the transaction.
 + * @type {boolean|undefined}
 + * @api
 + */
@@ -37,7 +46,7 @@ index 9c4bccc..46ba6c2 100644
   * @type {Array.<Object>}
   * @api
 diff --git a/src/ol/format/gml2.js b/src/ol/format/gml2.js
-index 8c1fb48..cdcc826 100644
+index 8c1fb48..134e208 100644
 --- a/src/ol/format/gml2.js
 +++ b/src/ol/format/gml2.js
 @@ -352,6 +352,7 @@ ol.format.GML2.prototype.createCoordinatesNode_ = function(namespaceURI) {
@@ -78,7 +87,7 @@ index 8c1fb48..cdcc826 100644
  /**
   * @param {Array.<number>} point Point geometry.
   * @param {string=} opt_srsName Optional srsName
-+ * @param {boolean=} opt_is3D wether the geometry is 3D or not.
++ * @param {boolean=} opt_is3D whether the geometry is 3D or not.
   * @return {string} The coords string.
   * @private
   */
@@ -165,7 +174,7 @@ index 8c1fb48..cdcc826 100644
        this.MULTIGEOMETRY_MEMBER_NODE_FACTORY_, polygons,
        objectStack, undefined, this);
 diff --git a/src/ol/format/gml3.js b/src/ol/format/gml3.js
-index 2036d94..171a95b 100644
+index 2036d94..be9a256 100644
 --- a/src/ol/format/gml3.js
 +++ b/src/ol/format/gml3.js
 @@ -565,6 +565,7 @@ ol.format.GML3.prototype.SEGMENTS_PARSERS_ = {
@@ -190,7 +199,7 @@ index 2036d94..171a95b 100644
  /**
   * @param {Array.<number>} point Point geometry.
   * @param {string=} opt_srsName Optional srsName
-+ * @param {boolean=} opt_is3D wether the geometry is 3D or not.
++ * @param {boolean=} opt_is3D whether the geometry is 3D or not.
   * @return {string} The coords string.
   * @private
   */
@@ -310,10 +319,10 @@ index 2036d94..171a95b 100644
      surface: this.surface_,
      multiSurface: this.multiSurface_,
 diff --git a/src/ol/format/wfs.js b/src/ol/format/wfs.js
-index 5ad2431..60eaf4f 100644
+index 5b0b19c..d666940 100644
 --- a/src/ol/format/wfs.js
 +++ b/src/ol/format/wfs.js
-@@ -452,7 +452,7 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
+@@ -469,7 +469,7 @@ ol.format.WFS.writeUpdate_ = function(node, feature, objectStack) {
      }
      ol.xml.pushSerializeAndPop(/** @type {ol.XmlNodeStackItem} */ (
        {'gmlVersion': context['gmlVersion'], node: node,
@@ -322,7 +331,7 @@ index 5ad2431..60eaf4f 100644
          ol.format.WFS.TRANSACTION_SERIALIZERS_,
          ol.xml.makeSimpleNodeFactory('Property'), values,
          objectStack);
-@@ -911,7 +911,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+@@ -934,7 +934,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
    if (inserts) {
      obj = {node: node, 'featureNS': options.featureNS,
        'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
@@ -331,7 +340,7 @@ index 5ad2431..60eaf4f 100644
      ol.obj.assign(obj, baseObj);
      ol.xml.pushSerializeAndPop(obj,
          ol.format.WFS.TRANSACTION_SERIALIZERS_,
-@@ -921,7 +921,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
+@@ -944,7 +944,7 @@ ol.format.WFS.prototype.writeTransaction = function(inserts, updates, deletes,
    if (updates) {
      obj = {node: node, 'featureNS': options.featureNS,
        'featureType': options.featureType, 'featurePrefix': options.featurePrefix,
@@ -341,14 +350,14 @@ index 5ad2431..60eaf4f 100644
      ol.xml.pushSerializeAndPop(obj,
          ol.format.WFS.TRANSACTION_SERIALIZERS_,
 diff --git a/test/spec/ol/format/wfs.test.js b/test/spec/ol/format/wfs.test.js
-index 89b76fa..e352bf5 100644
+index 0d9fe3e..5c2f15f 100644
 --- a/test/spec/ol/format/wfs.test.js
 +++ b/test/spec/ol/format/wfs.test.js
-@@ -839,6 +839,86 @@ describe('ol.format.WFS', function() {
+@@ -880,6 +880,86 @@ describe('ol.format.WFS', function() {
      });
    });
  
-+  describe('when writting out a transaction request', function() {
++  describe('when writing out a transaction request', function() {
 +    var text;
 +    var filename = 'spec/ol/format/wfs/TransactionMultiVersion100_3D.xml';
 +    before(function(done) {

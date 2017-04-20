@@ -1,7 +1,7 @@
-From 6978da08fb5ad62f7bd4f62a0d5df6993f1640df Mon Sep 17 00:00:00 2001
+From 4955097a523fa9e1bee696ef162173fb3d165def Mon Sep 17 00:00:00 2001
 From: Julien Enselme <julien.enselme@ioda.net>
 Date: Fri, 7 Apr 2017 10:58:57 +0200
-Subject: [PATCH] Prevent Z to be undefined in 3D WFS transactions
+Subject: [PATCH 2/3] Prevent Z to be undefined in 3D WFS transactions
 
 For newly created points, Z can be undefined. In these cases, we use 0
 for Z.
@@ -11,7 +11,7 @@ for Z.
  2 files changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/src/ol/format/gml2.js b/src/ol/format/gml2.js
-index cdcc826..282438a 100644
+index 134e208..f90f07b 100644
 --- a/src/ol/format/gml2.js
 +++ b/src/ol/format/gml2.js
 @@ -471,7 +471,9 @@ ol.format.GML2.prototype.getCoords_ = function(point, opt_srsName, opt_is3D) {
@@ -26,7 +26,7 @@ index cdcc826..282438a 100644
  
    return coords;
 diff --git a/src/ol/format/gml3.js b/src/ol/format/gml3.js
-index 171a95b..cf55c95 100644
+index be9a256..2e77ea6 100644
 --- a/src/ol/format/gml3.js
 +++ b/src/ol/format/gml3.js
 @@ -580,7 +580,9 @@ ol.format.GML3.prototype.writePos_ = function(node, value, objectStack) {
