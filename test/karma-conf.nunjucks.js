@@ -39,7 +39,7 @@ function mergeFilesWithArgv(staticFiles) {
     });
 
     if (isProd) {
-      source.push('prod/src/lib/build.js');
+      source.push('lib/build.js');
       source = source.map(function(src) {
         return path.join(infra_dir, portal, src);
       });
@@ -52,16 +52,12 @@ function mergeFilesWithArgv(staticFiles) {
 module.exports = function(config) {
     config.set({
 	// base path, that will be used to resolve files and exclude
-	{% if prod %}
 	   basePath: '..',
-	{% else %}
-	   basePath: '..',
-	{% endif %}
 
 	// list of files / patterns to load in the browser
 	files: mergeFilesWithArgv([
-	    {% if prod %}
-           'prod/src/lib/d3.min.js',
+        {% if prod %}
+           'lib/d3.min.js',
         {% else %}
 	       'src/lib/jquery.js',
            'src/lib/jquery.xdomainrequest.min.js',
