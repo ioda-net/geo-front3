@@ -170,7 +170,16 @@ goog.require('ngeo.fileService');
     };
 
     $scope.options.isValidUrl = gaUrlUtils.isValid;
-    $scope.options.getOlLayerFromGetCapLayer = gaWms.getOlLayerFromGetCapLayer;
+    $scope.options.getOlLayerFromGetCapLayer = function(layer, kind) {
+      switch(kind) {
+        case 'WMS':
+          return gaWms.getOlLayerFromGetCapLayer(layer);
+        case 'WMTS':
+          return gf3Wmts.getOlLayerFromGetCapLayer(layer);
+        default:
+          throw new Error('Unknow kind of layer: ' + kind);
+      }
+    };
     $scope.options.addPreviewLayer = function(map, layer, kind) {
       switch(kind) {
         case 'WMS':
