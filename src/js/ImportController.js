@@ -170,27 +170,15 @@ goog.require('ngeo.fileService');
     };
 
     $scope.options.isValidUrl = gaUrlUtils.isValid;
-    $scope.options.getOlLayerFromGetCapLayer = function(layer, kind) {
-      switch(kind) {
-        case 'WMS':
-          return gaWms.getOlLayerFromGetCapLayer(layer);
-        case 'WMTS':
-          return gf3Wmts.getOlLayerFromGetCapLayer(layer);
-        default:
-          throw new Error('Unknow kind of layer: ' + kind);
+    $scope.options.getOlLayerFromGetCapLayer = function(layer) {
+      if (layer.wmsUrl) {
+        return gaWms.getOlLayerFromGetCapLayer(layer);
+      } else if (layer.capabilitiesUrl) {
+        return gf3Wmts.getOlLayerFromGetCapLayer(layer);
       }
     };
-    $scope.options.addPreviewLayer = function(map, layer, kind) {
-      switch(kind) {
-        case 'WMS':
-          gaPreviewLayers.addGetCapWMSLayer(map, layer);
-          break;
-        case 'WMTS':
-          gaPreviewLayers.addGetCapWMTSLayer(map, layer);
-          break;
-        default:
-          throw new Error('Unknow kind of layer: ' + kind);
-      }
+    $scope.options.addPreviewLayer = function(map, layer) {
+      gaPreviewLayers.addGetCapLayer(map, layer);
     };
     $scope.options.removePreviewLayer = gaPreviewLayers.removeAll;
     $scope.options.transformExtent = gaMapUtils.intersectWithDefaultExtent;
