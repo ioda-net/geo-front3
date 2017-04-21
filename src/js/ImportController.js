@@ -156,11 +156,17 @@ goog.require('ngeo.fileService');
       'http://rips-gdi.lubw.baden-wuerttemberg.de/arcgis/services/wms/UIS_0100000001500003/MapServer/WMSServer',
       'http://rips-gdi.lubw.baden-wuerttemberg.de/arcgis/services/wms/UIS_0100000004200001/MapServer/WMSServer'
     ];
+    var wmsList = gaGlobalOptions.wmsList !== undefined ?
+        gaGlobalOptions.wmsList : defaultWmsList;
+    var defaultWmtsList = [
+      'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml'
+    ];
+    var wmtsList = gaGlobalOptions.wmtsList !== undefined ?
+          gaGlobalOptions.wmtsList : defaultWmtsList;
 
     $scope.supportDnd = !gaBrowserSniffer.msie || gaBrowserSniffer.msie > 9;
     $scope.options = {
-      urls: gaGlobalOptions.wmsList !== undefined ?
-        gaGlobalOptions.wmsList : defaultWmsList
+      urls: wmtsList.concat(wmsList)
     };
 
     $scope.options.isValidUrl = gaUrlUtils.isValid;
