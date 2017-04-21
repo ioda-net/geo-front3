@@ -12,7 +12,7 @@ goog.require('ngeo.fileService');
 
   module.controller('GaImportController', function($scope, $q, $document,
       $window, $timeout, ngeoFile, gaKml, gaBrowserSniffer, gaWms, gaUrlUtils,
-      gaLang, gaPreviewLayers, gaMapUtils, gaGlobalOptions) {
+      gaLang, gaPreviewLayers, gaMapUtils, gaGlobalOptions, gf3Wmts) {
 
     var defaultWmsList = [
       'https://wms.geo.admin.ch/?lang=',
@@ -171,8 +171,17 @@ goog.require('ngeo.fileService');
 
     $scope.options.isValidUrl = gaUrlUtils.isValid;
     $scope.options.getOlLayerFromGetCapLayer = gaWms.getOlLayerFromGetCapLayer;
-    $scope.options.addPreviewLayer = function(map, layer) {
-      gaPreviewLayers.addGetCapWMSLayer(map, layer);
+    $scope.options.addPreviewLayer = function(map, layer, kind) {
+      switch(kind) {
+        case 'WMS':
+          gaPreviewLayers.addGetCapWMSLayer(map, layer);
+          break;
+        case 'WMTS':
+          gaPreviewLayers.addGetCapWMTSLayer(map, layer);
+          break;
+        default:
+          throw new Error('Unknow kind of layer: ' + kind);
+      }
     };
     $scope.options.removePreviewLayer = gaPreviewLayers.removeAll;
     $scope.options.transformExtent = gaMapUtils.intersectWithDefaultExtent;

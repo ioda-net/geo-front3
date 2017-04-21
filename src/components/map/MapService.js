@@ -474,31 +474,31 @@ goog.require('ga_urlutils_service');
           return layerConfig;
         };
 
-        // Create an ol WMS layer from GetCapabilities informations
-        this.getOlLayerFromGetCapLayer = function(wmtsSourceOptions) {
-          wmtsSourceOptions.attributions = [
+        // Create an ol WMTS layer from GetCapabilities informations
+        this.getOlLayerFromGetCapLayer = function(getCapLayer) {
+          getCapLayer.sourceConfig.attributions = [
             '<a href="' +
-              wmtsSourceOptions.attributionUrl +
+              getCapLayer.attributionUrl +
               '" target="new">' +
-              wmtsSourceOptions.attribution + '</a>'
+              getCapLayer.attribution + '</a>'
           ];
-          var source = new ol.source.WMTS(wmtsSourceOptions);
+          var source = new ol.source.WMTS(getCapLayer.sourceConfig);
           var layer = new ol.layer.Tile({
-            id: wmtsSourceOptions.id,
+            id: getCapLayer.Identifier,
             source: source,
             extent: gaMapUtils.intersectWithDefaultExtent(
                   source.getProjection().getExtent()),
             preload: gaMapUtils.preload,
-            attribution: wmtsSourceOptions.attribution
+            attribution: getCapLayer.sourceConfig.attribution
           });
           gaDefinePropertiesForLayer(layer);
           layer.useThirdPartyData =
-              gaUrlUtils.isThirdPartyValid(wmtsSourceOptions.urls[0]);
-          layer.label = wmtsSourceOptions.Title;
-          layer.url = wmtsSourceOptions.attributionUrl;
-          layer.attributions = wmtsSourceOptions.attributions;
-          layer.timeEnabled = wmtsSourceOptions.timeEnabled;
-          layer.timestamps = wmtsSourceOptions.timestamps;
+              gaUrlUtils.isThirdPartyValid(getCapLayer.sourceConfig.urls[0]);
+          layer.label = getCapLayer.Title;
+          layer.url = getCapLayer.attributionUrl;
+          layer.attributions = getCapLayer.attributions;
+          layer.timeEnabled = getCapLayer.timeEnabled;
+          layer.timestamps = getCapLayer.timestamps;
 
           return layer;
         };
