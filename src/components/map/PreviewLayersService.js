@@ -82,7 +82,7 @@ goog.require('ga_wms_service');
           this.removeAll(map);
 
           // Search or create the preview layer
-          var olPreviewLayer = olPreviewLayers[getCapLayer.Identifier];
+          var olPreviewLayer = olPreviewLayers[getCapLayer.id];
 
           if (!olPreviewLayer) {
             olPreviewLayer = gf3Wmts.getOlLayerFromGetCapLayer(getCapLayer);
@@ -90,7 +90,7 @@ goog.require('ga_wms_service');
 
           olPreviewLayer.preview = true;
           olPreviewLayer.displayInLayerManager = false;
-          olPreviewLayers[getCapLayer.Identifier] = olPreviewLayer;
+          olPreviewLayers[getCapLayer.id] = olPreviewLayer;
           map.addLayer(olPreviewLayer);
 
           return olPreviewLayer;

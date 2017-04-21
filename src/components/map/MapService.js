@@ -406,56 +406,61 @@ goog.require('ga_urlutils_service');
           return exportedDimensions.join(';');
         };
 
-        var completeWmtsConfig = function(layerConfig, capabilities, layer,
-                getCapabilitiesUrl) {
-          layerConfig.Title = layer.Title;
-          layerConfig.Name = layer.Title;
-          layerConfig.Abstract = layer.Abstract;
-          layerConfig.id = 'WMTS||' + layer.Identifier + '||' +
-              formatDimensions(layerConfig.dimensions) + '||' +
-              getCapabilitiesUrl;
-          layerConfig.attribution = capabilities.ServiceProvider.ProviderName;
-          layerConfig.attributionUrl =
-              capabilities.ServiceProvider.ProviderSite;
-          layerConfig.extent = layerConfig.projection.extent_;
+        var getDimensions = function(getCapLayer) {
+          var dimensions = {};
+          if (getCapLayer.Dimension && getCapLayer.Dimension.length > 0 &&
+              getCapLayer.Dimension[0].Identifier) {
+            dimensions[getCapLayer.Dimension[0].Identifier] =
+                getCapLayer.Dimension[0].Default;
+          }
+          return dimensions;
+        };
+
+        var completeWmtsConfig = function(getCapLayer) {
+          var dimensions = getDimensions(getCapLayer);
+          getCapLayer.id = 'WMTS||' + getCapLayer.Identifier + '||' +
+              formatDimensions(dimensions) + '||' +
+              getCapLayer.capabilitiesUrl;
           // Enable time selector if layer has multiple values for the time
           // dimension
-          for (var i = 0; i < layer.Dimension.length; i++) {
-            var dimension = layer.Dimension[i];
+          for (var i = 0; i < getCapLayer.Dimension.length; i++) {
+            var dimension = getCapLayer.Dimension[i];
             if (dimension.Identifier === 'Time') {
-              layerConfig.timeEnabled = dimension.Value.length > 1;
-              layerConfig.timestamps = dimension.Value;
+              getCapLayer.timeEnabled = dimension.Value.length > 1;
+              getCapLayer.timestamps = dimension.Value;
               break;
             }
           }
         };
 
         var getLayerConfig = function(getCapabilities, layer) {
-          var getCapabilitiesUrl = getCapabilities.OperationsMetadata
-            .GetCapabilities
-            .DCP
-            .HTTP
-            .Get[0]
-            .href;
           var requestEncoding = getCapabilities.OperationsMetadata
-            .GetTile
-            .DCP
-            .HTTP
-            .Get[0]
-            .Constraint[0]
-            .AllowedValues
-            .Value[0];
+              .GetTile
+              .DCP
+              .HTTP
+              .Get[0]
+              .Constraint[0]
+              .AllowedValues
+              .Value[0];
 
           var layerOptions = {
             layer: layer.Identifier,
             requestEncoding: requestEncoding
           };
-          var layerConfig = ol.source.WMTS.optionsFromCapabilities(
+          layer.sourceConfig = ol.source.WMTS.optionsFromCapabilities(
               getCapabilities, layerOptions);
-          completeWmtsConfig(
-              layerConfig, getCapabilities, layer, getCapabilitiesUrl);
+          layer.attribution = getCapabilities.ServiceProvider.ProviderName;
+          layer['attributionUrl'] =
+              getCapabilities.ServiceProvider.ProviderSite;
+          layer['capabilitiesUrl'] = getCapabilities.OperationsMetadata
+              .GetCapabilities
+              .DCP
+              .HTTP
+              .Get[0]
+              .href;
+          completeWmtsConfig(layer);
 
-          return layerConfig;
+          return layer;
         };
 
         this.getLayerConfig = getLayerConfig;
@@ -483,8 +488,9 @@ goog.require('ga_urlutils_service');
               getCapLayer.attribution + '</a>'
           ];
           var source = new ol.source.WMTS(getCapLayer.sourceConfig);
+          completeWmtsConfig(getCapLayer);
           var layer = new ol.layer.Tile({
-            id: getCapLayer.Identifier,
+            id: getCapLayer.id,
             source: source,
             extent: gaMapUtils.intersectWithDefaultExtent(
                   source.getProjection().getExtent()),
