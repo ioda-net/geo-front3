@@ -233,7 +233,11 @@ goog.require('ngeo.fileService');
         }, function(evt) {
           defer.notify(evt);
         });
-
+      } else if (ngeoFile.isWmtsGetCap(data)) {
+        $scope.wmtsGetCap = data;
+        defer.resolve({
+          message: 'upload_succeeded'
+        });
       } else {
 
         $window.console.error('Unparseable content: ', data);
