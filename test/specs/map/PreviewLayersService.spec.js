@@ -93,10 +93,10 @@ describe('ga_previewlayers_service', function() {
       });
     });
 
-    describe('addGetCapWMSLayer', function() {
+    describe('addGetCapLayer', function() {
 
       beforeEach(function() {
-        gaPreviewLayers.addGetCapWMSLayer(map, {id: 'some'});
+        gaPreviewLayers.addGetCapLayer(map, {id: 'some', wmsUrl: 'URL'});
       });
 
       it('adds a preview layer with good properties', function() {
@@ -110,14 +110,14 @@ describe('ga_previewlayers_service', function() {
 
       it('uses an existing preview layer if exist', function() {
         var spy = sinon.spy(gaWms, 'getOlLayerFromGetCapLayer');
-        gaPreviewLayers.addGetCapWMSLayer(map, {id: 'some'});
+        gaPreviewLayers.addGetCapLayer(map, {id: 'some', wmsUrl: 'URL'});
         expect(spy.callCount).to.be(0);
       });
 
       it('doesn\'t add 2 preview layers', function() {
         var layers = map.getLayers();
         expect(layers.getLength()).to.be(1);
-        gaPreviewLayers.addGetCapWMSLayer(map, {id: 'other'});
+        gaPreviewLayers.addGetCapLayer(map, {id: 'other', wmsUrl: 'URL'});
         expect(layers.getLength()).to.be(1);
         expect(layers.item(0).id).to.be('other');
       });
@@ -133,7 +133,7 @@ describe('ga_previewlayers_service', function() {
         map.addLayer(previewFeaturesLayer);
         map.addLayer(new ol.layer.Layer({}));
         gaPreviewLayers.addBodLayer(map, 'some');
-        gaPreviewLayers.addGetCapWMSLayer(map, {id: 'some1'});
+        gaPreviewLayers.addGetCapLayer(map, {id: 'some1', wmsUrl: 'URL'});
 
         var layers = map.getLayers();
         expect(layers.getLength()).to.be(3);
