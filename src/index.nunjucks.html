@@ -881,11 +881,11 @@ itemscope itemtype="http://schema.org/WebApplication"
           {%- endif %}
           styles: {
             hlFill: {
-              color: ${front.gf3.styles.hlFill.color}
+              color: ${front.gf3.get('styles', {}).get('hlFill', {}).get('color', 'null')}
             },
             hlStroke: {
-              color: ${front.gf3.styles.hlStroke.color},
-              width: ${front.gf3.styles.hlStroke.width}
+              color: ${front.gf3.get('styles', {}).get('hlStroke', {}).get('color', 'null')},
+              width: ${front.gf3.get('styles', {}).get('hlStroke', {}).get('width', 'null')}
             }
           }
         });
