@@ -1,0 +1,415 @@
+From 36e9ed3e49180b874547d436054b7673fc5e63e3 Mon Sep 17 00:00:00 2001
+From: Julien Enselme <julien.enselme@ioda.net>
+Date: Tue, 25 Apr 2017 10:14:04 +0200
+Subject: [PATCH] Add directive to import layers from a WMTS server
+
+Close #2537
+---
+ options/ngeox.js                                   |  10 ++
+ src/modules/import/file.js                         |   4 +
+ src/modules/import/importmodule.js                 |   6 +-
+ src/modules/import/partials/wmts-get-cap-item.html |   7 +
+ src/modules/import/partials/wmts-get-cap.html      |  27 ++++
+ src/modules/import/style/import.less               |   4 +-
+ .../style/{wmsgetcap.less => owsgetcap.less}       |   3 +-
+ .../{wmsgetcapitem.less => owsgetcapitem.less}     |   3 +-
+ src/modules/import/wmtsgetcap.js                   | 145 +++++++++++++++++++++
+ src/modules/import/wmtsgetcapitem.js               |  86 ++++++++++++
+ 10 files changed, 290 insertions(+), 5 deletions(-)
+ create mode 100644 src/modules/import/partials/wmts-get-cap-item.html
+ create mode 100644 src/modules/import/partials/wmts-get-cap.html
+ rename src/modules/import/style/{wmsgetcap.less => owsgetcap.less} (98%)
+ rename src/modules/import/style/{wmsgetcapitem.less => owsgetcapitem.less} (88%)
+ create mode 100644 src/modules/import/wmtsgetcap.js
+ create mode 100644 src/modules/import/wmtsgetcapitem.js
+
+diff --git a/options/ngeox.js b/options/ngeox.js
+index af7d162..93ba6be 100644
+--- a/options/ngeox.js
++++ b/options/ngeox.js
+@@ -2208,3 +2208,13 @@ ngeox.ImportOnlineOptions;
+  * }}
+  */
+ ngeox.ImportWmsGetCapItemOptions;
++
++/**
++ * @typedef {{
++ * layerHovered: Function,
++ * addPreviewLayer: Function,
++ * removePreviewLayer: function(ol.Map),
++ * layerSelected: {Name: string, Abstract: String, isInvalid: boolean, Layer: Object}
++ * }}
++ */
++ngeox.ImportWmtsGetCapItemOptions;
+diff --git a/src/modules/import/file.js b/src/modules/import/file.js
+index f597b84..c10b04c 100644
+--- a/src/modules/import/file.js
++++ b/src/modules/import/file.js
+@@ -21,6 +21,10 @@ ngeo.File = function($q, $http, $window, gettext) {
+     return /<(WMT_MS_Capabilities|WMS_Capabilities)/.test(fileContent);
+   };
+ 
++  this.isWmtsGetCap = function(fileContent) {
++    return /wmtsGetCapabilities/.test(fileContent);
++  };
++
+   this.isKml = function(fileContent) {
+     return /<kml/.test(fileContent) && /<\/kml>/.test(fileContent);
+   };
+diff --git a/src/modules/import/importmodule.js b/src/modules/import/importmodule.js
+index f40a95c..7669c8f 100644
+--- a/src/modules/import/importmodule.js
++++ b/src/modules/import/importmodule.js
+@@ -7,6 +7,8 @@ const local = goog.require('ngeo.importLocalDirective');
+ const online = goog.require('ngeo.importOnlineDirective');
+ const wmsGetCap = goog.require('ngeo.wmsGetCapDirective');
+ const wmsGetCapItem = goog.require('ngeo.wmsGetCapItemDirective');
++const wmtsGetCap = goog.require('ngeo.wmtsGetCapDirective');
++const wmtsGetCapItem = goog.require('ngeo.wmtsGetCapItemDirective');
+ 
+ 
+ exports.module = angular.module('ngeo.import', [
+@@ -15,5 +17,7 @@ exports.module = angular.module('ngeo.import', [
+   local.module.name,
+   online.module.name,
+   wmsGetCap.module.name,
+-  wmsGetCapItem.module.name
++  wmsGetCapItem.module.name,
++  wmtsGetCap.module.name,
++  wmtsGetCapItem.module.name
+ ]);
+diff --git a/src/modules/import/partials/wmts-get-cap-item.html b/src/modules/import/partials/wmts-get-cap-item.html
+new file mode 100644
+index 0000000..55618fd
+--- /dev/null
++++ b/src/modules/import/partials/wmts-get-cap-item.html
+@@ -0,0 +1,7 @@
++<div class="ngeo-header-group"
++     ng-class="{'ngeo-odd': $odd, 'ngeo-invalid': layer.isInvalid, 'ngeo-selected': (options.layerSelected === layer)}"
++     ng-mouseenter="addPreviewLayer($event, layer)"
++     ng-mouseleave="removePreviewLayer($event)"
++     ng-click="toggleLayerSelected($event, layer)" >
++  {{layer.Title}}
++</div>
+diff --git a/src/modules/import/partials/wmts-get-cap.html b/src/modules/import/partials/wmts-get-cap.html
+new file mode 100644
+index 0000000..4ed0c98
+--- /dev/null
++++ b/src/modules/import/partials/wmts-get-cap.html
+@@ -0,0 +1,27 @@
++<div class="ngeo-container">
++  <div class="ngeo-header" ng-click="reverse = !reverse">
++    <label translate>Layer</label>
++    <button class="pull-right fa" ng-class="{'fa-sort-by-alphabet': !reverse, 'fa-sort-by-alphabet-alt': reverse}"></button>
++  </div>
++  <div class="ngeo-content">
++    <ul>
++      <li ng-repeat="layer in layers | orderBy:'Title':reverse">
++        <div ngeo-wmts-get-cap-item></div>
++      </li>
++    </ul>
++  </div>
++  <div class="modal-backdrop fade in" ng-show="progress > 0 && progress < 100">
++    <div class="progress progress-striped active">
++      <div class="progress-bar" style="width: 100%;"></div>
++    </div>
++  </div>
++</div>
++<div class="ngeo-descr">
++  <label translate>Description</label>
++  <textarea placeholder="{{'description instructions' | translate}}"
++             class="form-control"
++             readonly>{{getAbstract()}}</textarea>
++  <button type="button" class="btn btn-default btn-sm ngeo-add"
++          ng-disabled="(!options.layerSelected || options.layerSelected.isInvalid)"
++          ng-click="addLayerSelected()" translate>Add layer</button>
++</div>
+diff --git a/src/modules/import/style/import.less b/src/modules/import/style/import.less
+index ba7a31e..53889b4 100644
+--- a/src/modules/import/style/import.less
++++ b/src/modules/import/style/import.less
+@@ -1,8 +1,8 @@
+ @import 'importdnd.less';
+ @import 'importlocal.less';
+ @import 'importonline.less';
+-@import 'wmsgetcapitem.less';
+-@import 'wmsgetcap.less';
++@import 'owsgetcapitem.less';
++@import 'owsgetcap.less';
+ 
+ // For an unknown reason the fa-zoom-in class must be redefined here to be
+ // available in the produced CSS file.
+diff --git a/src/modules/import/style/wmsgetcap.less b/src/modules/import/style/owsgetcap.less
+similarity index 98%
+rename from src/modules/import/style/wmsgetcap.less
+rename to src/modules/import/style/owsgetcap.less
+index 0acea9a..b247d59 100644
+--- a/src/modules/import/style/wmsgetcap.less
++++ b/src/modules/import/style/owsgetcap.less
+@@ -1,4 +1,5 @@
+-[ngeo-wms-get-cap] {
++[ngeo-wms-get-cap],
++[ngeo-wmts-get-cap] {
+   position: relative;
+   margin-top: 5px;
+   background-color: white;
+diff --git a/src/modules/import/style/wmsgetcapitem.less b/src/modules/import/style/owsgetcapitem.less
+similarity index 88%
+rename from src/modules/import/style/wmsgetcapitem.less
+rename to src/modules/import/style/owsgetcapitem.less
+index 5c5435f..c1bd15b 100644
+--- a/src/modules/import/style/wmsgetcapitem.less
++++ b/src/modules/import/style/owsgetcapitem.less
+@@ -1,4 +1,5 @@
+-[ngeo-wms-get-cap-item] {
++[ngeo-wms-get-cap-item],
++[ngeo-wmts-get-cap-item] {
+ 
+   .ngeo-header-group:hover {
+     background-color: #f5f5f5;
+diff --git a/src/modules/import/wmtsgetcap.js b/src/modules/import/wmtsgetcap.js
+new file mode 100644
+index 0000000..14aba64
+--- /dev/null
++++ b/src/modules/import/wmtsgetcap.js
+@@ -0,0 +1,145 @@
++goog.module('ngeo.wmtsGetCapDirective');
++goog.module.declareLegacyNamespace();
++
++goog.require('ol.format.WMTSCapabilities');
++goog.require('ol.source.WMTS.optionsFromCapabilities');
++
++
++/**
++ * @constructor
++ * @param {Window} $window The window.
++ * @param {gettext} gettext Gettext.
++ * @param {angularGettext.Catalog} gettextCatalog Gettext catalog.
++ * @param {string|function(!angular.JQLite=, !angular.Attributes=)}
++ *     ngeoWmtsGetCapTemplateUrl The template url.
++ * @ngInject
++ */
++exports = function($window, gettext, gettextCatalog, ngeoWmtsGetCapTemplateUrl) {
++  // Go through all layers, assign needed properties,
++  // and remove useless layers (no name or bad crs without children
++  // or no intersection between map extent and layer extent)
++  const getLayersList = function(getCap) {
++    const layers = [];
++
++    for (const layer of getCap['Contents']['Layer']) {
++      // If the WMTS layer has no title, it can't be displayed
++      if (!layer['Title']) {
++        layer['isInvalid'] = true;
++        layer['Abstract'] = gettext('Invalid layer: missing name');
++      }
++
++      if (!layer['isInvalid']) {
++        const requestEncoding = getCap['OperationsMetadata']['GetTile']['DCP']
++          .HTTP
++          .Get[0]
++          .Constraint[0]
++          .AllowedValues
++          .Value[0];
++        const layerOptions = {
++          layer: layer['Identifier'],
++          requestEnconding: requestEncoding
++        };
++        layer['sourceConfig'] = ol.source.WMTS.optionsFromCapabilities(getCap, layerOptions);
++        layer['attribution'] = getCap['ServiceProvider']['ProviderName'];
++        layer['attributionUrl'] = getCap['ServiceProvider']['ProviderSite'];
++        layer['capabilitiesUrl'] = getCap['OperationsMetadata']
++          .GetCapabilities
++          .DCP
++          .HTTP
++          .Get[0]
++          .href;
++      }
++
++      layers.push(layer);
++    }
++
++    return layers;
++  };
++
++  return {
++    restrict: 'A',
++    templateUrl: ngeoWmtsGetCapTemplateUrl,
++    scope: {
++      'getCap': '=ngeoWmtsGetCap',
++      'map': '=ngeoWmtsGetCapMap',
++      'options': '=ngeoWmtsGetCapOptions'
++    },
++    link(scope) {
++
++      // List of layers available in the GetCapabilities.
++      // The layerXXXX properties use layer objects from the parsing of
++      // a  GetCapabilities file, not ol layer object.
++      scope['layers'] = [];
++      scope['options'] = scope['options'] || {};
++      scope.$watch('getCap', (val) => {
++        let err;
++        try {
++          val = new ol.format.WMTSCapabilities().read(val);
++        } catch (e) {
++          err = e;
++        }
++
++        if (err || !val) {
++          $window.console.error('WMTS GetCap parsing failed: ', err || val);
++          scope['userMsg'] = gettext('Parsing failed');
++          return;
++        }
++
++        scope['layers'] = [];
++        scope['options'].layerSelected = null; // the layer selected on click
++        scope['options'].layerHovered = null;
++
++        if (val && val['Contents'] && val['Contents']['Layer']) {
++          scope['layers'] = getLayersList(val);
++        }
++      });
++
++      // Add the selected layer to the map
++      scope['addLayerSelected'] = function() {
++        const getCapLay = scope['options'].layerSelected;
++        if (getCapLay && scope['options']['getOlLayerFromGetCapLayer']) {
++          let msg = gettextCatalog.getString('WMTS layer added succesfully');
++          try {
++            const olLayer = scope['options']['getOlLayerFromGetCapLayer'](getCapLay);
++            if (olLayer) {
++              scope['map'].addLayer(olLayer);
++            }
++
++          } catch (e) {
++            $window.console.error(`Add layer failed:${e}`);
++            msg = `${gettextCatalog.getString('WMTS layer could not be added')} ${e.message}`;
++          }
++          $window.alert(msg);
++        }
++      };
++
++      // Get the abstract to display in the text area
++      scope['getAbstract'] = function() {
++        const l = scope['options'].layerSelected || scope['options'].layerHovered || {};
++        return gettextCatalog.getString(l.Abstract) || '';
++      };
++    }
++  };
++};
++
++exports.module = angular.module('ngeo.wmtsGetCapDirective', [
++  'gettext'
++]);
++
++exports.module.value('ngeoWmtsGetCapTemplateUrl',
++    /**
++     * @param {angular.JQLite} element Element.
++     * @param {angular.Attributes} attrs Attributes.
++     * @return {boolean} Template URL.
++     */
++    (element, attrs) => {
++      const templateUrl = attrs['ngeoWmtsGetCapTemplateUrl'];
++      return templateUrl !== undefined ? templateUrl :
++          `${ngeo.baseModuleTemplateUrl}/import/partials/wmts-get-cap.html`;
++    });
++
++/**
++ * This directive displays the list of layers available in the
++ * GetCapabilities object.
++ */
++exports.module.directive('ngeoWmtsGetCap', exports);
+diff --git a/src/modules/import/wmtsgetcapitem.js b/src/modules/import/wmtsgetcapitem.js
+new file mode 100644
+index 0000000..4559243
+--- /dev/null
++++ b/src/modules/import/wmtsgetcapitem.js
+@@ -0,0 +1,86 @@
++goog.module('ngeo.wmtsGetCapItemDirective');
++goog.module.declareLegacyNamespace();
++
++
++/**
++ * @constructor
++ * @param {angular.Scope} $scope .
++ * @ngInject
++ */
++exports.Controller = function($scope) {
++  /**
++   * @type {ngeox.ImportWmtsGetCapItemOptions}
++   */
++  const options = $scope['options'];
++
++  // Add preview layer
++  $scope['addPreviewLayer'] = function(evt, getCapLayer) {
++    evt.stopPropagation();
++    options.layerHovered = getCapLayer;
++    if (getCapLayer['isInvalid']) {
++      return;
++    }
++    options.addPreviewLayer($scope['map'], getCapLayer);
++  };
++
++  // Remove preview layer
++  $scope['removePreviewLayer'] = function(evt) {
++    evt.stopPropagation();
++    options.layerHovered = null;
++    options.removePreviewLayer($scope['map']);
++  };
++
++  // Select the layer clicked
++  $scope['toggleLayerSelected'] = function(evt, getCapLayer) {
++    evt.stopPropagation();
++
++    options.layerSelected = (options.layerSelected &&
++        options['layerSelected']['Title'] == getCapLayer['Title']) ?
++        null : getCapLayer;
++  };
++};
++
++/**
++ * @param {angular.$compile} $compile .
++ * @param {string|function(!angular.JQLite=, !angular.Attributes=)}
++ *    ngeoWmtsGetCapItemTemplateUrl The template url.
++ * @ngInject
++ * @return {angular.Directive} .
++ */
++exports.directive = function($compile, ngeoWmtsGetCapItemTemplateUrl) {
++
++  return {
++    restrict: 'A',
++    templateUrl: ngeoWmtsGetCapItemTemplateUrl,
++    controller: 'NgeoWmtsGetCapItemDirectiveController',
++    compile(elt) {
++      const contents = elt.contents().remove();
++      let compiledContent;
++      return function(scope, elt) {
++        if (!compiledContent) {
++          compiledContent = $compile(contents);
++        }
++        compiledContent(scope, (clone, scope) => {
++          elt.append(clone);
++        });
++      };
++    }
++  };
++};
++
++exports.module = angular.module('ngeo.wmtsGetCapItemDirective', []);
++
++exports.module.value('ngeoWmtsGetCapItemTemplateUrl',
++    /**
++     * @param {angular.JQLite} element Element.
++     * @param {angular.Attributes} attrs Attributes.
++     * @return {boolean} Template URL.
++     */
++    (element, attrs) => {
++      const templateUrl = attrs['ngeoWmsGetCapItemTemplateUrl'];
++      return templateUrl !== undefined ? templateUrl :
++          `${ngeo.baseModuleTemplateUrl}/import/partials/wmts-get-cap-item.html`;
++    });
++
++exports.module.controller('NgeoWmtsGetCapItemDirectiveController', exports.Controller);
++exports.module.directive('ngeoWmtsGetCapItem', exports.directive);
+-- 
+2.9.3
+

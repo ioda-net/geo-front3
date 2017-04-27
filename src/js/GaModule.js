@@ -21,10 +21,8 @@ goog.require('ga_fullscreen');
 goog.require('ga_geolocation');
 goog.require('ga_help');
 goog.require('ga_identify_service');
-goog.require('ga_importkml');
-goog.require('gf3_importows');
-goog.require('gf3_importwms_controller');
-goog.require('gf3_importwmts_controller');
+goog.require('ga_import');
+goog.require('ga_import_controller');
 goog.require('ga_layermanager');
 goog.require('ga_main_controller');
 goog.require('ga_map');
@@ -51,6 +49,7 @@ goog.require('ga_share_controller');
 goog.require('ga_shop');
 goog.require('ga_stylesfromliterals_service');
 goog.require('ga_swipe');
+goog.require('ga_tabs');
 goog.require('ga_tilt3d');
 goog.require('ga_timeselector');
 goog.require('ga_timeselector_controller');
@@ -71,8 +70,7 @@ goog.require('gf3_webdav');
     'ga_attribution',
     'ga_catalogtree',
     'ga_contextpopup',
-    'ga_importkml',
-    'gf3_importows',
+    'ga_import',
     'ga_help',
     'ga_map',
     'ga_mouseposition',
@@ -98,6 +96,7 @@ goog.require('gf3_webdav');
     'ga_seo',
     'ga_draw',
     'ga_shop',
+    'ga_tabs',
     'ga_tilt3d',
     'ga_modal_directive',
     'ga_draggable_directive',
@@ -106,9 +105,8 @@ goog.require('gf3_webdav');
     'ga_slider_directive',
     'ga_geolocation',
     'ga_rotate',
-    'gf3_importwms_controller',
-    'gf3_importwmts_controller',
     'ga_identify_service',
+    'ga_import_controller',
     'ga_main_controller',
     'ga_catalogtree_controller',
     'ga_mouseposition_controller',

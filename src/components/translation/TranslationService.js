@@ -42,7 +42,9 @@ goog.require('ga_topic_service');
         }
         if (newLang != $translate.use()) {
           lang = newLang;
-          $translate.use(lang).then(angular.noop, function() {
+          $translate.use(lang).then(function() {
+            $rootScope.$broadcast('gettextLanguageChanged');
+          }, function() {
             // failed to load lang from server, fallback to default code.
             // This should never happen
             /* istanbul ignore next */

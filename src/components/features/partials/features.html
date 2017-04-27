@@ -1,24 +1,16 @@
 <div ga-popup="popupToggle"
      ga-popup-options="options.popupOptions">
   <div class="gf3-features-popup">
-    <div class="htmlpopup-content">
-      <ul class="nav-tabs nav">
-        <li ng-repeat="(layerId, features) in options.features"
-            ng-if="features.length > 0">
-          <a href=""
-             ng-class="{'ga-active': options.currentTab === layerId}"
-             ng-click="options.currentTab = layerId"
-             translate>
-            {{layerId}}
-          </a>
-        </li>
-      </ul>
-
-      <div class="grid-container">
-        <div class="grid"
-             ng-repeat="(layerId, properties) in options.gridsOptions"
-             ng-if="options.currentTab === layerId"
-             ultimate-datatable="options.gridsOptions[layerId]"></div>
+    <div class="htmlpopup-content"
+         ng-if="popupToggle"
+         ga-tabs>
+      <div ga-tab ga-tab-title="{{ layerId }}"
+           ng-repeat="(layerId, features) in options.features"
+           ng-if="features.length > 0">
+        <div class="grid-container">
+          <div class="grid"
+               ultimate-datatable="options.gridsOptions[layerId]"></div>
+        </div>
       </div>
     </div>
   </div>

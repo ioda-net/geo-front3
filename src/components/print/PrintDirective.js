@@ -2,13 +2,13 @@ goog.provide('gf3_print_directive');
 
 goog.require('ga_browsersniffer_service');
 goog.require('ga_map_service');
+goog.require('gf3Ngeo.Print');
+goog.require('gf3Ngeo.PrintUtils');
 goog.require('gf3_plugins');
-goog.require('ngeo.Print');
-goog.require('ngeo.PrintUtils');
 (function() {
 
   var module = angular.module('gf3_print_directive', [
-    'ngeo',
+    'gf3Ngeo',
     'ga_map_service',
     'gf3'
   ]);
