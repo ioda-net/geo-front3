@@ -22,12 +22,12 @@ goog.require('gf3');
         ZSKETCH = 60;
 
     var selectStroke = new ol.style.Stroke({
-      color: [255, 128, 0, 1],
-      width: 3
+      color: gf3GlobalOptions.styles.selectStroke.color || [255, 128, 0, 1],
+      width: gf3GlobalOptions.styles.selectStroke.width || 3
     });
 
     var selectFill = new ol.style.Fill({
-      color: [255, 255, 0, 0.75]
+      color: gf3GlobalOptions.styles.selectFill.color || [255, 255, 0, 0.75]
     });
 
     var selectStyle = new ol.style.Style({

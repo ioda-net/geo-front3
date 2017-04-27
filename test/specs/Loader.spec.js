@@ -74,6 +74,13 @@ beforeEach(function() {
         hlStroke: {
           color: [255, 128, 0, 1],
           width: 6
+        },
+        selectFill: {
+          color: null,
+        },
+        selectStroke: {
+          color: null,
+          width: null
         }
       }
     });
