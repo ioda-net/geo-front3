@@ -123,6 +123,52 @@ describe('ga_previewlayers_service', function() {
       });
     });
 
+    describe('addGetCapLayer for WMTS', function() {
+      var getCap;
+
+      beforeEach(function() {
+        getCap = {
+          id: 'some',
+          Identifier: 'some',
+          capabilitiesUrl: 'URL',
+          Dimension: [{
+            Identifier: 'Time',
+            Default: 'current',
+            Value: ['current']
+          }],
+          sourceConfig: {
+            urls: ['URL']
+          }
+        };
+        gaPreviewLayers.addGetCapLayer(map, getCap);
+      });
+
+      it('adds a preview WMTS layer with good properties', function() {
+        var layers = map.getLayers();
+        expect(layers.getLength()).to.be(1);
+        var layer = layers.item(0);
+        expect(layer.preview).to.be(true);
+        expect(layer.displayInLayerManager).to.be(false);
+        expect(layer.getZIndex()).to.be(gaMapUtils.Z_PREVIEW_LAYER);
+      });
+
+      it('uses an existing WMTS preview layer if exist', function() {
+        var spy = sinon.spy(gaWms, 'getOlLayerFromGetCapLayer');
+        gaPreviewLayers.addGetCapLayer(map, getCap);
+        expect(spy.callCount).to.be(0);
+      });
+
+      it('doesn\'t add 2 WMTS preview layers', function() {
+        var layers = map.getLayers();
+        expect(layers.getLength()).to.be(1);
+        getCap.id = 'other';
+        getCap.Identifier = 'other';
+        gaPreviewLayers.addGetCapLayer(map, getCap);
+        expect(layers.getLength()).to.be(1);
+        expect(layers.item(0).id).to.be('WMTS||other||Time:current||URL');
+      });
+    });
+
     describe('removeAll', function() {
       var previewFeaturesLayer = new ol.layer.Vector({
         source: new ol.source.Vector({})

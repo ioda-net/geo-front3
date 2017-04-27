@@ -14,7 +14,8 @@ goog.require('ga_urlutils_service');
    * Manage external WMTS layers
    */
   module.provider('gf3Wmts', function() {
-    this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils) {
+    this.$get = function(gaDefinePropertiesForLayer, gaMapUtils, gaUrlUtils,
+        gaGlobalOptions) {
       var Wmts = function() {
 
         var formatDimensions = function(dimensions) {
@@ -107,11 +108,17 @@ goog.require('ga_urlutils_service');
           ];
           var source = new ol.source.WMTS(getCapLayer.sourceConfig);
           completeWmtsConfig(getCapLayer);
+          var projection = source.getProjection();
+          var extent;
+          if (projection) {
+            extent = projection.getExtent();
+          } else {
+            extent = gaGlobalOptions.defaultExtent;
+          }
           var layer = new ol.layer.Tile({
             id: getCapLayer.id,
             source: source,
-            extent: gaMapUtils.intersectWithDefaultExtent(
-                source.getProjection().getExtent()),
+            extent: gaMapUtils.intersectWithDefaultExtent(extent),
             preload: gaMapUtils.preload,
             attribution: getCapLayer.sourceConfig.attribution
           });
