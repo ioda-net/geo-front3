@@ -52,7 +52,7 @@ goog.require('ga_wms_service');
           return olPreviewLayer;
         };
 
-        this.addGetCapWMSLayer = function(map, getCapLayer) {
+        this.addGetCapLayer = function(map, getCapLayer) {
           // Remove all preview layers
           this.removeAll(map);
 
@@ -60,7 +60,11 @@ goog.require('ga_wms_service');
           var olPreviewLayer = olPreviewLayers[getCapLayer.id];
 
           if (!olPreviewLayer) {
-            olPreviewLayer = gaWms.getOlLayerFromGetCapLayer(getCapLayer);
+            if (getCapLayer.wmsUrl) {
+              olPreviewLayer = gaWms.getOlLayerFromGetCapLayer(getCapLayer);
+            } else if (getCapLayer.capabilitiesUrl) {
+              olPreviewLayer = gf3Wmts.getOlLayerFromGetCapLayer(getCapLayer);
+            }
           }
 
           // Something failed, layer doesn't exist
@@ -72,25 +76,6 @@ goog.require('ga_wms_service');
           olPreviewLayer.displayInLayerManager = false;
           olPreviewLayers[getCapLayer.id] = olPreviewLayer;
           olPreviewLayer.setZIndex(gaMapUtils.Z_PREVIEW_LAYER);
-          map.addLayer(olPreviewLayer);
-
-          return olPreviewLayer;
-        };
-
-        this.addGetCapWMTSLayer = function(map, getCapLayer) {
-          // Remove all preview layers
-          this.removeAll(map);
-
-          // Search or create the preview layer
-          var olPreviewLayer = olPreviewLayers[getCapLayer.id];
-
-          if (!olPreviewLayer) {
-            olPreviewLayer = gf3Wmts.getOlLayerFromGetCapLayer(getCapLayer);
-          }
-
-          olPreviewLayer.preview = true;
-          olPreviewLayer.displayInLayerManager = false;
-          olPreviewLayers[getCapLayer.id] = olPreviewLayer;
           map.addLayer(olPreviewLayer);
 
           return olPreviewLayer;

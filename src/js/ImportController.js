@@ -12,7 +12,7 @@ goog.require('ngeo.fileService');
 
   module.controller('GaImportController', function($scope, $q, $document,
       $window, $timeout, ngeoFile, gaKml, gaBrowserSniffer, gaWms, gaUrlUtils,
-      gaLang, gaPreviewLayers, gaMapUtils, gaGlobalOptions) {
+      gaLang, gaPreviewLayers, gaMapUtils, gaGlobalOptions, gf3Wmts) {
 
     var defaultWmsList = [
       'https://wms.geo.admin.ch/?lang=',
@@ -156,17 +156,29 @@ goog.require('ngeo.fileService');
       'http://rips-gdi.lubw.baden-wuerttemberg.de/arcgis/services/wms/UIS_0100000001500003/MapServer/WMSServer',
       'http://rips-gdi.lubw.baden-wuerttemberg.de/arcgis/services/wms/UIS_0100000004200001/MapServer/WMSServer'
     ];
+    var wmsList = gaGlobalOptions.wmsList !== undefined ?
+        gaGlobalOptions.wmsList : defaultWmsList;
+    var defaultWmtsList = [
+      'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml'
+    ];
+    var wmtsList = gaGlobalOptions.wmtsList !== undefined ?
+          gaGlobalOptions.wmtsList : defaultWmtsList;
 
     $scope.supportDnd = !gaBrowserSniffer.msie || gaBrowserSniffer.msie > 9;
     $scope.options = {
-      urls: gaGlobalOptions.wmsList !== undefined ?
-        gaGlobalOptions.wmsList : defaultWmsList
+      urls: wmtsList.concat(wmsList)
     };
 
     $scope.options.isValidUrl = gaUrlUtils.isValid;
-    $scope.options.getOlLayerFromGetCapLayer = gaWms.getOlLayerFromGetCapLayer;
+    $scope.options.getOlLayerFromGetCapLayer = function(layer) {
+      if (layer.wmsUrl) {
+        return gaWms.getOlLayerFromGetCapLayer(layer);
+      } else if (layer.capabilitiesUrl) {
+        return gf3Wmts.getOlLayerFromGetCapLayer(layer);
+      }
+    };
     $scope.options.addPreviewLayer = function(map, layer) {
-      gaPreviewLayers.addGetCapWMSLayer(map, layer);
+      gaPreviewLayers.addGetCapLayer(map, layer);
     };
     $scope.options.removePreviewLayer = gaPreviewLayers.removeAll;
     $scope.options.transformExtent = gaMapUtils.intersectWithDefaultExtent;
@@ -227,7 +239,11 @@ goog.require('ngeo.fileService');
         }, function(evt) {
           defer.notify(evt);
         });
-
+      } else if (ngeoFile.isWmtsGetCap(data)) {
+        $scope.wmtsGetCap = data;
+        defer.resolve({
+          message: 'upload_succeeded'
+        });
       } else {
 
         $window.console.error('Unparseable content: ', data);

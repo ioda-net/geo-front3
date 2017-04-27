@@ -4,6 +4,9 @@ var path = require('path');
 
 function mergeFilesWithArgv(staticFiles) {
     var common = [
+        {% if not prod %}
+       'test/lib/jscomp.js',
+       {% endif %}
        'test/lib/angular-mocks.js',
        'test/lib/expect.js',
        'test/lib/sinon.js',
