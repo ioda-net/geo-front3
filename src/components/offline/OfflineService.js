@@ -177,27 +177,25 @@ goog.require('ga_styles_service');
         // FileReader is strictly used to transform a blob to a base64 string
         var fileReader = new FileReader();
         fileReader.onload = function(evt) {
-          gaStorage.setTile(gaMapUtils.getTileKey(tileUrl), evt.target.result,
-              function(err, content) {
-                if (isStorageFull) {
-                  return;
-                }
-                if (err) {
-                  // err.QUOTQ_ERR for websql
-                  // DOMException.QUOTA_EXCEEDED_ERR for localstorage
-                  if (err.code == err.QUOTA_ERR ||
-                        err.code == DOMException.QUOTA_EXCEEDED_ERR) {
-                    isStorageFull = true;
-                    $window.alert($translate.instant('offline_space_warning'));
-                    nbTilesFailed = nbTilesTotal - nbTilesCached;
-                    onDlProgress();
-                  } else {
-                    onTileError(tileUrl, 'Write db failed, code:' + err.code);
-                  }
-                } else {
-                  onTileSuccess(blob.size);
-                }
-              });
+          gaStorage.setTile(gaMapUtils.getTileKey(tileUrl), evt.target.result)
+              .then(function() {
+            onTileSuccess(blob.size);
+          }, function(err) {
+            if (isStorageFull) {
+              return;
+            }
+            // err.QUOTQ_ERR for websql
+            // DOMException.QUOTA_EXCEEDED_ERR for localstorage
+            if (err.code == err.QUOTA_ERR ||
+                err.code == DOMException.QUOTA_EXCEEDED_ERR) {
+              isStorageFull = true;
+              $window.alert($translate.instant('offline_space_warning'));
+              nbTilesFailed = nbTilesTotal - nbTilesCached;
+              onDlProgress();
+            } else {
+              onTileError(tileUrl, 'Write db failed, code:' + err.code);
+            }
+          });
         };
         fileReader.onerror = function(evt) {
           onTileError(tileUrl, 'File read failed');
@@ -353,7 +351,9 @@ goog.require('ga_styles_service');
               parseInt(extent[1], 10),
               parseInt(extent[2], 10),
               parseInt(extent[3], 10)
-            ], map.getSize());
+            ], {
+              size: map.getSize()
+            });
           }
           var layersIds = gaStorage.getItem(layersKey).split(',');
           var opacity = gaStorage.getItem(opacityKey).split(',');
@@ -400,26 +400,23 @@ goog.require('ga_styles_service');
           }
 
           // Clear tiles database
-          gaStorage.clearTiles(function(err) {
+          gaStorage.clearTiles().then(function() {
+            initDownloadStatus();
 
-            if (err) {
-              alert($translate.instant('offline_clear_db_error'));
-            } else {
-              initDownloadStatus();
-
-              // Remove specific property of layers (currently only KML layers)
-              var layersId = gaStorage.getItem(layersKey).split(',');
-              for (var j = 0, jj = layersId.length; j < jj; j++) {
-                gaStorage.removeItem(layersId[j]);
-              }
-
-              gaStorage.removeItem(extentKey);
-              gaStorage.removeItem(layersKey);
-              gaStorage.removeItem(opacityKey);
-              gaStorage.removeItem(timestampKey);
-              gaStorage.removeItem(bgKey);
-              $rootScope.$broadcast('gaOfflineAbort');
+            // Remove specific property of layers (currently only KML layers)
+            var layersId = gaStorage.getItem(layersKey).split(',');
+            for (var j = 0, jj = layersId.length; j < jj; j++) {
+              gaStorage.removeItem(layersId[j]);
             }
+
+            gaStorage.removeItem(extentKey);
+            gaStorage.removeItem(layersKey);
+            gaStorage.removeItem(opacityKey);
+            gaStorage.removeItem(timestampKey);
+            gaStorage.removeItem(bgKey);
+            $rootScope.$broadcast('gaOfflineAbort');
+          }, function() {
+            alert($translate.instant('offline_clear_db_error'));
           });
         };
 
@@ -466,8 +463,10 @@ goog.require('ga_styles_service');
             // if the layer is a KML
             if (gaMapUtils.isKmlLayer(layer) &&
                 /^https?:\/\//.test(layer.url)) {
-              $http.get(gaUrlUtils.proxifyUrl(layer.url)).then(function(resp) {
-                gaStorage.setItem(layer.id, resp.data);
+              gaUrlUtils.proxifyUrl(layer.url).then(function(url) {
+                $http.get(url).then(function(resp) {
+                  gaStorage.setItem(layer.id, resp.data);
+                });
               });
               layersBg.push(false);
               continue;
@@ -622,12 +621,10 @@ goog.require('ga_styles_service');
           // empty so no need to clear the tiles.
           if (!gaBrowserSniffer.ios || gaStorage.getItem(promptKey)) {
             // We ensure the db is empty before saving tiles
-            gaStorage.clearTiles(function(err) {
-              if (err) {
-                that.abort();
-              } else {
-                runNextRequests();
-              }
+            gaStorage.clearTiles().then(function() {
+              runNextRequests();
+            }, function() {
+              that.abort();
             });
           } else {
             gaStorage.setItem(promptKey, true);

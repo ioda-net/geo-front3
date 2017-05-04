@@ -42,8 +42,8 @@ goog.require('ngeo.fileService');
           // TO FIX, caused by OL 3.18.2
           // Hack for #3531: We create an empty format first to create the
           // default style variables.
-          // https://github.com/openlayers/ol3/blob/master/src/ol/format/kml.js#L143
-          // https://github.com/openlayers/ol3/pull/5587
+          // https://github.com/openlayers/openlayers/blob/master/src/ol/format/kml.js#L143
+          // https://github.com/openlayers/openlayers/pull/5587
           ol.format.KML();
 
           kmlFormat = new ol.format.KML({
@@ -56,9 +56,9 @@ goog.require('ngeo.fileService');
       // Sanitize KML changing href links if necessary
       var sanitizeKml = function(kml) {
         // Replace all hrefs to prevent errors if image doesn't have
-        // CORS headers. Exception for *.geo.admin.ch, *.bgdi.ch, google
-        // markers icons (only https) and current domain
-        // to keep the OL3 magic for anchor origin.
+        // CORS headers. Exception for *.geo.admin.ch, *.bgdi.ch and google
+        // markers icons (only https)
+        // to keep the OL magic for anchor origin.
         // Test regex here: http://regex101.com/r/tF3vM0/9
         // List of google icons: http://www.lass.it/Web/viewer.aspx?id=4
         // Don't use $location here: injection fails.
@@ -69,6 +69,14 @@ goog.require('ngeo.fileService');
           new RegExp(re, 'g'),
           '<href>' + gaGlobalOptions.ogcproxyUrl + 'http'
         );
+        // We still need to convert <href>https://proxy.admin.ch/https:// to
+        // <href>https://proxy.admin.ch/https/
+        // kml = kml.replace(
+        //   new RegExp('<href>' + gaGlobalOptions.ogcproxyUrl + 'http://', 'g'),
+        //   '<href>' + gaGlobalOptions.proxyUrl + 'http/')
+        //     .replace(
+        //   new RegExp('<href>' + gaGlobalOptions.proxyUrl + 'https://', 'g'),
+        //   '<href>' + gaGlobalOptions.proxyUrl + 'https/');
 
         // Replace all http hrefs from *.geo.admin.ch or *.bgdi.ch by https
         // Test regex here: http://regex101.com/r/fY7wB3/5
@@ -244,7 +252,6 @@ goog.require('ngeo.fileService');
 
           // Sanitize KML
           kml = sanitizeKml(kml);
-
           // Read features available in a kml string, then create an ol layer.
           return readFeatures(kml).then(function(features) {
             var sanitizedFeatures = [];
@@ -335,7 +342,9 @@ goog.require('ngeo.fileService');
                 var sourceExtent = gaMapUtils.getVectorSourceExtent(source);
                 var ext = gaMapUtils.intersectWithDefaultExtent(sourceExtent);
                 if (ext) {
-                  olMap.getView().fit(ext, olMap.getSize());
+                  olMap.getView().fit(ext, {
+                    size: olMap.getSize()
+                  });
                 }
               }
             }
@@ -354,19 +363,21 @@ goog.require('ngeo.fileService');
           if (gaNetworkStatus.offline) {
             return this.addKmlToMap(map, null, layerOptions, index);
           } else {
-            return $http.get(gaUrlUtils.proxifyUrl(url), {
-              cache: true
-            }).then(function(response) {
-              var data = response.data;
-              var fileSize = response.headers('content-length');
-
-              if (ngeoFile.isKml(data) && ngeoFile.isValidFileSize(fileSize)) {
-                layerOptions.useImageVector = that.useImageVector(fileSize);
-                return that.addKmlToMap(map, data, layerOptions, index);
-              }
-            }, function() {
-              // Try to get offline data if exist
-              return that.addKmlToMap(map, null, layerOptions, index);
+            return gaUrlUtils.proxifyUrl(url).then(function(proxyUrl) {
+              return $http.get(proxyUrl, {
+                cache: true
+              }).then(function(response) {
+                var data = response.data;
+                var fileSize = response.headers('content-length');
+                if (ngeoFile.isKml(data) &&
+                    ngeoFile.isValidFileSize(fileSize)) {
+                  layerOptions.useImageVector = that.useImageVector(fileSize);
+                  return that.addKmlToMap(map, data, layerOptions, index);
+                }
+              }, function() {
+                // Try to get offline data if exist
+                return that.addKmlToMap(map, null, layerOptions, index);
+              });
             });
           }
         };

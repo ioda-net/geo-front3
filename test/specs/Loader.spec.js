@@ -9,6 +9,7 @@ beforeEach(function() {
     var apiUrl = '//api3.geo.admin.ch';
     var publicUrl = '//public.geo.admin.ch';
     var printUrl = '//print.geo.admin.ch';
+    var proxyUrl = '//proxy.geo.admin.ch';
     var mapproxyUrl = '//wmts{s}.geo.admin.ch';
     var shopUrl = '//shop.bgdi.ch';
     var wmsUrl = '//wms.geo.admin.ch';
@@ -33,6 +34,7 @@ beforeEach(function() {
       cachedApiUrl: location.protocol + apiUrl + cacheAdd,
       cachedPrintUrl: location.protocol + printUrl + cacheAdd,
       resourceUrl: location.origin + pathname + versionSlashed,
+      proxyUrl: location.protocol + proxyUrl + '/',
       ogcproxyUrl: location.protocol + apiUrl + '/ogcproxy?url=',
       wmsUrl: location.protocol + wmsUrl,
       w3wUrl: 'dummy.test.url.com',
@@ -40,7 +42,8 @@ beforeEach(function() {
       lv95tolv03Url: '//api.example.com/reframe/lv95tolv03',
       w3wApiKey: 'testkey',
       whitelist: [
-        'https://' + window.location.host + '/**'
+        'https://' + window.location.host + '/**',
+        'https://www.googleapis.com/**'
       ],
       defaultEpsg: 'EPSG:21781',
       secondaryEpsg: 'EPSG:2056',
@@ -148,5 +151,10 @@ beforeEach(function() {
     var whitelist = $sceDelegateProvider.resourceUrlWhitelist();
     whitelist = whitelist.concat(gaGlobalOptions.whitelist);
     $sceDelegateProvider.resourceUrlWhitelist(whitelist);
+  });
+
+  // Void display of "Possibly unhandled rejection:" message
+  module(function($qProvider) {
+    $qProvider.errorOnUnhandledRejections(false);
   });
 });

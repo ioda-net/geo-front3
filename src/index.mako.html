@@ -190,11 +190,6 @@ itemscope itemtype="http://schema.org/WebApplication"
 % endif
     <div id="loader"></div>
     <div tabindex="1" ga-map ga-map-map="map" ga-map-ol3d="::ol3d">
-      <div ng-cloak translate-cloak
-           ga-attribution
-           ga-attribution-map="::map"
-           ga-attribution-ol3d="::ol3d">
-      </div>
   % if device == 'embed':
       <a ng-cloak translate-cloak id="bigMapLink" target="_blank" href="{{toMainHref}}">
         <div>
@@ -224,10 +219,22 @@ itemscope itemtype="http://schema.org/WebApplication"
         <div ga-offline-bt></div>
   % endif
       </div>
+  % if device != 'embed':
+      <div ng-cloak translate-cloak
+           ga-background-selector
+           ga-background-selector-map="::map"
+           ga-background-selector-ol3d="::ol3d">
+      </div>
+  % endif
       <div ga-swipe
            ga-swipe-map="map"
            ga-swipe-active="globals.isSwipeActive"
            style="display:none;">
+      </div>
+      <div ng-cloak translate-cloak
+           ga-attribution
+           ga-attribution-map="::map"
+           ga-attribution-ol3d="::ol3d">
       </div>
     </div> <!-- #map -->
 % if device != 'mobile':
@@ -247,11 +254,6 @@ itemscope itemtype="http://schema.org/WebApplication"
       <span translate>3d_overlay_warning</span>
     </div>
 % if device != 'embed':
-    <div ng-cloak translate-cloak
-         ga-background-selector
-         ga-background-selector-map="::map"
-         ga-background-selector-ol3d="::ol3d">
-    </div>
     <div ng-cloak translate-cloak id="footer" class="navbar navbar-fixed-bottom">
       <div  class="pull-left" ga-scale-line ga-scale-line-map="::map" ng-show="!globals.is3dActive"></div>
 
@@ -546,7 +548,7 @@ itemscope itemtype="http://schema.org/WebApplication"
          ga-draggable=".popover-title"
          id="import-popup"
          class="ga-popup-mobile-bottom">
-      <div ng-controller="GaImportController">  
+      <div ng-controller="GaImportController">
         <div ga-import
              ga-import-map="::map"
              ga-import-options="::options">
@@ -634,14 +636,14 @@ itemscope itemtype="http://schema.org/WebApplication"
     </div><!-- end Feature Tree -->
 
   % if device == 'desktop':
-    <div ng-controller="GaImportController">  
+    <div ng-controller="GaImportController">
       <div ng-if="::supportDnd"
            ngeo-import-dnd
            ngeo-import-dnd-options="::options">
       </div>
     </div>
   % endif
-    
+
   % if device == 'mobile':
     <div ng-if="globals.homescreen" class="popover homescreen"
          ng-class="{
@@ -712,12 +714,12 @@ itemscope itemtype="http://schema.org/WebApplication"
       window.CLOSURE_NO_DEPS = true;
     </script>
 
-    <!-- ol3cesium-debug.js includes Closure's base.js code, so we don't
+    <!-- olcesium-debug.js includes Closure's base.js code, so we don't
          need to load base.js ourselves. We keep Closure's base.js file
          around in case we need to test with ol.js or ol-simple.js. -->
     <!--<script src="${s3basepath}lib/closure/base.js"></script>-->
-    <!-- ol3 and ol3-cesium are built together in debug mode -->
-    <script src="${s3basepath}lib/ol3cesium-debug.js"></script>
+    <!-- ol and ol-cesium are built together in debug mode -->
+    <script src="${s3basepath}lib/olcesium-debug.js"></script>
     <script src="${s3basepath}deps.js"></script>
     <script>
       goog.require('geoadmin');
@@ -788,6 +790,7 @@ itemscope itemtype="http://schema.org/WebApplication"
         var shopUrl = setBackend(prtl + '${shop_url}', prtl + '${shop_tech_url}', 'shop_url');
         var publicUrl = setBackend(prtl + '${public_url}', prtl + '${public_tech_url}', 'public_url');
         var printUrl = setBackend(prtl + '${print_url}', prtl + '${print_tech_url}', 'print_url');
+        var proxyUrl = prtl + '${proxy_url}' + '/';
         var apiOverwrite = !!(getParam('api_url') || env);
         ngeo.baseModuleTemplateUrl = 'ngeo/src/modules';
         module.constant('gaGlobalOptions', {
@@ -799,6 +802,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           mapUrl: location.origin + pathname,
           apiUrl: apiUrl,
           printUrl: printUrl,
+          proxyUrl: proxyUrl,
           mapproxyUrl: mapproxyUrl,
           vectorTilesUrl: vectorTilesUrl,
           shopUrl: shopUrl,
@@ -808,14 +812,14 @@ itemscope itemtype="http://schema.org/WebApplication"
           cachedApiUrl: apiUrl + cacheAdd,
           cachedPrintUrl: printUrl + cacheAdd,
           resourceUrl: location.origin + s3pathname + '${versionslashed}',
-          ogcproxyUrl: apiUrl + '/ogcproxy?url=',
           wmsUrl: wmsUrl,
           w3wUrl: 'https://api.what3words.com',
           lv03tolv95Url: 'https://geodesy.geo.admin.ch/reframe/lv03tolv95',
           lv95tolv03Url: 'https://geodesy.geo.admin.ch/reframe/lv95tolv03',
           w3wApiKey: 'OM48J50Y',
           whitelist: [
-            'https://' + window.location.host + '/**'
+            'https://' + window.location.host + '/**',
+            'https://www.googleapis.com/**'
           ],
           defaultTopicId: '${default_topic_id}',
           translationFallbackCode: '${translation_fallback_code}',

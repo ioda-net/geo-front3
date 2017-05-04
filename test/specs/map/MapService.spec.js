@@ -320,14 +320,14 @@ describe('ga_map_service', function() {
 
       expect(layer.getOpacity()).to.be.a('number');
       expect(layer.getOpacity()).to.be(1);
-      expect(layer[prop]).to.be.a('string');
-      expect(layer[prop]).to.be('0');
+      expect(layer[prop]).to.be.a('number');
+      expect(layer[prop]).to.be(0);
 
       layer.setOpacity(0.2);
-      expect(layer[prop]).to.be.a('string');
-      expect(layer[prop]).to.be('0.8');
+      expect(layer[prop]).to.be.a('number');
+      expect(layer[prop]).to.be(0.8);
 
-      layer.invertedOpacity = '0.3';
+      layer.invertedOpacity = 0.3;
       expect(layer.getOpacity()).to.be.a('number');
       expect(layer.getOpacity()).to.be(0.7);
     });
@@ -962,7 +962,7 @@ describe('ga_map_service', function() {
         expect(args[0]).to.be('http://foo.kml');
         expect(args[1].camera).to.be(scene.camera);
         expect(args[1].canvas).to.be(scene.canvas);
-        expect(args[1].proxy).to.be.an(Cesium.DefaultProxy);
+        expect(args[1].proxy.getURL('http://foo.kml')).to.be('http://proxy.geo.admin.ch/http/foo.kml');
         spy.restore();
       });
     });
@@ -1009,7 +1009,7 @@ describe('ga_map_service', function() {
           minResolution: 0.5,
           maxResolution: 100,
           opacity: 0.35,
-          geojsonUrl: 'https://my.json',
+          geojsonUrl: 'http://my.json',
           styleUrl: '//mystyle.json'
         }
       };
@@ -1124,7 +1124,7 @@ describe('ga_map_service', function() {
 
         it('returns a GeoJSON layer', function() {
           $httpBackend.expectGET('http://mystyle.json').respond({});
-          $httpBackend.expectGET(gaGlobalOptions.ogcproxyUrl + 'https%3A%2F%2Fmy.json').respond({
+          $httpBackend.expectGET(gaGlobalOptions.ogcproxyUrl + encodeURIComponent('http://my.json')).respond({
             'features': [{
               'type': 'Feature',
               'geometry': {

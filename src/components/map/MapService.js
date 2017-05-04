@@ -117,7 +117,7 @@ goog.require('ga_urlutils_service');
           },
           invertedOpacity: {
             get: function() {
-              return (Math.round((1 - this.getOpacity()) * 100) / 100) + '';
+              return Math.round((1 - this.getOpacity()) * 100) / 100;
             },
             set: function(val) {
               this.setOpacity(1 - val);
@@ -483,8 +483,8 @@ goog.require('ga_urlutils_service');
         // storage if they exist otherwise try to load the tiles normally.
         var tileLoadFunction = function(imageTile, src) {
           if (gaBrowserSniffer.mobile) {
-            gaStorage.getTile(gaMapUtils.getTileKey(src), function(err,
-                content) {
+            gaStorage.getTile(gaMapUtils.getTileKey(src)).then(
+                function(content) {
               if (content && $window.URL && $window.atob) {
                 try {
                   var blob = gaMapUtils.dataURIToBlob(content);
@@ -699,7 +699,7 @@ goog.require('ga_urlutils_service');
           var dsP = Cesium.KmlDataSource.load(config3d.url, {
             camera: scene.camera,
             canvas: scene.canvas,
-            proxy: new Cesium.DefaultProxy(gaGlobalOptions.ogcproxyUrl)
+            proxy: gaUrlUtils.getCesiumProxy()
           });
           return dsP;
         };
@@ -857,13 +857,14 @@ goog.require('ga_urlutils_service');
               extent: extent
             });
             var setLayerSource = function() {
-              var fullUrl = gaUrlUtils.proxifyUrl(layer.geojsonUrl);
               var geojsonFormat = new ol.format.GeoJSON();
-              $http.get(fullUrl).then(function(response) {
-                olSource.clear();
-                olSource.addFeatures(
-                  geojsonFormat.readFeatures(response.data)
-                );
+              gaUrlUtils.proxifyUrl(layer.geojsonUrl).then(function(proxyUrl) {
+                $http.get(proxyUrl).then(function(response) {
+                  olSource.clear();
+                  olSource.addFeatures(
+                    geojsonFormat.readFeatures(response.data)
+                  );
+                });
               });
             };
 
@@ -1210,7 +1211,9 @@ goog.require('ga_urlutils_service');
           if (ol3d && ol3d.getEnabled()) {
             return this.flyToAnimation(ol3d, null, extent);
           }
-          map.getView().fit(extent, map.getSize());
+          map.getView().fit(extent, {
+            size: map.getSize()
+          });
           return $q.when();
         },
 

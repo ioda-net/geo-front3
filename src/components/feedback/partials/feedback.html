@@ -9,12 +9,6 @@
   </div>
   <!-- needs to be ng-show, otherwise we break the ng-model -->
   <form ng-show="form" ng-submit="submit()">
-    <!-- email address -->
-    <label translate>feedback_mail</label>
-    <input type="email" name="email" ng-model="email">
-    <!-- email subject -->
-    <label translate>feedback_subject</label>
-    <input type="text" name="subject" ng-model="subject">
     <!-- feedback text -->
     <label translate>feedback_description</label>
     <textarea rows=3 name="feedback" ng-model="feedback" class="form-control" required></textarea>
@@ -27,7 +21,13 @@
            ga-draw-active="showDraw"
            ga-feedback-popup-shown="true"></div>
     </div>
-    <!-- attachment -->
+    <!-- email address -->
+    <label translate>feedback_mail</label>
+    <input type="email" name="email" ng-model="email">
+    <!-- email subject -->
+    <label translate>feedback_subject</label>
+    <input type="text" name="subject" ng-model="subject">
+    <!-- attachement -->
     <label ng-show="!isIE9" translate>feedback_attachment</label>
     <div ng-show="!isIE9">
       <div class="input-group input-group-sm">
@@ -53,7 +53,10 @@
       <a href="{{permalinkValue}}" target="_blank" translate>permalink</a>
     </p>
 
-   <!-- footer -->
+    <!-- termas of use -->
+    <p translate>feedback_disclaimer</p>
+
+    <!-- footer -->
     <div class="ga-feedback-footer">
       <button type="submit" class="pull-right btn btn-default" translate>send</button>
     </div>

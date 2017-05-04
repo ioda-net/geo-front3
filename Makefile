@@ -3,7 +3,7 @@ SHELL = /bin/bash
 # Auto initialization of submodules
 INIT := ${shell git submodule update --init}
 
-NGEO_MODULES := src/ngeo/src/modules/import 
+NGEO_MODULES := src/ngeo/src/modules/import
 SRC_JS_FILES := $(shell find src/components src/js -type f -name '*.js')
 SRC_ES6_FILES := $(shell find ${NGEO_MODULES} -type f -name '*.js')
 SRC_JS_FILES_FOR_COMPILER = $(shell sed -e ':a' -e 'N' -e '$$!ba' -e 's/\n/ --js /g' .build-artefacts/js-files | sed 's/^.*base\.js //')
@@ -38,6 +38,8 @@ LAST_PUBLIC_URL := $(shell if [ -f .build-artefacts/last-public-url ];  then cat
 PRINT_URL ?= //print.geo.admin.ch
 PRINT_TECH_URL ?= //service-print.
 LAST_PRINT_URL := $(shell if [ -f .build-artefacts/last-print-url ]; then cat .build-artefacts/last-print-url 2> /dev/null; else echo '-none-'; fi)
+PROXY_URL ?= //service-proxy.prod.bgdi.ch
+LAST_PROXY_URL ?= $(shell if [ -f .build-artefacts/last-proxy-ulr ]; then cat .build-artefacts/last-proxy-url 2> /dev/null; else echo '-none-'; fi)
 
 PUBLIC_URL_REGEXP ?= ^https?:\/\/public\..*\.(bgdi|admin)\.ch\/.*
 ADMIN_URL_REGEXP ?= ^(ftp|http|https):\/\/(.*(\.bgdi|\.geo\.admin)\.ch)
@@ -52,10 +54,10 @@ GIT_BRANCH := $(shell if [ -f .build-artefacts/deployed-git-branch ]; then cat .
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
 BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
-OL3_VERSION ?= v3.20.1 # v3.20.1, 21 december 2016
-OL3_CESIUM_VERSION ?= 40ab703bb7f91f1b93b421412819b83942983616 # master, 3 february 2017
-CESIUM_VERSION ?= 3dddac53f24811a4e11989fc21cd9e7d39459a82 # camptocamp/c2c_patches_vector_tiles_labels, 18 january 2017
-NGEO_VERSION ?= 3ecccd0c805ccf29dc8fe406dd4309bd292d50c8 # master, 16 january 2017
+OL_VERSION ?= v4.1.0 # v4.1.0, April 14 2017
+OL_CESIUM_VERSION ?= v1.26 # # v1.26, April 4 2017
+CESIUM_VERSION ?= a2c421d39ac3f43b047681049dd517f489747a72 # camptocamp/c2c_patches_vector_tiles_labels, April 20 2017
+NGEO_VERSION ?= 4f3430b4d27bb0a7e2f0c7356fbcca8f134991e5 # master, April 27 2017
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"fr\", \"it\", \"en\", \"rm\"]'
@@ -143,7 +145,7 @@ help:
 	@echo "- s3infoprod         Get version info on remote prod bucket. (usage only: make s3infoprod S3_VERSION_PATH=<branch>/<sha>/<version>)"
 	@echo "- s3deleteint        Delete a project version in a remote int bucket. (usage: make s3deleteint S3_VERSION_PATH=<branch> or <branch>/<sha>/<version>)"
 	@echo "- s3deleteprod       Delete a project version in a remote prod bucket. (usage: make s3deleteprod S3_VERSION_PATH=<branch> or <branch>/<sha>/<version>)"
-	@echo "- ol3cesium          Update ol3cesium.js, ol3cesium-debug.js, Cesium.min.js and Cesium folder"
+	@echo "- olcesium           Update olcesium.js, olcesium-debug.js, Cesium.min.js and Cesium folder"
 	@echo "- ngeo               Update ngeo submodule with the version specified in Makefile"
 	@echo "- libs               Update js librairies used in index.html, see npm packages defined in section 'dependencies' of package.json"
 	@echo "- translate          Generate the translation files (requires db user pwd in ~/.pgpass: dbServer:dbPort:*:dbUser:dbUserPwd)"
@@ -238,6 +240,10 @@ deploydev:
 		./scripts/deploydev.sh; \
 	fi
 
+.PHONY: s3deployinfra
+s3deployinfra: guard-SNAPSHOT guard-S3_MF_GEOADMIN3_INFRA .build-artefacts/requirements.timestamp
+	./scripts/deploysnapshot.sh $(SNAPSHOT) infra;
+
 .PHONY: s3deployint
 s3deployint: guard-SNAPSHOT guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	./scripts/deploysnapshot.sh $(SNAPSHOT) int;
@@ -256,6 +262,21 @@ s3deploybranch: guard-S3_MF_GEOADMIN3_INT \
 	./scripts/clonebuild.sh ${CLONEDIR} int ${DEPLOY_GIT_BRANCH} ${DEEP_CLEAN} ${NAMED_BRANCH};
 	${PYTHON_CMD} ./scripts/s3manage.py upload ${CLONEDIR}/mf-geoadmin3 int ${NAMED_BRANCH};
 
+.PHONY: s3deploybranchinfra
+s3deploybranchinfra: guard-S3_MF_GEOADMIN3_INFRA \
+	              guard-CLONEDIR \
+	              guard-DEPLOY_GIT_BRANCH \
+	              guard-DEEP_CLEAN \
+	              guard-NAMED_BRANCH \
+	              .build-artefacts/requirements.timestamp
+	./scripts/clonebuild.sh ${CLONEDIR} infra ${DEPLOY_GIT_BRANCH} ${DEEP_CLEAN} ${NAMED_BRANCH};
+	${PYTHON_CMD} ./scripts/s3manage.py upload ${CLONEDIR}/mf-geoadmin3 infra ${NAMED_BRANCH};
+
+
+.PHONY: s3listinfra
+s3listinfra: guard-S3_MF_GEOADMIN3_INFRA .build-artefacts/requirements.timestamp
+	${PYTHON_CMD} ./scripts/s3manage.py list infra;
+
 .PHONY: s3listint
 s3listint: guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py list int;
@@ -263,6 +284,10 @@ s3listint: guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 .PHONY: s3listprod
 s3listprod: guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py list prod;
+
+.PHONY: s3infoinfra
+s3infoinfra: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INFRA .build-artefacts/requirements.timestamp
+	${PYTHON_CMD} ./scripts/s3manage.py info ${S3_VERSION_PATH} infra;
 
 .PHONY: s3infoint
 s3infoint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
@@ -272,6 +297,10 @@ s3infoint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requ
 s3infoprod: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py info ${S3_VERSION_PATH} prod;
 
+.PHONY: s3activateinfra
+s3activateinfra: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INFRA .build-artefacts/requirements.timestamp
+	${PYTHON_CMD} ./scripts/s3manage.py activate ${S3_VERSION_PATH} infra;
+
 .PHONY: s3activateint
 s3activateint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py activate ${S3_VERSION_PATH} int;
@@ -279,6 +308,10 @@ s3activateint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/
 .PHONY: s3activateprod
 s3activateprod: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py activate ${S3_VERSION_PATH} prod;
+
+.PHONY: s3deleteinfra
+s3deleteinfra: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INFRA .build-artefacts/requirements.timestamp
+	${PYTHON_CMD} ./scripts/s3manage.py delete ${S3_VERSION_PATH} infra;
 
 .PHONY: s3deleteint
 s3deleteint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/requirements.timestamp
@@ -288,24 +321,24 @@ s3deleteint: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_INT .build-artefacts/re
 s3deleteprod: guard-S3_VERSION_PATH guard-S3_MF_GEOADMIN3_PROD .build-artefacts/requirements.timestamp
 	${PYTHON_CMD} ./scripts/s3manage.py delete ${S3_VERSION_PATH} prod;
 
-.PHONY: ol3cesium
-ol3cesium: .build-artefacts/ol3-cesium
-	cd .build-artefacts/ol3-cesium; \
+.PHONY: olcesium
+olcesium: .build-artefacts/ol-cesium
+	cd .build-artefacts/ol-cesium; \
 	git reset HEAD --hard; \
 	git fetch --all; \
-	git checkout $(OL3_CESIUM_VERSION); \
+	git checkout $(OL_CESIUM_VERSION); \
 	git show; \
 	git submodule update --recursive --init --force; \
-	cd ol3; \
+	cd ol; \
 	git reset HEAD --hard; \
 	git fetch --all; \
-	git checkout $(OL3_VERSION); \
+	git checkout $(OL_VERSION); \
 	git show; \
-	cat ../../../scripts/ga-ol3-reproj.exports >> src/ol/reproj/reproj.js; \
-	cat ../../../scripts/ga-ol3-style.exports >> src/ol/style/style.js; \
-	cat ../../../scripts/ga-ol3-tilegrid.exports >> src/ol/tilegrid/tilegrid.js; \
-	cat ../../../scripts/ga-ol3-tilerange.exports >> src/ol/tilerange.js; \
-	cat ../../../scripts/ga-ol3-view.exports >> src/ol/view.js; \
+	cat ../../../scripts/ga-ol-reproj.exports >> src/ol/reproj/reproj.js; \
+	cat ../../../scripts/ga-ol-style.exports >> src/ol/style/style.js; \
+	cat ../../../scripts/ga-ol-tilegrid.exports >> src/ol/tilegrid/tilegrid.js; \
+	cat ../../../scripts/ga-ol-tilerange.exports >> src/ol/tilerange.js; \
+	cat ../../../scripts/ga-ol-view.exports >> src/ol/view.js; \
 	npm install --only prod; \
 	node tasks/build-ext.js; \
 	cd ../cesium; \
@@ -314,16 +347,16 @@ ol3cesium: .build-artefacts/ol3-cesium
 	git checkout $(CESIUM_VERSION); \
 	git show; \
 	cd ..; \
-	ln -T -f -s ../../../../ol3-cesium-plugin/ src/plugins/geoadmin; \
+	ln -T -f -s ../../../../ol-cesium-plugin/ src/plugins/geoadmin; \
 	( cd cesium; [ -f node_modules/.bin/gulp ] || npm install ); \
 	( cd cesium; if [ -f "Build/Cesium/Cesium.js" ] ; then echo 'Skipping Cesium minified build'; else node_modules/.bin/gulp minifyRelease; fi ); \
 	( cd cesium; if [ -f "Build/CesiumUnminified/Cesium.js" ] ; then echo 'Skipping Cesium debug build'; else node_modules/.bin/gulp generateStubs combine; fi ); \
 	npm install; \
 	node build/generate-exports.js dist/exports.js; \
-	node build/build.js build/ol3cesium-debug.json dist/ol3cesium-debug.js; \
-	node build/build.js ../../scripts/ol3cesium-geoadmin.json dist/ol3cesium.js; \
-	cp dist/ol3cesium-debug.js ../../src/lib/; \
-	cp dist/ol3cesium.js ../../src/lib/ol3cesium.js; \
+	node build/build.js ../../scripts/olcesium-debug-geoadmin.json dist/olcesium-debug.js; \
+	node build/build.js ../../scripts/olcesium-geoadmin.json dist/olcesium.js; \
+	cp dist/olcesium-debug.js ../../src/lib/; \
+	cp dist/olcesium.js ../../src/lib/olcesium.js; \
 	rm -rf ../../src/lib/Cesium; \
 	cp -r cesium/Build/CesiumUnminified ../../src/lib/Cesium; \
 	cp cesium/Build/Cesium/Cesium.js ../../src/lib/Cesium.min.js; \
@@ -389,7 +422,7 @@ prd/lib/: src/lib/d3.min.js \
 	    src/lib/jquery.xdomainrequest.min.js \
 	    src/lib/Cesium \
 	    src/lib/Cesium.min.js \
-	    src/lib/ol3cesium.js
+	    src/lib/olcesium.js
 	mkdir -p $@
 	cp -rf  $^ $@
 
@@ -405,7 +438,7 @@ prd/lib/build.js: src/lib/polyfill.min.js \
 	    src/lib/EPSG2056.js \
 	    src/lib/EPSG32631.js \
 	    src/lib/EPSG32632.js \
-	    src/lib/ol3cesium.js \
+	    src/lib/olcesium.js \
 	    src/lib/angular-translate.min.js \
 	    src/lib/angular-translate-loader-static-files.min.js \
 	    src/lib/fastclick.min.js \
@@ -429,10 +462,7 @@ prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 	    --var "deploy_target=$(DEPLOY_TARGET)" \
 	    --var "apache_base_path=$(APACHE_BASE_PATH)" \
 	    --var "languages=$(LANGUAGES)" \
-	    --var "api_url=$(API_URL)" \
-	    --var "print_url=$(PRINT_URL)" \
-	    --var "s3basepath=$(S3_BASE_PATH)" \
-	    --var "public_url=$(PUBLIC_URL)" $< > $@
+	    --var "s3basepath=$(S3_BASE_PATH)" $< > $@
 	mv $@ prd/geoadmin.$(VERSION).appcache
 
 prd/cache/: .build-artefacts/last-version \
@@ -463,6 +493,7 @@ define buildpage
 		--var "api_tech_url=$(API_TECH_URL)" \
 		--var "print_url=$(PRINT_URL)" \
 		--var "print_tech_url=$(PRINT_TECH_URL)" \
+		--var "proxy_url=$(PROXY_URL)" \
 		--var "mapproxy_url=$(MAPPROXY_URL)" \
 		--var "mapproxy_tech_url=$(MAPPROXY_TECH_URL)" \
 		--var "vectortiles_url=$(VECTORTILES_URL)" \
@@ -513,6 +544,7 @@ prd/index.html: src/index.mako.html \
 	    .build-artefacts/last-wms-url \
 	    .build-artefacts/last-public-url \
 	    .build-artefacts/last-print-url \
+	    .build-artefacts/last-proxy-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-version
 	mkdir -p $(dir $@)
@@ -529,6 +561,7 @@ prd/mobile.html: src/index.mako.html \
 	    .build-artefacts/last-wms-url \
 	    .build-artefacts/last-public-url \
 	    .build-artefacts/last-print-url \
+	    .build-artefacts/last-proxy-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-version
 	mkdir -p $(dir $@)
@@ -544,6 +577,7 @@ prd/embed.html: src/index.mako.html \
 	    .build-artefacts/last-wms-url \
 	    .build-artefacts/last-public-url \
 	    .build-artefacts/last-print-url \
+	    .build-artefacts/last-proxy-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-version
 	mkdir -p $(dir $@)
@@ -586,6 +620,7 @@ src/index.html: src/index.mako.html \
 	    .build-artefacts/last-wms-url \
 	    .build-artefacts/last-public-url \
 	    .build-artefacts/last-print-url \
+	    .build-artefacts/last-proxy-url \
 	    .build-artefacts/last-apache-base-path
 	$(call buildpage,desktop,,,,$(S3_SRC_BASE_PATH))
 
@@ -598,6 +633,7 @@ src/mobile.html: src/index.mako.html \
 	    .build-artefacts/last-wms-url \
 	    .build-artefacts/last-public-url \
 	    .build-artefacts/last-print-url \
+	    .build-artefacts/last-proxy-url \
 	    .build-artefacts/last-apache-base-path
 	$(call buildpage,mobile,,,,$(S3_SRC_BASE_PATH))
 
@@ -610,6 +646,7 @@ src/embed.html: src/index.mako.html \
 	    .build-artefacts/last-wms-url \
 	    .build-artefacts/last-public-url \
 	    .build-artefacts/last-print-url \
+	    .build-artefacts/last-proxy-url \
 	    .build-artefacts/last-apache-base-path
 	$(call buildpage,embed,,,,$(S3_SRC_BASE_PATH))
 
@@ -622,16 +659,14 @@ src/TemplateCacheModule.js: src/TemplateCacheModule.mako.js \
 
 apache/app.conf: apache/app.mako-dot-conf \
 	    ${MAKO_CMD} \
-	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-apache-base-path \
 	    .build-artefacts/last-apache-base-directory \
+	    .build-artefacts/last-api-url \
 	    .build-artefacts/last-version
 	${PYTHON_CMD} ${MAKO_CMD} \
 	    --var "apache_base_path=$(APACHE_BASE_PATH)" \
-	    --var "api_url=$(API_URL)" \
-	    --var "print_url=$(PRINT_URL)" \
-	    --var "public_url=$(PUBLIC_URL)" \
 	    --var "apache_base_directory=$(APACHE_BASE_DIRECTORY)" \
+	    --var "api_url=$(API_URL)" \
 	    --var "version=$(VERSION)" $< > $@
 
 test/karma-conf-debug.js: test/karma-conf.mako.js ${MAKO_CMD}
@@ -676,7 +711,7 @@ libs:
 	    --compilation_level SIMPLE_OPTIMIZATIONS \
 	    --jscomp_error checkVars \
 	    --externs externs/ol.js \
-	    --externs externs/ol3-cesium.js \
+	    --externs externs/ol-cesium.js \
 	    --externs externs/Cesium.externs.js \
 	    --externs externs/slip.js \
 	    --externs externs/angular.js \
@@ -768,6 +803,10 @@ ${PYTHON_VENV}:
 	mkdir -p $(dir $@)
 	test "$(PRINT_URL)" != "$(LAST_PRINT_URL)" && echo $(PRINT_URL) > .build-artefacts/last-print-url || :
 
+.build-artefacts/last-proxy-url::
+	mkdir -p $(dir $@)
+	test "$(PROXY_URL)" != "$(LAST_PROXY_URL)" && echo $(PROXY_URL) > .build-artefacts/last-proxy-url || :
+
 .build-artefacts/last-apache-base-path::
 	mkdir -p $(dir $@)
 	test "$(APACHE_BASE_PATH)" != "$(LAST_APACHE_BASE_PATH)" && \
@@ -783,8 +822,8 @@ ${PYTHON_VENV}:
 	test "$(APACHE_BASE_DIRECTORY)" != "$(LAST_APACHE_BASE_DIRECTORY)" && \
 	    echo "$(APACHE_BASE_DIRECTORY)" > .build-artefacts/last-apache-base-directory || :
 
-.build-artefacts/ol3-cesium:
-	git clone --recursive https://github.com/openlayers/ol3-cesium.git $@
+.build-artefacts/ol-cesium:
+	git clone --recursive https://github.com/openlayers/ol-cesium.git $@
 
 # No npm module
 .build-artefacts/filesaver:
@@ -824,3 +863,5 @@ clean:
 	rm -f src/mobile.html
 	rm -f src/embed.html
 	rm -rf prd
+	rm -rf src/ngeo
+	git submodule update --init

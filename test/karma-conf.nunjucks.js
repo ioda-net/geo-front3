@@ -81,7 +81,7 @@ module.exports = function(config) {
            'src/lib/filesaver.js',
            'src/lib/moment-with-customlocales.js',
            'src/lib/ultimate-datatable.js',
-           'src/lib/ol3.js',
+           'src/lib/ol.js',
            'test/app-whitespace.js',
 	    {% endif %}
 	]),
@@ -160,6 +160,13 @@ module.exports = function(config) {
 	// Continuous Integration mode
 	// if true, it capture browsers, run tests and exit
 	singleRun: false,
+
+    // Starting with 1.6
+    browserConsoleLogOptions: {
+        level: 'log',
+        format: '%b %T: %m',
+        terminal: true
+    }
 
     });
 };
