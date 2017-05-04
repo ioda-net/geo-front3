@@ -72,7 +72,7 @@ goog.require('ngeo.fileService');
         // We still need to convert <href>https://proxy.admin.ch/https:// to
         // <href>https://proxy.admin.ch/https/
         // kml = kml.replace(
-        //   new RegExp('<href>' + gaGlobalOptions.ogcproxyUrl + 'http://', 'g'),
+        // new RegExp('<href>' + gaGlobalOptions.ogcproxyUrl + 'http://', 'g'),
         //   '<href>' + gaGlobalOptions.proxyUrl + 'http/')
         //     .replace(
         //   new RegExp('<href>' + gaGlobalOptions.proxyUrl + 'https://', 'g'),
