@@ -49,9 +49,7 @@ goog.provide('gf3Ngeo.CreatePrint');
 goog.provide('gf3Ngeo.Print');
 
 goog.require('gf3Ngeo');
-goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.object');
 
 
 /**
@@ -243,7 +241,7 @@ gf3Ngeo.Print.prototype.createSpec = function(
   var attributes = /** @type {MapFishPrintAttributes} */ ({
     map: specMap
   });
-  goog.object.extend(attributes, customAttributes);
+  angular.extend(attributes, customAttributes);
 
   var spec = /** @type {MapFishPrintSpec} */ ({
     attributes: attributes,
@@ -281,13 +279,7 @@ gf3Ngeo.Print.prototype.encodeMap_ = function(map, scale, object) {
   var layers = layersCollection.getArray().slice().reverse();
 
   this.encodeOverlays_(object.layers, map.getOverlays(), scale);
-  goog.array.forEach(layers,
-      /**
-       * @param {ol.layer.Layer} layer Layer.
-       * @param {number} idx Index.
-       * @param {Array.<ol.layer.Layer>} layers Layers.
-       */
-      function(layer, idx, layers) {
+  layers.forEach(function(layer, idx, layers) {
         if (layer.visible) {
           goog.asserts.assert(goog.isDef(viewResolution));
           this.encodeLayer(object.layers, layer, viewResolution);
@@ -354,11 +346,11 @@ gf3Ngeo.Print.prototype.encodeImageWmsLayer_ = function(arr, layer) {
  */
 gf3Ngeo.Print.prototype.encodeWmsLayer_ = function(arr, opacity, url, params) {
   var customParams = {'TRANSPARENT': true};
-  goog.object.extend(customParams, params);
+  angular.extend(customParams, params);
 
-  goog.object.remove(customParams, 'LAYERS');
-  goog.object.remove(customParams, 'FORMAT');
-  goog.object.remove(customParams, 'VERSION');
+  delete customParams['LAYERS'];
+  delete customParams['FORMAT'];
+  delete customParams['VERSION'];
 
   var object = /** @type {MapFishPrintWmsLayer} */ ({
     baseURL: gf3Ngeo.Print.getAbsoluteUrl_(url),
@@ -434,7 +426,7 @@ gf3Ngeo.Print.prototype.encodeTileWmtsLayer_ = function(arr, layer) {
   }
 
   var dimensions = source.getDimensions();
-  var dimensionKeys = goog.object.getKeys(dimensions);
+  var dimensionKeys = Object.keys(dimensions);
 
   var object = /** @type {MapFishPrintWmtsLayer} */ ({
     baseURL: this.getWmtsUrl_(source),
@@ -930,7 +922,7 @@ gf3Ngeo.Print.prototype.createReport = function(printSpec, opt_httpConfig) {
       'Content-Type': 'application/json; charset=UTF-8'
     }
   });
-  goog.object.extend(httpConfig,
+  angular.extend(httpConfig,
       goog.isDef(opt_httpConfig) ? opt_httpConfig : {});
   return this.$http_.post(url, printSpec, httpConfig);
 };
