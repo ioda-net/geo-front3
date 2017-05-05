@@ -793,9 +793,9 @@ itemscope itemtype="http://schema.org/WebApplication"
           gaLayersProvider.wmsUrlTemplate = '${mapserver.PORTAL_BASE_OWS}';
           gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{y}/{x}.{Format}';
           gaLayersProvider.wmtsMapProxyGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{x}/{y}.{Format}';
-          gaLayersProvider.terrainTileUrlTemplate = '//3d.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
+          gaLayersProvider.terrainTileUrlTemplate = '${front.build.get("terrain_provider", "//assets.agi.com/stk-terrain/world/")}';
           gaLayersProvider.vectorTilesUrlTemplate = gaGlobalOptions.vectorTilesUrl + '/{Layer}/{Time}/';
-          gaLayersProvider.imageryMetadataUrl = '//3d.geo.admin.ch/imagery/';
+          gaLayersProvider.imageryMetadataUrl = '${front.build.get("terrain_provider", "//assets.agi.com/stk-terrain/world/")}';
 
           gaLayersProvider.layersConfigUrlTemplate = '/json/layersConfig_{Lang}.json';
 
