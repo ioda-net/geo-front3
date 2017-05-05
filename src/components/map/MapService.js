@@ -569,7 +569,9 @@ goog.require('ga_urlutils_service');
         };
 
         this.getConfig3d = function(config) {
-          if (config.config3d) {
+          if (!config) {
+            return {};
+          } else if (config.config3d) {
             return layers[config.config3d];
           }
           return config;
