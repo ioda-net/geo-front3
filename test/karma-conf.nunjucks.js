@@ -61,6 +61,7 @@ module.exports = function(config) {
 	files: mergeFilesWithArgv([
         {% if prod %}
            'lib/d3.min.js',
+           'lib/Cesium.min.js',
         {% else %}
 	       'src/lib/jquery.js',
            'src/lib/jquery.xdomainrequest.min.js',
@@ -79,9 +80,10 @@ module.exports = function(config) {
            'src/lib/fastclick.js',
            'src/lib/localforage.js',
            'src/lib/filesaver.js',
+           'src/lib/Cesium/Cesium.js',
            'src/lib/moment-with-customlocales.js',
            'src/lib/ultimate-datatable.js',
-           'src/lib/ol.js',
+           'src/lib/olcesium.js',
            'test/app-whitespace.js',
 	    {% endif %}
 	]),

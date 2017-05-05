@@ -85,7 +85,7 @@ describe('ga_wms_service', function() {
 
       if (options.useThirdPartyData) {
         expect(prov.proxy.getURL('http://wms.ch')).to.be(
-            gaGlobalOptions.proxyUrl + 'http/wms.ch');
+            gaGlobalOptions.ogcproxyUrl + encodeURIComponent('http://wms.ch'));
       } else {
         expect(prov.proxy.getURL('https://wms.geo.admin.ch')).to.be(
             'https://wms.geo.admin.ch');
@@ -105,8 +105,8 @@ describe('ga_wms_service', function() {
     });
 
     describe('#addWmsToMap()', function() {
-      
-      it.skip('adds a layer using minimal parameters', function() {
+
+      it('adds a layer using minimal parameters', function() {
         var params = {
           LAYERS: 'some'
         };
@@ -128,7 +128,7 @@ describe('ga_wms_service', function() {
         });
       });
 
-      it.skip('adds a layer with custom options', function() {
+      it('adds a layer with custom options', function() {
         var params = {
           LAYERS: 'some',
           VERSION: '1.1.1'
@@ -163,7 +163,7 @@ describe('ga_wms_service', function() {
         });
       });
 
-      it.skip('adds a layer using reprojection', function() {
+      it('adds a layer using reprojection', function() {
         var params = {
           LAYERS: 'some',
           VERSION: 'custom'
@@ -187,7 +187,7 @@ describe('ga_wms_service', function() {
         });
       });
 
-      it.skip('adds a layer at the correct index in the layer list', function() {
+      it('adds a layer at the correct index in the layer list', function() {
         var idx = 2;
         var params = {LAYERS: 'some'};
         var options = {label: 'somelabel', url: 'https://wms.ch'};
@@ -213,7 +213,7 @@ describe('ga_wms_service', function() {
 
     describe('#getOlLayerFromGetCapLayer()', function() {
 
-      it.skip('creates a layer with minimal param', function() {
+      it('creates a layer with minimal param', function() {
         var options = {
           Name: 'some',
           Title: 'somelabel',

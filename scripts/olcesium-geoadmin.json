@@ -48,6 +48,7 @@
     "ol.extent.intersects",
     "ol.format.GeoJSON",
     "ol.format.GeoJSON#*",
+    "ol.format.IGC",
     "ol.format.KML",
     "ol.format.KML#*",
     "ol.format.WMSCapabilities",

@@ -603,7 +603,7 @@ describe('ga_map_service', function() {
       });
     });
 
-    describe.skip('#getConfig3d', function() {
+    describe('#getConfig3d', function() {
       var layersConfig = {
         foo: {
         'config3d': 'foo3d'
@@ -637,7 +637,7 @@ describe('ga_map_service', function() {
       });
     });
 
-    describe.skip('#getCesiumTerrainProviderById()' , function() {
+    describe('#getCesiumTerrainProviderById()' , function() {
       var layersConfig = {
         terrain: {
           type: 'terrain',
@@ -715,7 +715,7 @@ describe('ga_map_service', function() {
       });
     });
 
-    describe.skip('#getCesiumTileset3DById()' , function() {
+    describe('#getCesiumTileset3DById()' , function() {
       var layersConfig = {
         'ch.dummy.wms': {
           type: 'wms',
@@ -762,7 +762,7 @@ describe('ga_map_service', function() {
       });
     });
 
-    describe.skip('#getCesiumImageryProviderById()' , function() {
+    describe('#getCesiumImageryProviderById()' , function() {
       var layersConfig = {
         'ch.dummy.terrain.3d': {
           type: 'terrain',
@@ -897,7 +897,7 @@ describe('ga_map_service', function() {
         // succeed to test it so we test the params we send to the constructor
         // instead.
         var params = spy.args[0][0];
-        expect(params.url).to.eql(expectWmsUrl('wmsLayers'));
+        expect(params.url).to.eql('http://wms.geo.admin.ch');
         expect(params.subdomains).to.eql(['', '0', '1', '2', '3', '4']);
         expect(params.tileWidth).to.eql(512);
         expect(params.tileHeight).to.eql(512);
@@ -922,7 +922,7 @@ describe('ga_map_service', function() {
       });
     });
 
-    describe.skip('#getCesiumDataSourceById' , function() {
+    describe('#getCesiumDataSourceById' , function() {
       var layersConfig = {
         'ch.dummy.wms': {
           type: 'wms',
@@ -962,7 +962,7 @@ describe('ga_map_service', function() {
         expect(args[0]).to.be('http://foo.kml');
         expect(args[1].camera).to.be(scene.camera);
         expect(args[1].canvas).to.be(scene.canvas);
-        expect(args[1].proxy.getURL('http://foo.kml')).to.be('http://proxy.geo.admin.ch/http/foo.kml');
+        expect(args[1].proxy.getURL('http://foo.kml')).to.be(gaGlobalOptions.ogcproxyUrl + encodeURIComponent('http://foo.kml'));
         spy.restore();
       });
     });
@@ -1655,7 +1655,7 @@ describe('ga_map_service', function() {
       });
     });
 
-    describe.skip('#extentToRectangle()', function() {
+    describe('#extentToRectangle()', function() {
 
       it('using the default projection', function() {
         var rect = gaMapUtils.extentToRectangle([0, 0, 30, 30]);

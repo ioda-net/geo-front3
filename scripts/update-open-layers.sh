@@ -77,8 +77,3 @@ node build/build.js "${geo_front_root}/scripts/olcesium-geoadmin.json" "${geo_fr
 rm -rf "${geo_front_root}/src/lib/Cesium"
 cp -r cesium/Build/CesiumUnminified "${geo_front_root}/src/lib/Cesium"
 cp cesium/Build/Cesium/Cesium.js "${geo_front_root}/src/lib/Cesium.min.js"
-
-
-#### Build ol for WMTS
-cd ol
-node tasks/build.js "${geo_front_root}/scripts/ol.json" "${geo_front_root}/src/lib/ol.js"
