@@ -897,7 +897,15 @@ describe('ga_map_service', function() {
         // succeed to test it so we test the params we send to the constructor
         // instead.
         var params = spy.args[0][0];
-        expect(params.url).to.eql('http://wms.geo.admin.ch');
+        var wmsUrl = 'http://wms.geo.admin.ch?layers=wmsLayers&' +
+            'format=image/png&' +
+            'service=WMS&version=1.3.0&' +
+            'request=GetMap&crs=CRS:84&' +
+            'bbox={westProjected},{southProjected},{eastProjected},{northProjected}&' +
+            'width=512&height=512&' +
+            'styles=&' +
+            'transparent=true';
+        expect(params.url).to.eql(wmsUrl);
         expect(params.subdomains).to.eql(['', '0', '1', '2', '3', '4']);
         expect(params.tileWidth).to.eql(512);
         expect(params.tileHeight).to.eql(512);
