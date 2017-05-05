@@ -424,7 +424,11 @@ goog.require('ga_urlutils_service');
               query += '&transparent=true';
             }
 
-            wmsUrl += '?' + query;
+            if (!/\?$/.test(wmsUrl)) {
+              wmsUrl += '?';
+            }
+
+            wmsUrl += query;
           }
 
           return wmsUrl;
