@@ -133,7 +133,8 @@ var GaCesium = function(map, gaPermalink, gaLayers, gaGlobalOptions,
 
     // Tileset 3D
     var tileset3d = [
-      'ch.swisstopo.swisstlm3d.3d'
+      // We should add our tileset here. Swisstopo has:
+      // 'ch.swisstopo.swisstlm3d.3d'
     ];
 
     var primitives = [];
