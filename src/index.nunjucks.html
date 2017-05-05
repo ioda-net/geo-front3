@@ -748,6 +748,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           secondaryEpsgContextPopupTitle: '${geoportal.secondary_epsg_context_popup_title}',
           defaultToSecondaryEpsgUrl: '${geoportal.default_to_secondary_epsg_url}',
           secondaryToDefaultEpsgUrl: '${geoportal.secondary_to_default_epsg_url}',
+          wmsUrl: '${mapserver.PORTAL_BASE_OWS}',
           {% if front.default_values.wms_list %}
           wmsList: ${front.default_values.wms_list},
           {% endif %}
@@ -789,7 +790,7 @@ itemscope itemtype="http://schema.org/WebApplication"
           gaLayersProvider.dfltWmtsNativeSubdomains = ['5', '6', '7', '8', '9'];
           gaLayersProvider.dfltWmtsMapProxySubdomains = ['20', '21', '22', '23', '24'];
           gaLayersProvider.dfltVectorTilesSubdomains = ['', '0', '1', '2', '3', '4'];
-          gaLayersProvider.wmsUrlTemplate = '//wms{s}.geo.admin.ch/';
+          gaLayersProvider.wmsUrlTemplate = '${mapserver.PORTAL_BASE_OWS}';
           gaLayersProvider.wmtsGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{y}/{x}.{Format}';
           gaLayersProvider.wmtsMapProxyGetTileUrlTemplate = '//wmts{s}.geo.admin.ch/1.0.0/{Layer}/default/{Time}/{TileMatrixSet}/{z}/{x}/{y}.{Format}';
           gaLayersProvider.terrainTileUrlTemplate = '//3d.geo.admin.ch/1.0.0/{Layer}/default/{Time}/4326';
