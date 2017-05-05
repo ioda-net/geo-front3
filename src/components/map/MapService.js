@@ -582,7 +582,7 @@ goog.require('ga_urlutils_service');
          */
         this.getCesiumTerrainProviderById = function(bodId) {
           var config3d = this.getConfig3d(layers[bodId]);
-          if (!/^terrain$/.test(config3d.type)) {
+          if (config3d.type && !/^terrain$/.test(config3d.type)) {
             return;
           }
           var timestamp = this.getLayerTimestampFromYear(config3d,
@@ -603,7 +603,7 @@ goog.require('ga_urlutils_service');
          */
         this.getCesiumTileset3DById = function(bodId) {
           var config3d = this.getConfig3d(layers[bodId]);
-          if (!/^tileset3d$/.test(config3d.type)) {
+          if (config3d.type && !/^tileset3d$/.test(config3d.type)) {
             return;
           }
           var timestamp = this.getLayerTimestampFromYear(config3d,
@@ -624,7 +624,7 @@ goog.require('ga_urlutils_service');
         this.getCesiumImageryProviderById = function(bodId) {
           var config = layers[bodId];
           var config3d = this.getConfig3d(config);
-          if (!/^(wms|wmts|aggregate)$/.test(config3d.type)) {
+          if (config3d.type && !/^(wms|wmts|aggregate)$/.test(config3d.type)) {
             return;
           }
           var params;
@@ -722,7 +722,7 @@ goog.require('ga_urlutils_service');
           var config = layers[bodId];
           bodId = config.config3d;
           var config3d = this.getConfig3d(config);
-          if (!/^kml$/.test(config3d.type)) {
+          if (config3d.type && !/^kml$/.test(config3d.type)) {
             return;
           }
           var dsP = Cesium.KmlDataSource.load(config3d.url, {
