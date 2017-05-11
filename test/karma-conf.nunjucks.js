@@ -100,11 +100,17 @@ module.exports = function(config) {
 	    // need to use Karma's html2js preprocessor, and cache partials in
 	    // tests using ngMock's "module" function.
 	    //'components/**/*.html': 'html2js'
-        'js/*.js': ['coverage'],
+        'src/js/*.js': ['coverage'],
         'test/specs/importows/*.js': ['babel'],
         'test/specs/gf3Edit/*.js': ['babel'],
-        'components/**/*.js': ['coverage']
+        'src/components/**/*.js': ['coverage']
 	},
+    babelPreprocessor: {
+      options: {
+        presets: ['es2015'],
+        sourceMap: 'inline'
+      }
+    },
 
 
     // optionally, configure the reporter
