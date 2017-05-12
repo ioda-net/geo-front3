@@ -76,6 +76,7 @@ describe('ga_contextpopup_directive', function() {
     $httpBackend.when('GET', expectedHeightUrl).respond({height: '1233'});
     $httpBackend.when('GET', expectedReframeUrl).respond({coordinates: [2725984.4037894635, 1180787.4007025931]});
     $httpBackend.when('GET', expectedw3wUrl).respond({words: 'das.ist.test'});
+    $httpBackend.when('GET', expectedCommunesUrl).respond({commune: 'Moutier'});
   });
 
   afterEach(function() {
@@ -120,14 +121,13 @@ describe('ga_contextpopup_directive', function() {
       var spy = sinon.spy(gaReframe, 'getDefaultToSecondary');
       $httpBackend.expectGET(expectedHeightUrl);
       $httpBackend.expectGET(expectedReframeUrl);
-      if (plugins.communes) {
-        $httpBackend.expectGET(expectedCommunesUrl);
-      }
       $httpBackend.expectGET(expectedw3wUrl);
       var evt = $.Event("contextmenu");
       evt.coordinate = [661473, 188192];
       evt.pixel = [25, 50];
       $(map.getViewport()).trigger(evt);
+      $rootScope.$digest();
+      $timeout.flush();
       $httpBackend.flush();
 
       expect(elt.css('display')).to.be('block');
