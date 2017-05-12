@@ -1,6 +1,5 @@
 /**
- * To recreate: change WHITESPACE_ONLY by SIMPLE when in _launch-task-in-front-dir
- * and copy the $jscomp lines from app-whitespace.js
+ * To recreate: launch `manuel jscomp` in geo-infra
  */
 
 var $jscomp = {scope:{}};
