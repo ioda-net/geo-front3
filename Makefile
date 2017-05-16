@@ -54,10 +54,10 @@ GIT_BRANCH := $(shell if [ -f .build-artefacts/deployed-git-branch ]; then cat .
 GIT_LAST_BRANCH := $(shell if [ -f .build-artefacts/last-git-branch ]; then cat .build-artefacts/last-git-branch 2> /dev/null; else echo 'dummy'; fi)
 BRANCH_TO_DELETE ?=
 DEPLOY_ROOT_DIR := /var/www/vhosts/mf-geoadmin3/private/branch
-OL_VERSION ?= v4.1.0 # v4.1.0, April 14 2017
-OL_CESIUM_VERSION ?= v1.26 # # v1.26, April 4 2017
-CESIUM_VERSION ?= a2c421d39ac3f43b047681049dd517f489747a72 # camptocamp/c2c_patches_vector_tiles_labels, April 20 2017
-NGEO_VERSION ?= 4f3430b4d27bb0a7e2f0c7356fbcca8f134991e5 # master, April 27 2017
+OL_VERSION ?= v4.1.1 # v4.1.1, May 3 2017
+OL_CESIUM_VERSION ?= v1.27 # # v1.27, May 4 2017
+CESIUM_VERSION ?= 95240e12064fd450ea3d0d1f0917671fa37cc14b # camptocamp/c2c_patches_vector_tiles_labels, May 5 2017
+NGEO_VERSION ?= f3d565995d13d4a423d723f2c4687fd7de7248d1 # master, May 5 2017
 DEFAULT_TOPIC_ID ?= ech
 TRANSLATION_FALLBACK_CODE ?= de
 LANGUAGES ?= '[\"de\", \"fr\", \"it\", \"en\", \"rm\"]'
@@ -111,6 +111,7 @@ KARMA=${NODE_BIN}/karma
 PHANTOMJS=${NODE_BIN}/phantomjs
 NG_ANNOTATE=${NODE_BIN}/ng-annotate
 BABEL=${NODE_BIN}/babel
+POSTCSS=${NODE_BIN}/postcss
 
 .PHONY: help
 help:
@@ -451,6 +452,7 @@ prd/lib/build.js: src/lib/polyfill.min.js \
 prd/style/app.css: $(SRC_LESS_FILES)
 	mkdir -p $(dir $@)
 	${LESSC} $(LESS_PARAMETERS) --clean-css src/style/app.less $@
+	${POSTCSS} $@ --use autoprefixer --replace --no-map
 
 prd/geoadmin.appcache: src/geoadmin.mako.appcache \
 			${MAKO_CMD} \
@@ -610,6 +612,7 @@ src/deps.js: $(SRC_JS_FILES) ${PYTHON_VENV}
 
 src/style/app.css: $(SRC_LESS_FILES)
 	${LESSC} $(LESS_PARAMETERS) src/style/app.less $@
+	${POSTCSS} $@ --use autoprefixer --replace --no-map
 
 src/index.html: src/index.mako.html \
 	    ${MAKO_CMD} \

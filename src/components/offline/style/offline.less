@@ -21,11 +21,9 @@
   button {
     transition: all ease 1s;
     transform: rotateY(360deg);
-    -webkit-transform: rotateY(-360deg);
 
     &.ga-btn-active {
       transform: rotateY(360deg);
-      -webkit-transform: rotateY(360deg);
 
       .fa-ga-offline {
         color: #ed1c24;
@@ -75,7 +73,7 @@
     margin-left: -@bt-half-px;
     width: unit(@bt-width, px);
 
-    @media (max-width: @screen-tablet), (max-height: @screen-sm-max-height) {
+    @media (max-width: @screen-tablet), (max-height: @screen-s-height) {
       bottom: 21px;
     }
   }
@@ -115,7 +113,7 @@
     border: @circle-half-px solid #666;
     border-radius: 50%;
     position: absolute;
-    .transition-transform(1s ease);
+    transition: transform 1s ease;
   }
 
 }
