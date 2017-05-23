@@ -31,6 +31,8 @@ goog.require('ga_topic_service');
               scope.activeTopic = newTopic;
             };
 
+            //@geoportal.xyz we don't order alphabetically by default
+            //@TODO can be enhanced by having a global configuration per portal switch
             scope.localeSensitiveComparator = function(o1, o2) {
               var v1 = o1.value;
               var v2 = o2.value;
@@ -40,10 +42,12 @@ goog.require('ga_topic_service');
                   typeof(groupId2) == 'number') {
                 return groupId1 < groupId2 ? -1 : 1;
               }
-              var name1 = v1.name;
-              var name2 = v2.name;
+              
+              // var name1 = v1.name;
+              // var name2 = v2.name;
               // Compare strings alphabetically, taking locale into account
-              return name1.localeCompare(name2);
+              // return name1.localeCompare(name2);
+
             };
 
             scope.$watch('activeTopic', function(newTopic) {
