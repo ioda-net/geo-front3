@@ -66,41 +66,46 @@ describe('ga_topic_directive', function() {
         $rootScope.$digest();
       });
 
+//      @geoportal.xyz we don't reorder alphabetically topics.
+//      @todo : we need to recheck and validate active true false compared to upstream
       it('reorders correctly the html on lang change event', function() {
         var items = element.find('.ga-topic-item');
         expect(items.length).to.be(3);
-        expect($(items[0]).text().trim()).to.be('anothertopic');
-        expect($(items[1]).text().trim()).to.be('finaltopic');
-        expect($(items[2]).text().trim()).to.be('sometopic');
+        // expect($(items[0]).text().trim()).to.be('anothertopic');
+        // expect($(items[1]).text().trim()).to.be('finaltopic');
+        // expect($(items[2]).text().trim()).to.be('sometopic');
         $translate.use('en');
         $rootScope.$broadcast('translateChangeEnd', {language: 'en'});
         $rootScope.$digest();
         items = element.find('.ga-topic-item');
-        expect($(items[0]).text().trim()).to.be('Alien');
-        expect($(items[1]).text().trim()).to.be('Énergie');
-        expect($(items[2]).text().trim()).to.be('Zombie');
+        expect(items.length).to.be(3);
+        // expect($(items[0]).text().trim()).to.be('Alien');
+        // expect($(items[1]).text().trim()).to.be('Énergie');
+        // expect($(items[2]).text().trim()).to.be('Zombie');
       });
 
       it('updates correctly the html on first topic change event', function() {
         var items = element.find('.ga-topic-item');
         expect(items.length).to.be(3);
-        expect($(items[0]).hasClass('ga-topic-active')).to.be(false);
+        expect($(items[0]).hasClass('ga-topic-active')).to.be(true);
         expect($(items[1]).hasClass('ga-topic-active')).to.be(false);
-        expect($(items[2]).hasClass('ga-topic-active')).to.be(true);
+        expect($(items[2]).hasClass('ga-topic-active')).to.be(false);
       });
 
+//      @geoportal.xyz we don't reorder alphabetically topics.
+//      @todo need to check against upstream tests
       it('updates correctly the html on multiple topic change event', function() {
         $rootScope.$broadcast('gaTopicChange', topics[1]);
         $rootScope.$digest();
         var items = element.find('.ga-topic-item');
         expect(items.length).to.be(3);
-        expect($(items[0]).hasClass('ga-topic-active')).to.be(true);
+        expect($(items[1]).hasClass('ga-topic-active')).to.be(true);
 
         $rootScope.$broadcast('gaTopicChange', topics[0]);
         $rootScope.$digest();
         var items = element.find('.ga-topic-item');
         expect(items.length).to.be(3);
-        expect($(items[2]).hasClass('ga-topic-active')).to.be(true);
+        expect($(items[0]).hasClass('ga-topic-active')).to.be(true);
       });
 
       it('changes topic on click', function() {
