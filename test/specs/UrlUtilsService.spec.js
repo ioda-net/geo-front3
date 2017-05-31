@@ -1,10 +1,11 @@
 describe('ga_urlutils_service', function() {
 
   describe('gaUrlUtils', function() {
-    var gaUrlUtils, gaGlobalOptions;
+    var gaUrlUtils, gaGlobalOptions, $timeout;
 
     beforeEach(function() {
       inject(function($injector) {
+        $timeout = $injector.get('$timeout');
         gaUrlUtils = $injector.get('gaUrlUtils');
         gaGlobalOptions = $injector.get('gaGlobalOptions');
       });
@@ -170,6 +171,7 @@ describe('ga_urlutils_service', function() {
       afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
         $httpBackend.verifyNoOutstandingRequest();
+        $timeout.verifyNoPendingTasks();
       });
 
       it('shorten a url successfully', function(done) {
@@ -179,6 +181,7 @@ describe('ga_urlutils_service', function() {
           done();
         });
         $httpBackend.flush();
+        $timeout.flush();
       });
 
 
@@ -190,8 +193,10 @@ describe('ga_urlutils_service', function() {
           expect(errorSpy.callCount).to.be(1);
           done();
           errorSpy.restore();
+          $timeout.flush();
         });
         $httpBackend.flush();
+        $timeout.flush();
       });
     });
     describe('#isThirdPartyValid()', function() {
@@ -228,6 +233,12 @@ describe('ga_urlutils_service', function() {
         expect(gaUrlUtils.nonCloudFrontUrl('https://map.geo.admin.ch/asd')).to.be('https://s3-eu-west-1.amazonaws.com/mf-geoadmin3-prod-dublin/asd');
         expect(gaUrlUtils.nonCloudFrontUrl('map.geo.admin.ch')).to.be('map.geo.admin.ch');
         expect(gaUrlUtils.nonCloudFrontUrl('https://mf-geoadmin3.int.bgdi.ch/asd')).to.be('https://s3-eu-west-1.amazonaws.com/mf-geoadmin3-int-dublin/asd');
+        expect(gaUrlUtils.nonCloudFrontUrl('https://service-proxy.dev.bgdi.ch/http/dummy/somepath/myimage.png')).to.be('http://dummy/somepath/myimage.png');
+        expect(gaUrlUtils.nonCloudFrontUrl('https://service-proxy.dev.bgdi.ch/https/dummy/somepath/myimage.png')).to.be('https://dummy/somepath/myimage.png');
+        expect(gaUrlUtils.nonCloudFrontUrl('https://service-proxy.int.bgdi.ch/http/dummy/somepath/myimage.png')).to.be('http://dummy/somepath/myimage.png');
+        expect(gaUrlUtils.nonCloudFrontUrl('https://service-proxy.int.bgdi.ch/https/dummy/somepath/myimage.png')).to.be('https://dummy/somepath/myimage.png');
+        expect(gaUrlUtils.nonCloudFrontUrl('https://service-proxy.prod.bgdi.ch/http/dummy/somepath/myimage.png')).to.be('http://dummy/somepath/myimage.png');
+        expect(gaUrlUtils.nonCloudFrontUrl('https://service-proxy.prod.bgdi.ch/https/dummy/somepath/myimage.png')).to.be('https://dummy/somepath/myimage.png');
       });
     });
 

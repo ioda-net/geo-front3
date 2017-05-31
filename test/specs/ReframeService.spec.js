@@ -60,7 +60,7 @@ describe('ga_reframe_service', function() {
     it('falls back on proj4js on error for LV03 to LV95', function(done) {
       var coordinates = [620116.6, 142771.3];
       var url = buildUrl(lv03tolv95Url, coordinates);
-      $httpBackend.expectGET(url).respond(400);
+      $httpBackend.expectGET(url).respond(404);
 
       gaReframe.get03To95(coordinates).then(function(coords) {
         // On Chrome we have a higher accuracy than on PhantomJS. We round the
@@ -82,7 +82,7 @@ describe('ga_reframe_service', function() {
     it('falls back on proj4js on error for LV95 to LV03', function(done) {
       var coordinates = [2620116.600000524, 1142771.299843073];
       var url = buildUrl(lv95tolv03Url, coordinates);
-      $httpBackend.expectGET(url).respond(400);
+      $httpBackend.expectGET(url).respond(404);
 
       gaReframe.get95To03(coordinates).then(function(coords) {
         // On Chrome we have a higher accuracy than on PhantomJS. We round the

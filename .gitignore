@@ -3,6 +3,7 @@
 /coverage
 /src/deps.js
 /src/js/Gf3Plugins.js
+/src/jscomp.js
 /src/style/app.css
 /src/index.html
 /src/mobile.html

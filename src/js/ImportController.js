@@ -1,6 +1,7 @@
 goog.provide('ga_import_controller');
 
 goog.require('ga_kml_service');
+goog.require('ga_wmts_service');
 goog.require('ngeo.fileService');
 
 (function() {
@@ -12,7 +13,7 @@ goog.require('ngeo.fileService');
 
   module.controller('GaImportController', function($scope, $q, $document,
       $window, $timeout, ngeoFile, gaKml, gaBrowserSniffer, gaWms, gaUrlUtils,
-      gaLang, gaPreviewLayers, gaMapUtils, gaGlobalOptions, gf3Wmts) {
+      gaLang, gaPreviewLayers, gaMapUtils, gaGlobalOptions, gaWmts) {
 
     var defaultWmsList = [
       'https://wms.geo.admin.ch/?lang=',
@@ -159,7 +160,9 @@ goog.require('ngeo.fileService');
     var wmsList = gaGlobalOptions.wmsList !== undefined ?
         gaGlobalOptions.wmsList : defaultWmsList;
     var defaultWmtsList = [
-      'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml'
+      'https://wmts.geo.admin.ch/1.0.0/WMTSCapabilities.xml',
+      'http://www.basemap.at/wmts/1.0.0/WMTSCapabilities.xml',
+      'http://cidportal.jrc.ec.europa.eu/copernicus/services/tile/wmts/1.0.0/WMTSCapabilities.xml'
     ];
     var wmtsList = gaGlobalOptions.wmtsList !== undefined ?
           gaGlobalOptions.wmtsList : defaultWmtsList;
@@ -174,7 +177,7 @@ goog.require('ngeo.fileService');
       if (layer.wmsUrl) {
         return gaWms.getOlLayerFromGetCapLayer(layer);
       } else if (layer.capabilitiesUrl) {
-        return gf3Wmts.getOlLayerFromGetCapLayer(layer);
+        return gaWmts.getOlLayerFromGetCapLayer(layer);
       }
     };
     $scope.options.addPreviewLayer = function(map, layer) {
@@ -197,6 +200,7 @@ goog.require('ngeo.fileService');
           url = gaUrlUtils.append(url, 'lang=' + gaLang.get());
         }
       }
+      $scope.getCapUrl = url;
       return gaUrlUtils.proxifyUrl(url);
     };
 
@@ -239,6 +243,7 @@ goog.require('ngeo.fileService');
         }, function(evt) {
           defer.notify(evt);
         });
+
       } else if (ngeoFile.isWmtsGetCap(data)) {
         $scope.wmtsGetCap = data;
         defer.resolve({
@@ -252,7 +257,6 @@ goog.require('ngeo.fileService');
           reason: 'format_not_supported'
         });
       }
-      // WMTS
       // GPX
 
       return defer.promise;

@@ -8,6 +8,7 @@ goog.require('ga_time_service');
 goog.require('ga_topic_service');
 goog.require('ga_urlutils_service');
 goog.require('ga_wms_service');
+goog.require('ga_wmts_service');
 
 (function() {
 
@@ -20,7 +21,8 @@ goog.require('ga_wms_service');
     'ga_time_service',
     'ga_topic_service',
     'ga_urlutils_service',
-    'ga_wms_service'
+    'ga_wms_service',
+    'ga_wmts_service'
   ]);
 
   /**
@@ -38,9 +40,9 @@ goog.require('ga_wms_service');
    */
   module.provider('gaPermalinkLayersManager', function() {
 
-    this.$get = function($rootScope, gaLayers, gaPermalink, $http,
-        gaKml, gaMapUtils, gaWms, gf3Wmts, gaLayerFilters, gaUrlUtils,
-        gaFileStorage, gaTopic, gaGlobalOptions, $q, gaTime, $log) {
+    this.$get = function($rootScope, gaLayers, gaPermalink, $translate,
+        gaKml, gaMapUtils, gaWms, gaLayerFilters, gaUrlUtils, gaFileStorage,
+        gaTopic, gaGlobalOptions, $q, gaTime, $log, $http, gaWmts) {
 
       var layersParamValue = gaPermalink.getParams().layers;
       var layersOpacityParamValue = gaPermalink.getParams().layers_opacity;
@@ -306,23 +308,24 @@ goog.require('ga_wms_service');
               }
             } else if (gaMapUtils.isExternalWmtsLayer(layerSpec)) {
               var infos = layerSpec.split('||');
-              $http.get(infos[3]).then(function(response) {
-                var data = response.data;
+              $http.get(gaUrlUtils.buildProxyUrl(infos[2]))
+                  .then(function(response) {
                 try {
-                  var getCapabilities =
-                      new ol.format.WMTSCapabilities().read(data);
-                  var layerConfig = gf3Wmts.getLayerConfigFromIdentifier(
-                      getCapabilities, infos[1]);
-                  layerConfig.dimensions = gf3Wmts.importDimensions(infos[2]);
-                    gf3Wmts.addWmtsToMap(map, layerConfig, index + 1);
+                  var data = response.data;
+                  var getCap = new ol.format.WMTSCapabilities().read(data);
+                  var layerOptions = gaWmts.getLayerOptionsFromIdentifier(
+                      infos[1], getCap);
+                  layerOptions.time = timestamp;
+                  gaWmts.addWmtsToMap(map, layerOptions, index + 1);
                 } catch (e) {
                   // Adding external WMTS layer failed
-                  console.error('Loading of external WMTS layer ' + layerSpec +
-                          ' failed. ' + e);
+                  $log.error('Loading of external WMTS layer ' + layerSpec +
+                      ' failed. ' + e.message);
                 }
-              }, function() {
-                console.error('Loading of external WMTS layer ' + layerSpec +
-                        ' failed. Failed to get capabilities from server.');
+              }, function(reason) {
+                $log.error('Loading of external WMTS layer ' + layerSpec +
+                    ' failed. Failed to get capabilities from server.' +
+                    'Reason : ' + reason);
               });
             }
           });
@@ -330,7 +333,7 @@ goog.require('ga_wms_service');
           // When an async layer is added we must reorder correctly the layers.
           if (mustReorder) {
             var deregister2 = scope.$watchCollection(
-                'layers | filter:layerFilter', function(layers) {
+                'layers | filter : layerFilter', function(layers) {
               if (layers.length == nbLayersToAdd) {
                 deregister2();
                 var hasBg = map.getLayers().item(0).background;

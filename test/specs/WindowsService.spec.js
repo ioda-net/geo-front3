@@ -30,12 +30,12 @@ describe.skip('ga_window_service', function() {
     // The PhantomJS window is 400*300, so we can only test xs screen.
     describe('#isWidth()', function() {
 
-      describe('using an xs screen', function() {
+      describe('using an l screen', function() {
         [
-          '<=xs', 'xs', '>=xs',
-          '<s', '<=s',
-          '<m', '<=m',
-          '<l', '<=l'
+          '>xs', '>=xs',
+          '>s', '>=s',
+          '>m', '>=m',
+          '<=l', 'l', '>=l'
         ].forEach(function(alias) {
           it('returns true for alias \'' + alias + '\'', function() {
              expect(gaWindow.isWidth(alias)).to.be(true);
@@ -43,10 +43,10 @@ describe.skip('ga_window_service', function() {
         });
 
         [
-          '<xs', '>xs',
-          's', '>=s', '>s',
-          'm', '>=m', '>m',
-          'l', '>=l', '>l'
+          '<xs', '<=xs', 'xs',
+          '<s', '<=s', 's',
+          '<m', '<=m', 'm',
+          '<l', '>l'
         ].forEach(function(alias) {
           it('returns false for alias \'' + alias + '\'', function() {
              expect(gaWindow.isWidth(alias)).to.be(false);
@@ -57,11 +57,11 @@ describe.skip('ga_window_service', function() {
 
     describe('#isHeight()', function() {
 
-      describe('using an xs screen', function() {
+      describe('using an m screen', function() {
         [
-          '<=xs', 'xs', '>=xs',
-          '<s', '<=s',
-          '<m', '<=m',
+          '>xs', '>=xs',
+          '>s', '>=s',
+          '<=m', 'm', '>=m',
           '<l', '<=l'
         ].forEach(function(alias) {
           it('returns true for alias \'' + alias + '\'', function() {
@@ -70,9 +70,9 @@ describe.skip('ga_window_service', function() {
         });
 
         [
-          '<xs', '>xs',
-          's', '>=s', '>s',
-          'm', '>=m', '>m',
+          '<xs', '<=xs', 'xs',
+          '<s', '<=s', 's',
+          '<m', '>m',
           'l', '>=l', '>l'
         ].forEach(function(alias) {
           it('returns false for alias \'' + alias + '\'', function() {

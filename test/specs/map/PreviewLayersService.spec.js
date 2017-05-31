@@ -136,7 +136,7 @@ describe('ga_previewlayers_service', function() {
             Default: 'current',
             Value: ['current']
           }],
-          sourceConfig: {
+          sourceConfig: {
             urls: ['URL']
           }
         };
@@ -165,7 +165,7 @@ describe('ga_previewlayers_service', function() {
         getCap.Identifier = 'other';
         gaPreviewLayers.addGetCapLayer(map, getCap);
         expect(layers.getLength()).to.be(1);
-        expect(layers.item(0).id).to.be('WMTS||other||Time:current||URL');
+        expect(layers.item(0).id).to.be('WMTS||other||URL');
       });
     });
 

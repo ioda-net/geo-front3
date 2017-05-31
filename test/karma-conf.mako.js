@@ -1,4 +1,3 @@
-
 // Karma configuration
 <%
   if mode == 'release':
@@ -13,10 +12,16 @@ module.exports = function(config) {
   // base path, that will be used to resolve files and exclude
   basePath: '..',
 
+  proxies: {
+    '/checker': '/base/${basePath}/checker'
+  },
+
   // list of files / patterns to load in the browser
   files: [
     {pattern: '${basePath}/style/font-awesome-4.5.0/font/*', watched: false, included: false, served: true},
     {pattern: '${basePath}/checker', watched: false, included: false, served: true},
+    'test/lib/expect.js',
+    'test/lib/sinon.js',
   % if mode == 'release':
     '${basePath}/style/app.css',
     '${basePath}/lib/d3.min.js',
@@ -47,11 +52,8 @@ module.exports = function(config) {
     'test/closure-loader-globals.js',
     '${basePath}/lib/olcesium-debug.js',
     '.build-artefacts/app-whitespace.js',
-
   % endif
     'test/lib/angular-mocks.js',
-    'test/lib/expect.js',
-    'test/lib/sinon.js',
     'test/specs/Loader.spec.js',
     'test/specs/**/*.js',
     {
@@ -120,7 +122,7 @@ module.exports = function(config) {
 
   // level of logging
   // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-  logLevel: config.LOG_WARN,
+  logLevel: config.LOG_DEBUG,
 
 
   // enable / disable watching file and executing tests whenever any file changes
@@ -135,16 +137,30 @@ module.exports = function(config) {
   // - Safari (only Mac)
   // - PhantomJS
   // - IE (only Windows)
-  browsers: ['PhantomJS'],
-
-
+  browsers: ['PhantomJS_desktop'],
+  customLaunchers: {
+    'PhantomJS_desktop': {
+      base: 'PhantomJS',
+      options: {
+        'viewportSize':  {
+          width: 1366,
+          height: 768
+        }
+      }
+    }
+  },
   // If browser does not capture in given timeout [ms], kill it
   captureTimeout: 5000,
 
 
   // Continuous Integration mode
   // if true, it capture browsers, run tests and exit
-  singleRun: false
+  singleRun: false,
+  browserConsoleLogOptions: {
+    level: 'log',
+    format: '%b %T: %m',
+    terminal: true
+  }
 
   });
 };
