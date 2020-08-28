@@ -1,5 +1,15 @@
 # Getting started with geo-front3
 
+## Read-Only project
+
+After serving well its purpose, this project is now considered as deprecated, and this repository is made only read-only
+before being deleted on December 31 2020.
+
+If you want to take over the project please contact us : contact (at) ioda-net (dot) ch
+
+
+## History
+
 Checkout the source code:
 
     $ git clone https://github.com/ioda-net/geo-front3.git
